@@ -1,11 +1,15 @@
 from flask import Flask, send_file, request, abort, jsonify
 import json
+import os
 from data_regression import data_regression
 
 app = Flask(__name__)
 
 @app.route("/upload_test", methods=['POST'])
 def upload_test():
+    os.makedirs("Test_Data", exist_ok=True)
+    os.makedirs("Sequences", exist_ok=True)
+
     test_id = request.args.get("test_id")
     fuel_choice = request.args.get("fuel_choice")
 
