@@ -15,23 +15,23 @@ from Injector.get_mdot_from_area import get_mdot_from_area
 # on the CSV. 
 def data_regression(
     file_name: str,
-    fuel_choice: str,
-    fuel_CdA: float,
-    ox_CdA: float,
-    A_star: float,
+    fuel_choice: str, #
+    fuel_CdA: float, #
+    ox_CdA: float, #
+    A_star: float, #
     *,
-    csv_dir: str | Path = r"C:\Users\Precision\Downloads",
-    ox_name: str = "GOX",
+    csv_dir: str | Path = r"Test_data/",
+    ox_name: str = "GOX", #
     T_C: float = 20.0,
     accept_frac: float = 0.10,   # median ±10% band
     ATM_PSI: float = 14.6959,
     psi_to_pa: float = 6894.757,
     ft_to_m: float = 0.3048,
     # column names
-    state_ox: str = "SN-O2-02 State",
-    state_fu: str = "SN-FU-01 State",
-    fuel_upstream_col: str = "PT-FU-01 Pressure",
-    ox_upstream_col: str = "PT-O2-04 Pressure",
+    state_ox: str = "SN-O2-02 State", #
+    state_fu: str = "SN-FU-01 State", #
+    fuel_upstream_col: str = "PT-FU-01 Pressure", #
+    ox_upstream_col: str = "PT-O2-04 Pressure", #
     downstream_col: str = "PT-GG-01 Pressure",   # used for mdot + CEA Pc
     downstream_col2: str = "PT-GG-02 Pressure",  # used for c*_act
     # fuel density
