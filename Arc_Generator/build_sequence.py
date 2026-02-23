@@ -95,14 +95,14 @@ def parse_main_sequence(path="test.csv"):
     
 
     # TODO, FIX REDLINE DEFINITION, boolean is not a real type. Needs to be u8. Can't add all the u8s into a f64 though
-    redline_func = "func check_redline() boolean {\n" 
+    redline_func = "func check_redline() u8 {\n" 
 
-    redline_func += "\tredline_count f64 = 0,\n"
+    redline_func += "\tredline_count u8 = 0,\n"
 
     for key in redline_table:
         redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +"\n"
 
-    redline_func += "\treturn redline_count > 0\n"
+    redline_func += "\treturn redline_count\n"
     
     redline_func += "}\n\n"
 
@@ -137,7 +137,7 @@ def parse_main_sequence(path="test.csv"):
             for j, value in enumerate(row[1:]):
                 stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
 
-            stage_block += "\t\tcheck_redline() => abort_sequence,\n"
+            stage_block += "\t\tcheck_redline() > 0 => abort_sequence,\n"
 
             if (i - 5 < len(time_offsets)):
                 stage_block += "\t\twait{duration=" + str(time_offsets[i - 5]) + "ms} => next\n"
