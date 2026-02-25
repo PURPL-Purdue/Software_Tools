@@ -21,6 +21,8 @@ def preprocess_file(path):
             if i == 0 and row[0] != "Limits":
                 return (False, "Error: missing Limits flag")
             if i == 1:
+                for j, value in enumerate(row):
+                    row[j] = value.replace("-", "_")
                 redline_devices = row
             if i == 2:
                 for j, value in enumerate(row):
@@ -35,6 +37,8 @@ def preprocess_file(path):
                 if (row[0] != "Timestamp (ms)"):
                     return (False, "Error: no timestamp header element")
 
+                for j, value in enumerate(row[1:]):
+                    row[j] = value.replace("-", "_")
                 devices = row[1:]
 
             if (i >= 5):
@@ -67,7 +71,7 @@ def preprocess_file(path):
                     if len(row) != 4:
                         return (False, "Error: invalid length for check condition in row " + str(i + 1))
                     
-                    if row[2] not in redline_devices:
+                    if row[2].replace("-", "_") not in redline_devices:
                         return (False, "Error: Check on non-existent device in row " + str(i + 1))
                     
                     try: # Logic to check if the check value is an integer (valid)
@@ -94,10 +98,9 @@ def parse_main_sequence(path="test.csv"):
         return
     
 
-    # TODO, FIX REDLINE DEFINITION, boolean is not a real type. Needs to be u8. Can't add all the u8s into a f64 though
     redline_func = "func check_redline() u8 {\n" 
 
-    redline_func += "\tredline_count u8 = 0,\n"
+    redline_func += "\tredline_count u8 := 0\n"
 
     for key in redline_table:
         redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +"\n"
@@ -123,7 +126,7 @@ def parse_main_sequence(path="test.csv"):
             stage_block = "\tstage ts" + str(timestamp) + " {\n"
 
             if ("CHECK" in row[1]):
-                stage_block += "\t\t" + row[2] + " > " + row[3] + " => abort_sequence,\n"
+                stage_block += "\t\t" + row[2].replace("-", "_") + " > " + row[3] + " => abort_sequence,\n"
 
                 if (i - 5< len(time_offsets)):
                     stage_block += "\t\twait{duration=" + str(time_offsets[i - 5]) + "ms} => next\n"
