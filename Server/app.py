@@ -95,8 +95,6 @@ def gen_test_condition(request):
 def get_tests():
     data = get_json()
 
-    print(data)
-
     test_ids = []
 
     for test in data["tests"]:
