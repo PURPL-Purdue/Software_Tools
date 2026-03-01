@@ -32,7 +32,7 @@ def upload_test():
 
     test_conditions = gen_test_condition(request)
 
-    parameters = run_reg_from_test_cond(test_id, test_conditions)
+    parameters = run_reg_from_test_cond(test_id, test_conditions)[0]
 
     exists = False
 
@@ -42,7 +42,7 @@ def upload_test():
             test["data_file"] = test_data_path
             test["sequence_file"] = seq_data_path
             test["test_conditions"] = test_conditions
-            test["parameters"] = parameters[0]
+            test["parameters"] = parameters
     
 
     if not exists:
@@ -51,7 +51,7 @@ def upload_test():
             "data_file": test_data_path,
             "sequence_file": seq_data_path,
             "test_conditions": test_conditions,
-            "parameters": parameters[0]
+            "parameters": parameters
         })
 
     write_json(data)
