@@ -1,6 +1,8 @@
 from flask import Flask, send_file, request, abort, jsonify
 import json
 import os
+import io
+import csv
 from data_regression import data_regression
 
 app = Flask(__name__)
@@ -97,10 +99,18 @@ def get_tests():
 
     test_ids = []
 
-    for test in data["tests"]:
-        test_ids.append(test["test_id"])
+    output = io.StringIO()
+    writer = csv.writer(output)
 
-    return test_ids, 200
+    writer.writerow(["filename"])  # header required
+
+    for test in data["tests"]:
+        writer.writerow([test["test_id"]])
+
+    mem = io.BytesIO(output.getvalue().encode("utf-8"))
+    mem.seek(0)
+
+    return send_file(mem, mimetype="text/csv", as_attachment=False), 200
 
 @app.route("/get_test_data/<test_id>")
 def get_test_data(test_id):
