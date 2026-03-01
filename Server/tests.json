@@ -59,56 +59,6 @@
         "n_steady": 0,
         "note": "No steady-state samples passed the median band filter."
       }
-    },
-    {
-      "test_id": "upload-test",
-      "data_file": "Test_Data/upload-test.csv",
-      "sequence_file": "Sequences/upload-test.csv",
-      "test_conditions": {
-        "fuel_choice": "JetA",
-        "fuel_CdA": "0.8",
-        "ox_CdA": "0.8",
-        "A_star": "0.4",
-        "ox_name": "GOX",
-        "state_ox": "SN-O2-02 State",
-        "state_fu": "SN-FU-01 State",
-        "fuel_upstream_col": "PT-FU-01 Pressure",
-        "ox_upstream_col": "PT-O2-04 Pressure",
-        "downstream_col": "PT-GG-01 Pressure",
-        "downstream_col2": "PT-GG-02 Pressure"
-      },
-      "parameters": {
-        "file_name": "upload-test.csv",
-        "fuel_choice": "JetA",
-        "n_active": 0,
-        "n_steady": 0,
-        "note": "No steady-state samples passed the median band filter."
-      }
-    },
-    {
-      "test_id": "upload-test",
-      "data_file": "Test_Data/upload-test.csv",
-      "sequence_file": "Sequences/upload-test.csv",
-      "test_conditions": {
-        "fuel_choice": "JetA",
-        "fuel_CdA": "0.8",
-        "ox_CdA": "0.8",
-        "A_star": "0.4",
-        "ox_name": "GOX",
-        "state_ox": "SN-O2-02 State",
-        "state_fu": "SN-FU-01 State",
-        "fuel_upstream_col": "PT-FU-01 Pressure",
-        "ox_upstream_col": "PT-O2-04 Pressure",
-        "downstream_col": "PT-GG-01 Pressure",
-        "downstream_col2": "PT-GG-02 Pressure"
-      },
-      "parameters": {
-        "file_name": "upload-test.csv",
-        "fuel_choice": "JetA",
-        "n_active": 0,
-        "n_steady": 0,
-        "note": "No steady-state samples passed the median band filter."
-      }
     }
   ]
 }

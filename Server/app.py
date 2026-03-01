@@ -100,9 +100,7 @@ def get_tests():
     test_ids = []
 
     for test in data["tests"]:
-        test_ids.append({
-            "file": test["test_id"]
-        })
+        test_ids.append(test["test_id"])
 
     return test_ids, 200
 
