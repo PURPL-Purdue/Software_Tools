@@ -78,11 +78,15 @@ def data_regression(
       df_ss: steady-state dataframe (filtered)
     """
 
+    print("File Name: " + file_name)
+
     # -------------------------
     # Load
     # -------------------------
     csv_path = Path(csv_dir) / file_name
     df = pd.read_csv(csv_path)
+
+    print(df.keys)
 
     # -------------------------
     # Filter: both states TRUE

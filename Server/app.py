@@ -32,20 +32,27 @@ def upload_test():
 
     test_conditions = gen_test_condition(request)
 
+    parameters = run_reg_from_test_cond(test_id, test_conditions)
+
+    print("\n\n\n PARAMETERS \n\n\n" + str(parameters[0]))
+
     data["tests"].append({
         "test_id": test_id,
         "data_file": test_data_path,
         "sequence_file": seq_data_path,
         "test_conditions": test_conditions,
-        "parameters": run_reg_from_test_cond(test_id, test_conditions)
+        "parameters": parameters[0]
     })
 
     write_json(data)
 
-    return 200
+    print("RETURNING \n\n\n")
+    return {
+        "status" : 200
+    },200
 
 def run_reg_from_test_cond(test_id, test_conditions):
-    return data_regression(file_name=test_id,
+    return data_regression(file_name= test_id + ".csv",
                     fuel_choice=test_conditions["fuel_choice"],
                     fuel_CdA=test_conditions["fuel_CdA"],
                     ox_CdA=test_conditions["ox_CdA"],
@@ -121,7 +128,7 @@ def get_seq_data(test_id):
     return send_file(str(path), as_attachment=True), 200
 
 def get_json():
-    with open('tests.json', 'r') as file:
+    with open('./tests.json', 'r') as file:
         data = json.load(file)
     
     return data
