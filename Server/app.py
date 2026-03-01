@@ -34,13 +34,25 @@ def upload_test():
 
     parameters = run_reg_from_test_cond(test_id, test_conditions)
 
-    data["tests"].append({
-        "test_id": test_id,
-        "data_file": test_data_path,
-        "sequence_file": seq_data_path,
-        "test_conditions": test_conditions,
-        "parameters": parameters[0]
-    })
+    exists = False
+
+    for test in data["tests"]:
+        if test["test_id"] == test_id:
+            exists = True
+            test["data_file"] = test_data_path
+            test["sequence_file"] = seq_data_path
+            test["test_conditions"] = test_conditions
+            test["parameters"] = parameters[0]
+    
+
+    if not exists:
+        data["tests"].append({
+            "test_id": test_id,
+            "data_file": test_data_path,
+            "sequence_file": seq_data_path,
+            "test_conditions": test_conditions,
+            "parameters": parameters[0]
+        })
 
     write_json(data)
 
