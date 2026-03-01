@@ -34,8 +34,6 @@ def upload_test():
 
     parameters = run_reg_from_test_cond(test_id, test_conditions)
 
-    print("\n\n\n PARAMETERS \n\n\n" + str(parameters[0]))
-
     data["tests"].append({
         "test_id": test_id,
         "data_file": test_data_path,
@@ -46,7 +44,6 @@ def upload_test():
 
     write_json(data)
 
-    print("RETURNING \n\n\n")
     return {
         "status" : 200
     },200
