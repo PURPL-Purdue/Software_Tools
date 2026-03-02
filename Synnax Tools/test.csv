@@ -1,8 +1,8 @@
 Limits
 PT-TI-01,PT-GG-01,PT-H2-03,PT-O2-04,PT-O2-05,PT-N2-02,PT-N2-07,PT-FU-01
 402,-1,-1,-1,-1,-1,-1,-1
-Sequence
 Timestamp (ms),SN-H2-01,SN-O2-01,SN-O2-02,SN-N2-01,SN-N2-02,SN-N2-03,SN-N2-04,SN-N2-07,SN-FU-01,Spark_Plug
+Main
 0,0,0,0,0,0,0,1,0,0,0
 500,0,0,0,1,1,1,1,0,0,0 / purge 1 start
 1000,0,0,0,0,0,0,1,0,0,0 / purge 1 end
