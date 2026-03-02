@@ -1,40 +1,64 @@
 {
-    "tests": [
-        {
-            "test_id": "sampleObj_datetime",
-            "data_file": "Test_Data/placeholder.csv",
-            "sequence_file": "Sequences/placeholder.csv",
-            "test_conditions": {
-                "fuel_choice": "fuel_choice",
-                "fuel_CdA": "fuel_CdA",
-                "ox_CdA": "ox_CdA",
-                "A_star": "A_star",
-                "ox_name": "ox_name",
-                "state_ox": "state_ox",
-                "state_fu": "state_fu",
-                "fuel_upstream_col": "fuel_upstream_col",
-                "ox_upstream_col": "ox_upstream_col",
-                "downstream_col": "downstream_col",
-                "downstream_col2": "downstream_col2"
-            },
-            "parameters": 
-            {
-                "fuel_choice": "fuel_choice",
-                "n_active": "int(len(df_active))",
-                "n_steady": "int(len(df_ss))",
-                "m_dot_fu_mean": "float(df_ss['m_dot_fu'].mean())",
-                "m_dot_ox_mean": "float(df_ss['m_dot_ox'].mean())",
-                "OF_mean": "float(df_ss['OF_ratio'].mean())",
-                "p_fu_mean_psig": "float(df_ss[fuel_upstream_col].mean())",
-                "p_ox_mean_psig": "float(df_ss[ox_upstream_col].mean())",
-                "pc_mean_psig": "float(df_ss[downstream_col2].mean())",
-                "overall_pressure_dev_psig": "float(overall_dev_psi)",
-                "rho_fu_mean": "float(df_ss['rho_fu'].mean())",
-                "rho_ox_mean": "float(df_ss['rho_ox'].mean())",
-                "cstar_expected_mean_mps": "float(df_ss['cstar_the'].mean())",
-                "cstar_actual_mean_mps": "float(df_ss['cstar_act'].mean())",
-                "cstar_eff_mean": "float(df_ss['cstar_eff'].mean())"
-            }
-        }
-    ]
+  "tests": [
+    {
+      "test_id": "sampleObj_datetime",
+      "data_file": "Test_Data/placeholder.csv",
+      "sequence_file": "Sequences/placeholder.csv",
+      "test_conditions": {
+        "fuel_choice": "fuel_choice",
+        "fuel_CdA": "fuel_CdA",
+        "ox_CdA": "ox_CdA",
+        "A_star": "A_star",
+        "ox_name": "ox_name",
+        "state_ox": "state_ox",
+        "state_fu": "state_fu",
+        "fuel_upstream_col": "fuel_upstream_col",
+        "ox_upstream_col": "ox_upstream_col",
+        "downstream_col": "downstream_col",
+        "downstream_col2": "downstream_col2"
+      },
+      "parameters": {
+        "fuel_choice": "fuel_choice",
+        "n_active": "int(len(df_active))",
+        "n_steady": "int(len(df_ss))",
+        "m_dot_fu_mean": "float(df_ss['m_dot_fu'].mean())",
+        "m_dot_ox_mean": "float(df_ss['m_dot_ox'].mean())",
+        "OF_mean": "float(df_ss['OF_ratio'].mean())",
+        "p_fu_mean_psig": "float(df_ss[fuel_upstream_col].mean())",
+        "p_ox_mean_psig": "float(df_ss[ox_upstream_col].mean())",
+        "pc_mean_psig": "float(df_ss[downstream_col2].mean())",
+        "overall_pressure_dev_psig": "float(overall_dev_psi)",
+        "rho_fu_mean": "float(df_ss['rho_fu'].mean())",
+        "rho_ox_mean": "float(df_ss['rho_ox'].mean())",
+        "cstar_expected_mean_mps": "float(df_ss['cstar_the'].mean())",
+        "cstar_actual_mean_mps": "float(df_ss['cstar_act'].mean())",
+        "cstar_eff_mean": "float(df_ss['cstar_eff'].mean())"
+      }
+    },
+    {
+      "test_id": "upload-test",
+      "data_file": "Test_Data/upload-test.csv",
+      "sequence_file": "Sequences/upload-test.csv",
+      "test_conditions": {
+        "fuel_choice": "JetA",
+        "fuel_CdA": "0.8",
+        "ox_CdA": "0.8",
+        "A_star": "0.4",
+        "ox_name": "GOX",
+        "state_ox": "SN-O2-02 State",
+        "state_fu": "SN-FU-01 State",
+        "fuel_upstream_col": "PT-FU-01 Pressure",
+        "ox_upstream_col": "PT-O2-04 Pressure",
+        "downstream_col": "PT-GG-01 Pressure",
+        "downstream_col2": "PT-GG-02 Pressure"
+      },
+      "parameters": {
+        "file_name": "upload-test.csv",
+        "fuel_choice": "JetA",
+        "n_active": 0,
+        "n_steady": 0,
+        "note": "No steady-state samples passed the median band filter."
+      }
+    }
+  ]
 }

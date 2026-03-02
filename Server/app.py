@@ -1,6 +1,8 @@
 from flask import Flask, send_file, request, abort, jsonify
 import json
 import os
+import io
+import csv
 from data_regression import data_regression
 
 app = Flask(__name__)
@@ -32,20 +34,36 @@ def upload_test():
 
     test_conditions = gen_test_condition(request)
 
-    data["tests"].append({
-        "test_id": test_id,
-        "data_file": test_data_path,
-        "sequence_file": seq_data_path,
-        "test_conditions": test_conditions,
-        "parameters": run_reg_from_test_cond(test_id, test_conditions)
-    })
+    parameters = run_reg_from_test_cond(test_id, test_conditions)[0]
+
+    exists = False
+
+    for test in data["tests"]:
+        if test["test_id"] == test_id:
+            exists = True
+            test["data_file"] = test_data_path
+            test["sequence_file"] = seq_data_path
+            test["test_conditions"] = test_conditions
+            test["parameters"] = parameters
+    
+
+    if not exists:
+        data["tests"].append({
+            "test_id": test_id,
+            "data_file": test_data_path,
+            "sequence_file": seq_data_path,
+            "test_conditions": test_conditions,
+            "parameters": parameters
+        })
 
     write_json(data)
 
-    return 200
+    return {
+        "status" : 200
+    },200
 
 def run_reg_from_test_cond(test_id, test_conditions):
-    return data_regression(file_name=test_id,
+    return data_regression(file_name= test_id + ".csv",
                     fuel_choice=test_conditions["fuel_choice"],
                     fuel_CdA=test_conditions["fuel_CdA"],
                     ox_CdA=test_conditions["ox_CdA"],
@@ -79,16 +97,20 @@ def gen_test_condition(request):
 def get_tests():
     data = get_json()
 
-    print(data)
-
     test_ids = []
 
-    for test in data["tests"]:
-        test_ids.append({
-            "file": test["test_id"]
-        })
+    output = io.StringIO()
+    writer = csv.writer(output)
 
-    return test_ids, 200
+    writer.writerow(["filename"])  # header required
+
+    for test in data["tests"]:
+        writer.writerow([test["test_id"]])
+
+    mem = io.BytesIO(output.getvalue().encode("utf-8"))
+    mem.seek(0)
+
+    return send_file(mem, mimetype="text/csv", as_attachment=False), 200
 
 @app.route("/get_test_data/<test_id>")
 def get_test_data(test_id):
@@ -121,7 +143,7 @@ def get_seq_data(test_id):
     return send_file(str(path), as_attachment=True), 200
 
 def get_json():
-    with open('tests.json', 'r') as file:
+    with open('./tests.json', 'r') as file:
         data = json.load(file)
     
     return data
