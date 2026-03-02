@@ -23,6 +23,7 @@ Main
 4000,0,0,0,0,0,0,1,0,0,0 / stop engine purge
 5300,0,0,0,1,1,1,1,0,0,0 / purge all on
 6300,0,0,0,0,0,0,1,0,0,0 / purge all off
+END, Main
 Redline
 0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
 50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
@@ -34,8 +35,10 @@ Redline
 350,0,0,0,0,0,0,1,0,0,0 / stop engine purge
 400,0,0,0,1,1,1,1,0,0,0 / purge all on
 450,0,0,0,0,0,0,1,0,0,0 / purge all off
+END, Redline
 SEQONE
 0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
 50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
 100,0,0,1,1,0,0,1,0,1,0 / TI h2 off
 150,0,0,1,0,0,0,1,0,1,0 / TI purge off
+END, SEQONE
