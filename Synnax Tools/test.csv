@@ -10,7 +10,7 @@ Timestamp (ms),SN-H2-01,SN-O2-01,SN-O2-02,SN-N2-01,SN-N2-02,SN-N2-03,SN-N2-04,SN
 1950,1,0,0,0,0,0,1,0,0,1 / TI h2 run
 2000,1,1,0,0,0,0,1,0,0,1 / TI o2 run, TI ignition
 2250,1,1,0,0,0,0,1,0,0,0 / spark off
-2260,CHECKPSI,PT-TI-01,100 / redline, ensure torch on
+2260,BLUELINE, LOWER, PT-TI-01,100, SEQONE / blueline, ensure torch on (lower bound of 100 psi)
 2440,1,1,1,0,0,0,1,0,1,0 / main fuel run
 2450,1,1,1,0,0,0,1,0,0,0 / main o2 run
 2950,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
@@ -23,3 +23,19 @@ Timestamp (ms),SN-H2-01,SN-O2-01,SN-O2-02,SN-N2-01,SN-N2-02,SN-N2-03,SN-N2-04,SN
 4000,0,0,0,0,0,0,1,0,0,0 / stop engine purge
 5300,0,0,0,1,1,1,1,0,0,0 / purge all on
 6300,0,0,0,0,0,0,1,0,0,0 / purge all off
+Redline
+0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
+50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
+100,0,0,1,1,0,0,1,0,1,0 / TI h2 off
+150,0,0,1,0,0,0,1,0,1,0 / TI purge off
+200,0,0,0,0,1,0,1,0,1,0 / main engine shutdown, o2 off, o2 purge on
+250,0,0,0,0,1,1,1,0,1,0 / RP purge on
+300,0,0,0,0,1,1,1,0,0,0 / RP off
+350,0,0,0,0,0,0,1,0,0,0 / stop engine purge
+400,0,0,0,1,1,1,1,0,0,0 / purge all on
+450,0,0,0,0,0,0,1,0,0,0 / purge all off
+SEQONE
+0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
+50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
+100,0,0,1,1,0,0,1,0,1,0 / TI h2 off
+150,0,0,1,0,0,0,1,0,1,0 / TI purge off
