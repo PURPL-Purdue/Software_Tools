@@ -10,7 +10,7 @@ Main
 1950,1,0,0,0,0,0,1,0,0,1 / TI h2 run
 2000,1,1,0,0,0,0,1,0,0,1 / TI o2 run, TI ignition
 2250,1,1,0,0,0,0,1,0,0,0 / spark off
-2260,BLUELINE, LOWER, PT-TI-01,100, SEQONE / blueline, ensure torch on (lower bound of 100 psi)
+2260,BLUELINE,LOWER,PT-TI-01,100, SEQONE / blueline, ensure torch on (lower bound of 100 psi)
 2440,1,1,1,0,0,0,1,0,1,0 / main fuel run
 2450,1,1,1,0,0,0,1,0,0,0 / main o2 run
 2950,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
@@ -23,7 +23,7 @@ Main
 4000,0,0,0,0,0,0,1,0,0,0 / stop engine purge
 5300,0,0,0,1,1,1,1,0,0,0 / purge all on
 6300,0,0,0,0,0,0,1,0,0,0 / purge all off
-END, Main
+END,Main
 Redline
 0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
 50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
@@ -35,10 +35,10 @@ Redline
 350,0,0,0,0,0,0,1,0,0,0 / stop engine purge
 400,0,0,0,1,1,1,1,0,0,0 / purge all on
 450,0,0,0,0,0,0,1,0,0,0 / purge all off
-END, Redline
+END,Redline
 SEQONE
 0,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
 50,1,0,1,1,0,0,1,0,1,0 / TI o2 off
 100,0,0,1,1,0,0,1,0,1,0 / TI h2 off
 150,0,0,1,0,0,0,1,0,1,0 / TI purge off
-END, SEQONE
+END,SEQONE
