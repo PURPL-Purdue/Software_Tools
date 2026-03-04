@@ -4,6 +4,7 @@ import os
 import io
 import csv
 from data_regression import data_regression
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -112,7 +113,8 @@ def get_tests():
 
     return send_file(mem, mimetype="text/csv", as_attachment=False), 200
 
-@app.route("/get_test_data/<test_id>")
+
+'''@app.route("/get_test_data/<test_id>")
 def get_test_data(test_id):
     data = get_json()
 
@@ -126,6 +128,48 @@ def get_test_data(test_id):
         return None, 404
     
     return send_file(str(path), as_attachment=True), 200
+'''
+
+@app.route("/get_test_data/<test_id>")
+def get_test_data(test_id):
+    data = get_json()
+
+    path = ""
+
+    for test in data["tests"]:
+        if test["test_id"] == test_id:
+            path = test["data_file"]
+
+    if path == "":
+        return jsonify({"error": "Not found"}), 404
+
+    rows = []
+
+    with open(path, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        for row in reader:
+            converted = {}
+
+            for key, value in row.items():
+                if value is None or value == "":
+                    converted[key] = None
+                    continue
+
+                # ---- BOOLEAN ----
+                if value.lower() in ["true", "false"]:
+                    converted[key] = value.lower() == "true"
+
+                # ---- NUMBER ----
+                else:
+                    try:
+                        converted[key] = float(value)
+                    except ValueError:
+                        converted[key] = value  # leave as string (Timestamp etc.)
+
+            rows.append(converted)
+
+    return jsonify(rows), 200
 
 @app.route("/get_seq_data/<test_id>")
 def get_seq_data(test_id):
