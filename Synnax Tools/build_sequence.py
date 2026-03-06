@@ -1,5 +1,6 @@
 import csv
 import sys
+import pyperclip
 
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
@@ -222,7 +223,7 @@ def parse_main_sequence(path="test.csv"):
         main_sequence += redline_func
 
         print(main_sequence)
-
+        pyperclip.copy(main_sequence)
     
 
 if __name__ == "__main__":
