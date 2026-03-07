@@ -1,5 +1,6 @@
 import csv
 import sys
+import pyperclip
 
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
@@ -32,6 +33,8 @@ def preprocess_file(path):
                     row[j] = value.replace("-", "_")
                 redline_devices = row
             if i == 2:
+                if len(row) != len(redline_devices):
+                    return (False, "Error: number of redline devices does not match number of redlines in row 3")
                 for j, value in enumerate(row):
                     if int(value) != -1 and int(value) < 0:
                         return (False, "Error: invalid redline value for device " + redline_devices[j])
@@ -120,6 +123,8 @@ def preprocess_file(path):
         
         if not has_redline_seq:
             return (False, "Error: File contains no redline sequence")
+        if not new_seq:
+            return (False, "Error: did not terminate sequence " + str(seq_name) + " with an END")
 
         for device in redline_devices:
             redline_table[device] = redline_values[redline_devices.index(device)]
@@ -218,7 +223,7 @@ def parse_main_sequence(path="test.csv"):
         main_sequence += redline_func
 
         print(main_sequence)
-
+        pyperclip.copy(main_sequence)
     
 
 if __name__ == "__main__":
