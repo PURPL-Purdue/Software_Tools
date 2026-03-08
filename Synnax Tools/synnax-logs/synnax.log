@@ -1,0 +1,294 @@
+{"level":"info","ts":1771986282.0705454,"caller":"start/cmd.go:73","msg":"\u001b[34mSynnax version 0.51.2 starting\u001b[0m"}
+{"level":"info","ts":1771986282.0731251,"caller":"start/start.go:151","msg":"starting synnax node","version":"0.51.2","commit":"0378b6b0bd5befea3b14d7944125fa7a906ef022","build":1771351661}
+{"level":"info","ts":1771986282.1128168,"caller":"start/start.go:189","msg":"using working directory","dir":"C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\17768"}
+{"level":"info","ts":1771986282.1133263,"logger":"storage","caller":"storage/layer.go:193","msg":"starting with memory-backed storage. no data will be persisted"}
+{"level":"info","ts":1771986282.1133263,"logger":"storage.kv","caller":"v2@v2.1.4/version_set.go:206","msg":"[JOB 1] MANIFEST created 000001"}
+{"level":"info","ts":1771986282.1138425,"logger":"storage.kv","caller":"storage/layer.go:394","msg":"Found 0 WALs"}
+{"level":"info","ts":1771986282.1138425,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 1] WAL created 000002"}
+{"level":"info","ts":1771986282.1138425,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 014"}
+{"level":"info","ts":1771986282.1138425,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 015"}
+{"level":"info","ts":1771986282.1138425,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 016"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 017"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 018"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 019"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 020"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 021"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 022"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 023"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 024"}
+{"level":"info","ts":1771986282.1143875,"logger":"storage.kv","caller":"v2@v2.1.4/table_stats.go:130","msg":"[JOB 2] all initial table stats loaded"}
+{"level":"info","ts":1771986282.1154075,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:86","msg":"beginning cluster startup"}
+{"level":"info","ts":1771986282.1154075,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:121","msg":"no peers provided, bootstrapping new cluster","cluster_key":"678990ed-a81e-4a3b-b2da-407e3a4db5e2"}
+{"level":"info","ts":1771986282.1154075,"logger":"distribution.aspen.cluster.gossip","caller":"gossip/gossip.go:40","msg":"starting cluster gossip"}
+{"level":"info","ts":1771986282.116876,"logger":"distribution.aspen.kv.recovery","caller":"kv/recovery.go:103","msg":"recovering lost key-value operations","peer_node_count":0}
+{"level":"info","ts":1771986282.116876,"logger":"distribution","caller":"verification/service.go:145","msg":"new license key registered, limit is 5000 channels"}
+{"level":"info","ts":1771986282.1310582,"logger":"service.framer.calculation","caller":"calculation/service.go:146","msg":"calculation service initialized"}
+{"level":"info","ts":1771986282.1366673,"logger":"service.driver","caller":"driver/service.go:84","msg":"created go driver rack","key":"65538"}
+{"level":"info","ts":1771986282.1366673,"logger":"service.driver","caller":"driver/service.go:198","msg":"configuring initial tasks","count":0}
+{"level":"info","ts":1771986282.1882105,"logger":"server","caller":"server/server.go:121","msg":"starting server","port":9091}
+{"level":"info","ts":1771986282.189234,"logger":"driver","caller":"driver/enabled.go:126","msg":"starting embedded driver"}
+{"level":"info","ts":1771986282.3628242,"logger":"driver","caller":"start.cpp:19:0","msg":"starting Synnax Driver v0.51.2 (2026-02-17 18:01:06)"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"real-time capabilities:"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"priority scheduling: yes"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"deadline scheduling: not supported"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"time constraint: not supported"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"mmcss: yes"}
+{"level":"info","ts":1771986282.3633351,"logger":"driver","caller":"rack.cpp:33:0","msg":"cpu affinity: yes"}
+{"level":"info","ts":1771986282.3638473,"logger":"driver","caller":"rack.cpp:33:0","msg":"memory locking: not supported"}
+{"level":"info","ts":1771986282.3669133,"logger":"driver","caller":"file.cpp:24:0","msg":"loading config file from C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\17768\\driver\\config.json"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"configuration:"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"cluster address: localhost:9091"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"username: synnax"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"password: ******"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"secure: false"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"clock skew correction: enabled"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"op timeout: 60s"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"poll interval: 1s"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"shutdown timeout: 30s"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"worker count: 4"}
+{"level":"info","ts":1771986282.3709831,"logger":"driver","caller":"rack.h:147:0","msg":"enabled integrations: arc, ethercat, labjack, modbus, ni, opc, sequence"}
+{"level":"info","ts":1771986282.427531,"logger":"driver","caller":"rack.h:149:0","msg":"successfully reached cluster at localhost:9091. Continuing with driver startup"}
+{"level":"info","ts":1771986282.427531,"logger":"driver","caller":"rack.h:152:0","msg":"remote info"}
+{"level":"info","ts":1771986282.427531,"logger":"driver","caller":"rack.h:152:0","msg":"rack: Node 1 Embedded Driver (65537)"}
+{"level":"info","ts":1771986282.427531,"logger":"driver","caller":"rack.h:152:0","msg":"cluster: 678990ed-a81e-4a3b-b2da-407e3a4db5e2"}
+{"level":"warn","ts":1771986282.539563,"logger":"driver.sy.shared.load","caller":"factory.cpp:121:0","msg":"LabJack LJM shared library is not installed. Download here: https://support.labjack.com/docs/ljm-software-installer-downloads-t4-t7-t8-digit. Restart Driver after installation."}
+{"level":"info","ts":1771986282.539563,"logger":"driver.ethercat","caller":"factory.cpp:55:0","msg":"using SOEM backend"}
+{"level":"warn","ts":1771986282.539563,"logger":"driver.ethercat","caller":"factory.cpp:58:0","msg":"[sy.shared.load"}
+{"level":"info","ts":1771986282.600554,"logger":"driver","caller":"manager.cpp:136:0","msg":"started successfully"}
+{"level":"info","ts":1771986282.600554,"caller":"start/start.go:328","msg":"\u001b[32mSynnax is running and available at localhost:9091 \u001b[0m"}
+{"level":"info","ts":1771986285.2016082,"logger":"driver.ni.scan_task","caller":"scan_task.h:535:0","msg":"successfully created device 01DCA43E"}
+{"level":"warn","ts":1771986290.1657064,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/auth/login","protocol":"http","variant":"VariantUnary","error":"invalid credentials: auth error"}
+{"level":"warn","ts":1771986297.331987,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/auth/login","protocol":"http","variant":"VariantUnary","error":"invalid credentials: auth error"}
+{"level":"info","ts":1771986322.6235764,"logger":"service.arc.lsp","caller":"lsp/server.go:207","msg":"Shutting down server"}
+{"level":"info","ts":1771986322.625366,"logger":"service.arc.lsp","caller":"lsp/server.go:207","msg":"Shutting down server"}
+{"level":"info","ts":1771986398.246029,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 3] WAL created 000004"}
+{"level":"info","ts":1771986427.041453,"caller":"start/cmd.go:78","msg":"\u001b[33mSynnax is shutting down. This can take up to 5 seconds. Please be patient\u001b[0m"}
+{"level":"info","ts":1771986427.0419567,"logger":"driver","caller":"driver/enabled.go:245","msg":"stopping embedded driver"}
+{"level":"info","ts":1771986427.0419567,"logger":"driver","caller":"start.cpp:48:0","msg":"received shutdown signal. Gracefully stopping driver. This can take up to 5 seconds. Please be patient"}
+{"level":"info","ts":1771986427.0423968,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task OPC UA Scanner"}
+{"level":"info","ts":1771986427.0423968,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task Rack Status"}
+{"level":"info","ts":1771986427.0423968,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task NI Scanner"}
+{"level":"info","ts":1771986427.0423968,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task EtherCAT Scanner"}
+{"level":"info","ts":1771986427.0432723,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task Modbus Scanner"}
+{"level":"info","ts":1771986427.1534448,"logger":"driver","caller":"start.cpp:57:0","msg":"stopped"}
+{"level":"info","ts":1771986427.3110104,"caller":"start/cmd.go:92","msg":"\u001b[34mSynnax has shut down\u001b[0m"}
+{"level":"info","ts":1771986435.2502987,"caller":"start/cmd.go:73","msg":"\u001b[34mSynnax version 0.51.2 starting\u001b[0m"}
+{"level":"info","ts":1771986435.2510617,"caller":"start/start.go:151","msg":"starting synnax node","version":"0.51.2","commit":"0378b6b0bd5befea3b14d7944125fa7a906ef022","build":1771351661}
+{"level":"info","ts":1771986435.2709277,"caller":"start/start.go:189","msg":"using working directory","dir":"C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\13212"}
+{"level":"info","ts":1771986435.2709277,"logger":"storage","caller":"storage/layer.go:193","msg":"starting with memory-backed storage. no data will be persisted"}
+{"level":"info","ts":1771986435.271438,"logger":"storage.kv","caller":"v2@v2.1.4/version_set.go:206","msg":"[JOB 1] MANIFEST created 000001"}
+{"level":"info","ts":1771986435.271438,"logger":"storage.kv","caller":"storage/layer.go:394","msg":"Found 0 WALs"}
+{"level":"info","ts":1771986435.271438,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 1] WAL created 000002"}
+{"level":"info","ts":1771986435.2719524,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 014"}
+{"level":"info","ts":1771986435.2719524,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 015"}
+{"level":"info","ts":1771986435.2719524,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 016"}
+{"level":"info","ts":1771986435.2719524,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 017"}
+{"level":"info","ts":1771986435.2719524,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 018"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 019"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 020"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 021"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 022"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 023"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 024"}
+{"level":"info","ts":1771986435.2724624,"logger":"storage.kv","caller":"v2@v2.1.4/table_stats.go:130","msg":"[JOB 2] all initial table stats loaded"}
+{"level":"info","ts":1771986435.2729728,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:86","msg":"beginning cluster startup"}
+{"level":"info","ts":1771986435.2729728,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:121","msg":"no peers provided, bootstrapping new cluster","cluster_key":"73558367-2eb1-4e3e-9362-5330a5f11ec0"}
+{"level":"info","ts":1771986435.2729728,"logger":"distribution.aspen.cluster.gossip","caller":"gossip/gossip.go:40","msg":"starting cluster gossip"}
+{"level":"info","ts":1771986435.2739975,"logger":"distribution.aspen.kv.recovery","caller":"kv/recovery.go:103","msg":"recovering lost key-value operations","peer_node_count":0}
+{"level":"info","ts":1771986435.2739975,"logger":"distribution","caller":"verification/service.go:145","msg":"new license key registered, limit is 5000 channels"}
+{"level":"info","ts":1771986435.2876866,"logger":"service.framer.calculation","caller":"calculation/service.go:146","msg":"calculation service initialized"}
+{"level":"info","ts":1771986435.2943275,"logger":"service.driver","caller":"driver/service.go:84","msg":"created go driver rack","key":"65538"}
+{"level":"info","ts":1771986435.2943275,"logger":"service.driver","caller":"driver/service.go:198","msg":"configuring initial tasks","count":0}
+{"level":"info","ts":1771986435.3439817,"logger":"server","caller":"server/server.go:121","msg":"starting server","port":9090}
+{"level":"error","ts":1771986435.3461504,"caller":"signal/routine.go:292","msg":"routine failed","key":"sy.start","state":"RoutineStateFailed","running":[],"error":"listen tcp :9090: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted."}
+{"level":"error","ts":1771986435.3461504,"caller":"start/cmd.go:41","msg":"\u001b[31mSynnax has encountered an error and is shutting down: listen tcp :9090: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.\u001b[0m","stacktrace":"github.com/synnaxlabs/synnax/cmd/start.init.func2\n\tC:/actions-runner/_work/synnax/synnax/core/cmd/start/cmd.go:41\ngithub.com/spf13/cobra.(*Command).execute\n\tC:/Windows/system32/config/systemprofile/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1019\ngithub.com/spf13/cobra.(*Command).ExecuteC\n\tC:/Windows/system32/config/systemprofile/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1148\ngithub.com/spf13/cobra.(*Command).Execute\n\tC:/Windows/system32/config/systemprofile/go/pkg/mod/github.com/spf13/cobra@v1.10.2/command.go:1071\ngithub.com/synnaxlabs/synnax/cmd.RunMain\n\tC:/actions-runner/_work/synnax/synnax/core/cmd/start_windows.go:33\nmain.main\n\tC:/actions-runner/_work/synnax/synnax/core/main.go:14\nruntime.main\n\tC:/actions-runner/_work/_tool/go/1.25.6/x64/src/runtime/proc.go:285"}
+{"level":"fatal","ts":1771986435.3461504,"caller":"start/cmd.go:90","msg":"synnax failed","error":"listen tcp :9090: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted."}
+{"level":"info","ts":1771986474.4056401,"caller":"start/cmd.go:73","msg":"\u001b[34mSynnax version 0.51.2 starting\u001b[0m"}
+{"level":"info","ts":1771986474.4061737,"caller":"start/start.go:151","msg":"starting synnax node","version":"0.51.2","commit":"0378b6b0bd5befea3b14d7944125fa7a906ef022","build":1771351661}
+{"level":"info","ts":1771986474.4389791,"caller":"start/start.go:189","msg":"using working directory","dir":"C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\18292"}
+{"level":"info","ts":1771986474.4389791,"logger":"storage","caller":"storage/layer.go:193","msg":"starting with memory-backed storage. no data will be persisted"}
+{"level":"info","ts":1771986474.439487,"logger":"storage.kv","caller":"v2@v2.1.4/version_set.go:206","msg":"[JOB 1] MANIFEST created 000001"}
+{"level":"info","ts":1771986474.439487,"logger":"storage.kv","caller":"storage/layer.go:394","msg":"Found 0 WALs"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 1] WAL created 000002"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 014"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 015"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 016"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 017"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 018"}
+{"level":"info","ts":1771986474.4399972,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 019"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 020"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 021"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 022"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 023"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 024"}
+{"level":"info","ts":1771986474.4405096,"logger":"storage.kv","caller":"v2@v2.1.4/table_stats.go:130","msg":"[JOB 2] all initial table stats loaded"}
+{"level":"info","ts":1771986474.4415324,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:86","msg":"beginning cluster startup"}
+{"level":"info","ts":1771986474.4415324,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:121","msg":"no peers provided, bootstrapping new cluster","cluster_key":"ec39d042-809a-4d28-a03d-44bd6c560e38"}
+{"level":"info","ts":1771986474.4415324,"logger":"distribution.aspen.cluster.gossip","caller":"gossip/gossip.go:40","msg":"starting cluster gossip"}
+{"level":"info","ts":1771986474.4425547,"logger":"distribution.aspen.kv.recovery","caller":"kv/recovery.go:103","msg":"recovering lost key-value operations","peer_node_count":0}
+{"level":"info","ts":1771986474.4430642,"logger":"distribution","caller":"verification/service.go:145","msg":"new license key registered, limit is 5000 channels"}
+{"level":"info","ts":1771986474.4574099,"logger":"service.framer.calculation","caller":"calculation/service.go:146","msg":"calculation service initialized"}
+{"level":"info","ts":1771986474.4643607,"logger":"service.driver","caller":"driver/service.go:84","msg":"created go driver rack","key":"65538"}
+{"level":"info","ts":1771986474.4643607,"logger":"service.driver","caller":"driver/service.go:198","msg":"configuring initial tasks","count":0}
+{"level":"info","ts":1771986474.508224,"logger":"server","caller":"server/server.go:121","msg":"starting server","port":9090}
+{"level":"info","ts":1771986474.508224,"logger":"driver","caller":"driver/enabled.go:126","msg":"starting embedded driver"}
+{"level":"warn","ts":1771986474.549888,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.5688875,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.5883646,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.5992954,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.6194015,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.629506,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.629506,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.6395254,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.6395254,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.658714,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.678958,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.6900263,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"start.cpp:19:0","msg":"starting Synnax Driver v0.51.2 (2026-02-17 18:01:06)"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"real-time capabilities:"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"priority scheduling: yes"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"deadline scheduling: not supported"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"time constraint: not supported"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"mmcss: yes"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"cpu affinity: yes"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.cpp:33:0","msg":"memory locking: not supported"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"file.cpp:24:0","msg":"loading config file from C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\18292\\driver\\config.json"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"configuration:"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"cluster address: localhost:9090"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"username: synnax"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"password: ******"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"secure: false"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"clock skew correction: enabled"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"op timeout: 60s"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"poll interval: 1s"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"shutdown timeout: 30s"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"worker count: 4"}
+{"level":"info","ts":1771986474.6900263,"logger":"driver","caller":"rack.h:147:0","msg":"enabled integrations: arc, ethercat, labjack, modbus, ni, opc, sequence"}
+{"level":"warn","ts":1771986474.710741,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"warn","ts":1771986474.7287464,"logger":"api","caller":"alamos/alamos.go:156","msg":"/api/v1/frame/stream","protocol":"http","variant":"VariantUnary","error":"invalid token: auth error"}
+{"level":"info","ts":1771986474.7611296,"logger":"driver","caller":"rack.h:149:0","msg":"successfully reached cluster at localhost:9090. Continuing with driver startup"}
+{"level":"info","ts":1771986474.7611296,"logger":"driver","caller":"rack.h:152:0","msg":"remote info"}
+{"level":"info","ts":1771986474.7611296,"logger":"driver","caller":"rack.h:152:0","msg":"rack: Node 1 Embedded Driver (65537)"}
+{"level":"info","ts":1771986474.7611296,"logger":"driver","caller":"rack.h:152:0","msg":"cluster: ec39d042-809a-4d28-a03d-44bd6c560e38"}
+{"level":"warn","ts":1771986474.7611296,"logger":"driver.sy.shared.load","caller":"factory.cpp:121:0","msg":"LabJack LJM shared library is not installed. Download here: https://support.labjack.com/docs/ljm-software-installer-downloads-t4-t7-t8-digit. Restart Driver after installation."}
+{"level":"info","ts":1771986474.7611296,"logger":"driver.ethercat","caller":"factory.cpp:55:0","msg":"using SOEM backend"}
+{"level":"warn","ts":1771986474.7611296,"logger":"driver.ethercat","caller":"factory.cpp:58:0","msg":"[sy.shared.load"}
+{"level":"info","ts":1771986474.832214,"logger":"driver","caller":"manager.cpp:136:0","msg":"started successfully"}
+{"level":"info","ts":1771986474.832214,"caller":"start/start.go:328","msg":"\u001b[32mSynnax is running and available at localhost:9090 \u001b[0m"}
+{"level":"info","ts":1771986475.3696957,"logger":"driver.ni.scan_task","caller":"scan_task.h:535:0","msg":"successfully created device 01DCA43E"}
+{"level":"info","ts":1771986503.3637373,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 3] WAL created 000004"}
+{"level":"info","ts":1771986608.7190385,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 4] WAL created 000005"}
+{"level":"info","ts":1771986861.343929,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 5] WAL created 000006"}
+{"level":"info","ts":1771987369.3303192,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 6] WAL created 000007"}
+{"level":"warn","ts":1771987414.453078,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"7s 74ms 430µs 900ns"}
+{"level":"warn","ts":1771987469.4536927,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"1m 2s 74ms 985µs 200ns"}
+{"level":"warn","ts":1771987529.4536345,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"2m 2s 74ms 987µs 600ns"}
+{"level":"warn","ts":1771987589.4535215,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"3m 2s 74ms 874µs 300ns"}
+{"level":"warn","ts":1771987649.4531891,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"4m 2s 74ms 542µs 200ns"}
+{"level":"warn","ts":1771987709.45324,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"5m 2s 74ms 592µs 700ns"}
+{"level":"warn","ts":1771987769.4535685,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"6m 2s 74ms 921µs 400ns"}
+{"level":"warn","ts":1771987829.453438,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"7m 2s 74ms 626µs 600ns"}
+{"level":"warn","ts":1771987889.4532688,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"8m 2s 74ms 621µs 700ns"}
+{"level":"warn","ts":1771987949.4534001,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"9m 2s 74ms 753µs"}
+{"level":"warn","ts":1771988009.4532142,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"10m 2s 74ms 567µs 300ns"}
+{"level":"warn","ts":1771988069.4530802,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"11m 2s 74ms 433µs 100ns"}
+{"level":"warn","ts":1771988129.4532752,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"12m 2s 74ms 628µs 100ns"}
+{"level":"warn","ts":1771988189.4535284,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"13m 2s 74ms 881µs 200ns"}
+{"level":"warn","ts":1771988249.4530873,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"14m 2s 74ms 440µs 200ns"}
+{"level":"warn","ts":1771988319.4535682,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"6s 220ms 574µs 800ns"}
+{"level":"warn","ts":1771988394.4534447,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"7s 154ms 382µs 300ns"}
+{"level":"warn","ts":1771988449.4531994,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"1m 2s 154ms 197µs 700ns"}
+{"level":"warn","ts":1771988509.453384,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"2m 2s 154ms 382µs 300ns"}
+{"level":"warn","ts":1771988649.4533238,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"8s 236ms 68µs 700ns"}
+{"level":"info","ts":1771988809.5137823,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 7] WAL created 000008"}
+{"level":"error","ts":1771989636.0622551,"logger":"service.arc.lsp","caller":"lsp/server.go:447","msg":"failed to publish diagnostics","error":"write to stream: context canceled","uri":"inmemory://model/4"}
+{"level":"warn","ts":1771989644.453179,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"8s 166ms 177µs 800ns"}
+{"level":"warn","ts":1771989719.4533746,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"9s 283ms 10µs 400ns"}
+{"level":"warn","ts":1771989809.4534876,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"6s 392ms 301µs 900ns"}
+{"level":"warn","ts":1771989864.4534836,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"9s 332ms 631µs 100ns"}
+{"level":"warn","ts":1771990204.4531138,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"9s 314ms 618µs 200ns"}
+{"level":"warn","ts":1771990264.4534154,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"5s 368ms 337µs 800ns"}
+{"level":"warn","ts":1771990319.4530675,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"1m 367ms 990µs"}
+{"level":"warn","ts":1771990404.4530919,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"7s 49ms 23µs 100ns"}
+{"level":"warn","ts":1771990459.4535708,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"1m 2s 49ms 501µs 900ns"}
+{"level":"warn","ts":1771990519.453393,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"2m 2s 49ms 324µs"}
+{"level":"info","ts":1771990527.9753332,"logger":"service.arc.lsp","caller":"lsp/server.go:207","msg":"Shutting down server"}
+{"level":"info","ts":1771990527.9789066,"logger":"service.arc.lsp","caller":"lsp/server.go:207","msg":"Shutting down server"}
+{"level":"warn","ts":1771990579.4533458,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"3m 2s 49ms 277µs 100ns"}
+{"level":"warn","ts":1771990639.4531646,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"4m 2s 49ms 95µs 700ns"}
+{"level":"warn","ts":1771990699.453131,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"5m 2s 49ms 62µs 100ns"}
+{"level":"warn","ts":1771990759.4530725,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"6m 2s 49ms 3µs 900ns"}
+{"level":"info","ts":1771990793.402465,"caller":"start/cmd.go:78","msg":"\u001b[33mSynnax is shutting down. This can take up to 5 seconds. Please be patient\u001b[0m"}
+{"level":"info","ts":1771990793.402465,"logger":"driver","caller":"driver/enabled.go:245","msg":"stopping embedded driver"}
+{"level":"info","ts":1771990793.4030037,"logger":"driver","caller":"start.cpp:48:0","msg":"received shutdown signal. Gracefully stopping driver. This can take up to 5 seconds. Please be patient"}
+{"level":"info","ts":1771990793.4030037,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task Rack Status"}
+{"level":"info","ts":1771990793.4035153,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task NI Scanner"}
+{"level":"info","ts":1771990793.4035153,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task OPC UA Scanner"}
+{"level":"info","ts":1771990793.4035153,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task EtherCAT Scanner"}
+{"level":"info","ts":1771990793.4045417,"logger":"driver","caller":"manager.cpp:379:0","msg":"shutting down task Modbus Scanner"}
+{"level":"info","ts":1771990793.5111327,"logger":"driver","caller":"start.cpp:57:0","msg":"stopped"}
+{"level":"info","ts":1771990793.6353636,"caller":"start/cmd.go:92","msg":"\u001b[34mSynnax has shut down\u001b[0m"}
+{"level":"info","ts":1771990838.950173,"caller":"start/cmd.go:72","msg":"\u001b[34mSynnax version 0.52.1 starting\u001b[0m"}
+{"level":"info","ts":1771990838.9512131,"caller":"start/start.go:151","msg":"starting synnax node","version":"0.52.1","commit":"994f8ce52ccf622ab181bf26ebfead28effbc13e","build":1771961905}
+{"level":"info","ts":1771990838.9940922,"caller":"start/start.go:189","msg":"using working directory","dir":"C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\9648"}
+{"level":"info","ts":1771990838.9940922,"logger":"storage","caller":"storage/layer.go:193","msg":"starting with memory-backed storage. no data will be persisted"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/version_set.go:206","msg":"[JOB 1] MANIFEST created 000001"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"storage/layer.go:394","msg":"Found 0 WALs"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 1] WAL created 000002"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 014"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 015"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 016"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 017"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 018"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 019"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 020"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 021"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 022"}
+{"level":"info","ts":1771990838.9950945,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 023"}
+{"level":"info","ts":1771990838.9961152,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 024"}
+{"level":"info","ts":1771990838.9961152,"logger":"storage.kv","caller":"v2@v2.1.4/table_stats.go:130","msg":"[JOB 2] all initial table stats loaded"}
+{"level":"info","ts":1771990838.9961152,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:86","msg":"beginning cluster startup"}
+{"level":"info","ts":1771990838.9961152,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:121","msg":"no peers provided, bootstrapping new cluster","cluster_key":"bf624d98-7eca-464d-ad50-bb8e8b6b0cd8"}
+{"level":"info","ts":1771990838.9971151,"logger":"distribution.aspen.cluster.gossip","caller":"gossip/gossip.go:40","msg":"starting cluster gossip"}
+{"level":"info","ts":1771990838.9971151,"logger":"distribution.aspen.kv.recovery","caller":"kv/recovery.go:103","msg":"recovering lost key-value operations","peer_node_count":0}
+{"level":"info","ts":1771990838.999174,"logger":"distribution","caller":"verification/service.go:145","msg":"new license key registered, limit is 5000 channels"}
+{"level":"info","ts":1771990839.0146182,"logger":"service.framer.calculation","caller":"calculation/service.go:146","msg":"calculation service initialized"}
+{"level":"info","ts":1771990839.0217795,"logger":"service.driver","caller":"driver/service.go:84","msg":"created go driver rack","key":"65538"}
+{"level":"info","ts":1771990839.0217795,"logger":"service.driver","caller":"driver/service.go:198","msg":"configuring initial tasks","count":0}
+{"level":"info","ts":1771990839.0717342,"logger":"server","caller":"server/server.go:121","msg":"starting server","port":9090}
+{"level":"info","ts":1771990839.0726788,"logger":"driver","caller":"driver/enabled.go:126","msg":"starting embedded driver"}
+{"level":"info","ts":1771990839.2259269,"logger":"driver","caller":"start.cpp:19:0","msg":"starting Synnax Driver v0.52.1 (2026-02-24 19:20:21)"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"real-time capabilities:"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"priority scheduling: yes"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"deadline scheduling: not supported"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"time constraint: not supported"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"mmcss: yes"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"cpu affinity: yes"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"rack.cpp:33:0","msg":"memory locking: not supported"}
+{"level":"info","ts":1771990839.2271392,"logger":"driver","caller":"file.cpp:24:0","msg":"loading config file from C:\\Users\\purpl\\AppData\\Local\\synnax\\core\\workdir\\9648\\driver\\config.json"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"configuration:"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"cluster address: localhost:9090"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"username: synnax"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"password: ******"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"secure: false"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"clock skew correction: enabled"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"op timeout: 60s"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"poll interval: 1s"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"shutdown timeout: 30s"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"worker count: 4"}
+{"level":"info","ts":1771990839.2276547,"logger":"driver","caller":"rack.h:151:0","msg":"enabled integrations: arc, ethercat, labjack, modbus, ni, opc"}
+{"level":"info","ts":1771990839.2840037,"logger":"driver","caller":"rack.h:153:0","msg":"successfully reached cluster at localhost:9090. Continuing with driver startup"}
+{"level":"info","ts":1771990839.2840037,"logger":"driver","caller":"rack.h:156:0","msg":"remote info"}
+{"level":"info","ts":1771990839.2840037,"logger":"driver","caller":"rack.h:156:0","msg":"rack: Node 1 Embedded Driver (65537)"}
+{"level":"info","ts":1771990839.2840037,"logger":"driver","caller":"rack.h:156:0","msg":"cluster: bf624d98-7eca-464d-ad50-bb8e8b6b0cd8"}
+{"level":"warn","ts":1771990839.288787,"logger":"driver.sy.shared.load","caller":"factory.cpp:121:0","msg":"LabJack LJM shared library is not installed. Download here: https://support.labjack.com/docs/ljm-software-installer-downloads-t4-t7-t8-digit. Restart Driver after installation."}
+{"level":"info","ts":1771990839.288787,"logger":"driver.ethercat","caller":"factory.cpp:55:0","msg":"using SOEM backend"}
+{"level":"warn","ts":1771990839.288787,"logger":"driver.ethercat","caller":"factory.cpp:58:0","msg":"[sy.shared.load"}
+{"level":"info","ts":1771990839.3513002,"logger":"driver","caller":"manager.cpp:135:0","msg":"started successfully"}
+{"level":"info","ts":1771990839.3513002,"caller":"start/start.go:329","msg":"\u001b[32mSynnax is running and available at localhost:9090 \u001b[0m"}
+{"level":"info","ts":1771990839.7994711,"logger":"driver.ni.scan_task","caller":"scan_task.h:524:0","msg":"successfully created device 01DCA43E"}
+{"level":"info","ts":1771990908.7457654,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 3] WAL created 000004"}
+{"level":"info","ts":1771991059.0469148,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 4] WAL created 000005"}
+{"level":"warn","ts":1771991073.2202024,"logger":"api","caller":"alamos/alamos.go:156","msg":"api.v1.RackRetrieveService","protocol":"grpc","variant":"VariantUnary","error":"Racks with keys [65540] not found: not found: query"}
+{"level":"warn","ts":1771991104.0106082,"logger":"service.rack.monitor","caller":"rack/monitor.go:102","msg":"synnax driver on ni-crio-9056-01dca43e not running","time_since_alive":"7s 671ms 209µs 200ns"}
+{"level":"info","ts":1771991321.18056,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 5] WAL created 000006"}

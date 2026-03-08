@@ -1,0 +1,25 @@
+Limits
+PT-TI-01,PT-GG-01,PT-H2-03,PT-LO2-04,PT-LO2-05,PT-N2-01,PT-N2-03,PT-FU-02
+402,-1,-1,-1,-1,-1,-1,-1
+Sequence
+Timestamp (ms),SN-PV-LO2-01,SN-PV-LO2-03,SN-PV-N2-08,SN-PV-N2-09,SN-PV-N2-17,SN-PV-N2-18,SN-PV-N2-19,SN-PV-N2-20,SN-PV-FU-02,SN-PV-FU-03
+0,0,0,0,0,0,0,1,0,0,0
+500,0,0,0,1,1,1,1,0,0,0 / purge 1 start
+1000,0,0,0,0,0,0,1,0,0,0 / purge 1 end
+1850,0,0,0,0,0,0,1,0,0,1 / spark start
+1950,1,0,0,0,0,0,1,0,0,1 / TI h2 run
+2000,1,1,0,0,0,0,1,0,0,1 / TI o2 run, TI ignition
+2250,1,1,0,0,0,0,1,0,0,0 / spark off
+2260,CHECKPSI,PT-TI-01,100 / redline, ensure torch on
+2440,1,1,1,0,0,0,1,0,1,0 / main fuel run
+2450,1,1,1,0,0,0,1,0,0,0 / main o2 run
+2950,1,1,1,1,0,0,1,0,1,0 / TI purge start, begin TI shutdown
+3000,1,0,1,1,0,0,1,0,1,0 / TI o2 off
+3050,0,0,1,1,0,0,1,0,1,0 / TI h2 off
+3100,0,0,1,0,0,0,1,0,1,0 / TI purge off
+3500,0,0,0,0,1,0,1,0,1,0 / main engine shutdown, o2 off, o2 purge on
+3550,0,0,0,0,1,1,1,0,1,0 / RP purge on
+3600,0,0,0,0,1,1,1,0,0,0 / RP off
+4000,0,0,0,0,0,0,1,0,0,0 / stop engine purge
+5300,0,0,0,1,1,1,1,0,0,0 / purge all on
+6300,0,0,0,0,0,0,1,0,0,0 / purge all off
