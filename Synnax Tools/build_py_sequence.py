@@ -202,7 +202,7 @@ def parse_main_sequence(path="test.csv",start_seq="Main"):
             if "BLUELINE" not in row[1]:
                 with write_lock:
                     for i, value in enumerate(row[1:]):
-                        controller[input_devices[i]] = int(value)
+                        controller[input_devices[i] + "_cmd"] = int(value)
             else:
                 condition = row[2]
                 device = row[3].replace("-", "_")
@@ -238,7 +238,7 @@ def do_redline(redline_devices, input_devices, sequences_dict, sequence):
                 row = sequence[cur_row]
 
                 for i, value in enumerate(row[1:]):
-                    controller[input_devices[i]] = int(value)
+                    controller[input_devices[i] + "_cmd"] = int(value)
 
                 if sequence[cur_row + 1][0] != "END":
                     time.sleep((int(sequence[cur_row + 1]) - int(row[0])) / 1000)
