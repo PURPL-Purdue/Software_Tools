@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request, abort, jsonify
+from flask import Flask, send_file, request, abort, jsonify, render_template
 import json
 import os
 import io
@@ -10,31 +10,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Upload Test Files</title>
-    </head>
-    <body style="font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto;">
-        <h2>Upload Test Files</h2>
-
-        <form action="/upload_test?test_id=my_test&fuel_choice=my_fuel" method="post" enctype="multipart/form-data">
-            <div style="margin-bottom: 12px;">
-                <label for="test_data"><b>Data file:</b></label><br>
-                <input type="file" name="test_data" id="test_data" required>
-            </div>
-
-            <div style="margin-bottom: 12px;">
-                <label for="seq_data"><b>Seq file:</b></label><br>
-                <input type="file" name="seq_data" id="seq_data" required>
-            </div>
-
-            <button type="submit">Upload</button>
-        </form>
-    </body>
-    </html>
-    """
+    return render_template("./upload_interface.html"), 200
 
 @app.route("/upload_test", methods=['POST'])
 def upload_test():

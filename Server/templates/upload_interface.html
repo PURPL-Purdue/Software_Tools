@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>PURPL Test File Upload</title>
+            <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <style>
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            font-size: 20px;
+            font-weight: 500;
+            color: white;
+            background-color: rgb(145, 0, 255);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .upload-btn img {
+            height: 28px;
+            width: auto;
+        }
+
+        .upload-btn:hover {
+            background-color: rgb(125, 0, 225);
+        }
+
+        .header-bar {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: rgb(145, 0, 255);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Logo image */
+        .header-logo {
+            height: 40px;      /* adjust as needed */
+            width: auto;
+            margin-right: 15px;
+        }
+
+        /* Optional title text */
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Center the form container horizontally */
+        .form-container {
+            display: flex;
+            flex-direction: column;   /* stack heading + form vertically */
+            align-items: center;      /* horizontal center */
+            margin-top: 40px;         /* optional spacing from header */
+            width: 100%;
+        }
+
+        /* Make the form itself fit nicely */
+        form#upload_form {
+            max-width: 500px;         /* prevent it from stretching too wide */
+            width: 90%;               /* responsive on smaller screens */
+        }
+
+        body {
+            background-color: rgb(24, 22, 24);
+            color: white;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: rgb(24, 22, 24);
+            color: white;
+        }
+
+        /* Make all text, number, and file inputs have dark background */
+        input[type="text"],
+        input[type="number"],
+        input[type="file"] {
+            background-color: rgb(40, 38, 40);  /* dark gray, not white */
+            color: white;                       /* text color white for contrast */
+            border: 1px solid #555;             /* optional border color */
+            border-radius: 6px;                  /* keep rounded edges */
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        </style>
+        <body style="font-family: Arial, sans-serif; ">
+            <header class="header-bar">
+                <img src="{{ url_for('static', filename='PURPL_wordmark_white.png') }}" alt="logo" class="header-logo">
+            </header>
+            
+
+            <main class="form-container">
+                <h2>Upload Test Files</h2>
+                <form action="" id="upload_form" method="post" enctype="multipart/form-data">
+                    <div style="margin-bottom: 12px;">
+                        <label for="test_data"><b>Data file:</b></label><br>
+                        <input type="file" name="test_data" id="test_data" accept=".csv" required>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label for="seq_data"><b>Seq file:</b></label><br>
+                        <input type="file" name="seq_data" id="seq_data" accept=".csv" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="fuel_choice"><b>Fuel Choice:</b></label>
+                        <input type="text" name="fuel_choice" id="fuel_choice" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="fuel_CdA"><b>Fuel CdA:</b></label>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="fuel_CdA"><b>Fuel CdA:</b></label>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="ox_CdA"><b>Oxidizer CdA:</b></label>
+                        <input type="number" name="ox_CdA" id="ox_CdA" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="A_star"><b>A*:</b></label>
+                        <input type="number" name="A_star" id="A_star" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="ox_name"><b>Oxidizer Name:</b></label>
+                        <input type="text" name="ox_name" id="ox_name" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="state_ox"><b>Oxidizer State:</b></label>
+                        <input type="text" name="state_ox" id="state_ox" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="state_fu"><b>Fuel State:</b></label>
+                        <input type="text" name="state_fu" id="state_fu" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="fuel_upstream_col"><b>Fuel Upstream Column:</b></label>
+                        <input type="number" name="fuel_upstream_col" id="fuel_upstream_col" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="ox_upstream_col"><b>Oxidizer Upstream Column:</b></label>
+                        <input type="number" name="ox_upstream_col" id="ox_upstream_col" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="downstream_col"><b>Downstream Column:</b></label>
+                        <input type="number" name="downstream_col" id="downstream_col" required>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label for="downstream_col2"><b>Downstream Column 2:</b></label>
+                        <input type="number" name="downstream_col2" id="downstream_col2" required>
+                    </div>
+
+                    <button class="upload-btn">
+                        <img src="./static/logo.png" alt="logo">
+                        <b>Upload</b>
+                    </button>
+                </form>
+            </main>
+            <script>
+                const form = document.getElementById("upload_form");
+
+                form.addEventListener("submit", async function(event) {
+                    event.preventDefault();
+
+                    const formData = new FormData(form);
+
+                    let params = "/upload_test?";
+
+                    params += encodeURIComponent("test_id") + "=" + encodeURIComponent(document.getElementById("test_data").files[0].name) + "&";
+
+                    for (let [key, value] of formData.entries()) {
+                        if (key === "test_data" || key === "seq_data") {
+                            continue;
+                        }
+
+                        params += encodeURIComponent(key) + "=" + encodeURIComponent(value) + "&"
+                    }
+
+                    try {
+                        const response = await fetch(params, { // change to your backend route
+                            method: "POST",
+                            body: formData
+                        });
+
+                        if (!response.ok) throw new Error("Upload failed");
+
+                        const result = await response.text(); // or response.json() if your backend returns JSON
+                        console.log("Server response:", result);
+                        alert("Upload successful!");
+                    } catch (error) {
+                        console.error(error);
+                        alert("Upload failed");
+                    }
+                });
+            </script>
+        </body>
+    </html>
