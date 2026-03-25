@@ -1,6 +1,19 @@
 import csv
 import sys
 import pyperclip
+import time
+import synnax as sy
+from itertools import islice
+import threading
+
+client = sy.Synnax(
+        host="localhost",
+        port=9091,
+        username="synnax",
+        password="seldon",
+)
+
+write_lock = threading.Lock()
 
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
@@ -10,21 +23,25 @@ def preprocess_file(path):
         cleaned = (strip_comment(line) for line in f)
         reader = csv.reader(cleaned)
 
+        sequence = []
         redline_devices = []
         redline_values = []
         redline_table = {}
         time_offsets = []
         devices = []
 
-        new_seq = False
-        seq_name = "Main"
-        seq_list = ["Main"]
+        new_seq = True
+        seq_name = None
+        seq_list = []
+        sequences_dict = {}
 
         has_redline_seq = False
 
         last_time = -1
 
         for i, row in enumerate(reader):
+            sequence.append(row)
+
             if i == 0 and row[0] != "Limits":
                 print(row[0])
                 return (False, "Error: missing Limits flag")
@@ -55,7 +72,7 @@ def preprocess_file(path):
                 if (len(row) > 1):
                     return (False, "Error: Missing Main sequence start in row " + str(i + 1))
 
-            if (i >= 5):
+            if (i >= 4):
                 if row[0] == "END":
                     if len(row) > 2:
                         return (False, "Error: END statement should specify function name at row " + str(i + 1))
@@ -66,9 +83,12 @@ def preprocess_file(path):
                     continue
 
                 if new_seq:
+                    if (len(row) > 1):
+                        return (False, "Error: Missing sequence start in row " + str(i + 1))
                     seq_name = row[0]
 
                     seq_list.append(seq_name)
+                    sequences_dict[seq_name] = i + 1
 
                     if seq_name == "Redline":
                         has_redline_seq = True
@@ -129,107 +149,144 @@ def preprocess_file(path):
         for device in redline_devices:
             redline_table[device] = redline_values[redline_devices.index(device)]
                     
-        return (True, redline_table, devices, time_offsets)
+        return (True, redline_table, devices, sequences_dict, sequence)
                     
             
-def parse_main_sequence(path="test.csv"):
+def parse_main_sequence(path="test.csv",start_seq="Main"):
     validation = preprocess_file(path)
 
     redline_devices = []
     input_devices = []
 
     if (validation[0]):
-        isValid, redline_table, input_devices, time_offsets = validation
+        isValid, redline_table, input_devices, sequences_dict, sequence = validation
+        print(sequences_dict)
     else:
         print(validation[1])
         return
     
 
-    redline_func = "func check_redline() u8 {\n" 
-
-    redline_func += "\tredline_count u8 := 0\n"
-
     for key in redline_table:
-        if not int(redline_table[key]) < 1:
-            redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +"\n"
+        redline_devices.append(key)
 
-    redline_func += "\treturn redline_count\n"
+    print(redline_devices)
     
-    redline_func += "}\n\n"
+    """with open("test.csv", newline="") as f:
+        reader = csv.reader(f)
+        sequence = list(reader)"""
 
-    main_sequence = "sequence Main {\n"
+    print(sequence)
 
-    with open(path, newline="") as f:
+    cur_seq = start_seq
 
-        cleaned = (strip_comment(line) for line in f)
-        reader = csv.reader(cleaned)
+    redline_thread = threading.Thread(target=check_redlines, args=(redline_table, input_devices, sequences_dict, sequence))
 
-        new_seq = False
-        seq_name = "Main"
+    # Open the controller
+    with client.control.acquire(
+        name="execution_thread",
+        read=redline_devices,
+        write=input_devices,
+        write_authorities=[254]
+    ) as controller:
+        if not cur_seq:
+            cur_seq = client.sequences.get("Main")
 
-        rows = []
+        cur_line = sequences_dict[cur_seq]
 
-        for row in reader:
-            rows.append(row)
-
-        for i, row in enumerate(rows):
-            if (i < 5):
-                continue
-
-            if row[0] == "END":
-                new_seq = True
-
-                main_sequence += "}\n\n"
-                continue
-
-            if new_seq:
-                seq_name = row[0]
-                new_seq = False
-
-                main_sequence += "sequence " + seq_name + " {\n"
-                continue
+        while True:
+            if write_lock.locked():
+                return
             
-            timestamp = row[0]
+            row = sequence[cur_line]
 
-            stage_block = "\tstage ts" + str(timestamp) + " {\n"
+            if "BLUELINE" not in row[1]:
+                with write_lock:
+                    for i, value in enumerate(row[1:]):
+                        controller[input_devices[i] + "_cmd"] = int(value)
+            else:
+                condition = row[2]
+                device = row[3].replace("-", "_")
+                value = int(row[4])
+                if condition == "LOWER":
+                    if int(controller[device]) < value:
+                        cur_line = sequences_dict[row[5]] # Jump to specified sequence if condition is met
+                else:
+                    if int(controller[device]) > value:
+                        cur_line = sequences_dict[row[5]] # Jump to specified sequence if condition is met
 
-            if ("BLUELINE" in row[1]):
-                stage_block += "\t\t" + row[3].replace("-", "_") + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
+            delay = -1
 
-                if rows[i + 1][0] != "END":
-                    stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
+            if sequence[cur_line + 1][0] != "END": # Check to make sure we aren't trying to read a timestamp from an END statement
+                delay = int(sequence[cur_line + 1][0]) - int(row[0])
+                time.sleep(delay / 1000)
+            else:
+                break
+                
+            cur_line += 1
 
-                stage_block += "\t}\n\n"
+def do_redline(redline_devices, input_devices, sequences_dict, sequence):
+    with client.control.acquire(
+        name="Hello",
+        read=redline_devices,
+        write=input_devices,
+        write_authorities=[255]
+    ) as controller:
+        cur_row = sequences_dict["Redline"]
 
-                main_sequence += stage_block
-                continue
+        with write_lock:
+            while True:
+                row = sequence[cur_row]
 
+                for i, value in enumerate(row[1:]):
+                    controller[input_devices[i] + "_cmd"] = int(value)
 
-            for j, value in enumerate(row[1:]):
-                stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
+                if sequence[cur_row + 1][0] != "END":
+                    time.sleep((int(sequence[cur_row + 1]) - int(row[0])) / 1000)
+                else:
+                    break
 
-            if seq_name != "Redline":
-                stage_block += "\t\tcheck_redline() > 0 => Redline,\n"
+                cur_row += 1
 
-            if rows[i + 1][0] != "END":
-                stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
-    
-            stage_block += "\t}\n\n"
+def check_redlines(redline_table, input_devices, sequences_dict, sequence):
+    with client.control.acquire(
+        name="redline_check_thread",
+        read=redline_table.keys(),
+        write=[],
+        write_authorities=[]
+    ) as controller:
+        frame = []
 
-            main_sequence += stage_block
+        while True:
+            all_device_values = []
 
-        main_sequence += "\n\n"
+            for device in redline_table.keys():
+                all_device_values.append(controller[device])
 
-        main_sequence += redline_func
+            if len(frame) < 100:
+                frame.append(all_device_values)
+            else:
+                frame.pop(0)
+                frame.append(all_device_values)
 
-        print(main_sequence)
-        pyperclip.copy(main_sequence)
-    
+            totals = []
+            for ind in range(len(frame[0])):
+                totals.append(sum(frame[j][ind] for j in range(len(frame))))
+
+                # Check against redline
+                if int(totals[ind] / len(frame)) > int(list(redline_table.values())[ind]):
+                    do_redline(redline_table.keys(), input_devices, sequences_dict, sequence)
+                    return
+
+            
+        
+        
 
 if __name__ == "__main__":
     # Check if at least one argument (besides the script name) is provided
-    if len(sys.argv) > 1:
+    print("Hello World")
+    if len(sys.argv) > 2:
         path = sys.argv[1]
-        parse_main_sequence(path)
+        start_seq = sys.argv[2]
+        parse_main_sequence(path, start_seq)
     else:
         parse_main_sequence

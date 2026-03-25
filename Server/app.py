@@ -1,11 +1,16 @@
-from flask import Flask, send_file, request, abort, jsonify
+from flask import Flask, send_file, request, abort, jsonify, render_template
 import json
 import os
 import io
 import csv
 from data_regression import data_regression
+from datetime import datetime
 
 app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return render_template("./upload_interface.html"), 200
 
 @app.route("/upload_test", methods=['POST'])
 def upload_test():
@@ -45,7 +50,6 @@ def upload_test():
             test["sequence_file"] = seq_data_path
             test["test_conditions"] = test_conditions
             test["parameters"] = parameters
-    
 
     if not exists:
         data["tests"].append({
@@ -59,22 +63,24 @@ def upload_test():
     write_json(data)
 
     return {
-        "status" : 200
-    },200
+        "status": 200
+    }, 200
 
 def run_reg_from_test_cond(test_id, test_conditions):
-    return data_regression(file_name= test_id + ".csv",
-                    fuel_choice=test_conditions["fuel_choice"],
-                    fuel_CdA=test_conditions["fuel_CdA"],
-                    ox_CdA=test_conditions["ox_CdA"],
-                    A_star=test_conditions["A_star"],
-                    ox_name=test_conditions["ox_name"],
-                    state_ox=test_conditions["state_ox"],
-                    state_fu=test_conditions["state_fu"],
-                    fuel_upstream_col=test_conditions["fuel_upstream_col"],
-                    ox_upstream_col=test_conditions["ox_upstream_col"],
-                    downstream_col=test_conditions["downstream_col"],
-                    downstream_col2=test_conditions["downstream_col2"])
+    return data_regression(
+        file_name=test_id + ".csv",
+        fuel_choice=test_conditions["fuel_choice"],
+        fuel_CdA=test_conditions["fuel_CdA"],
+        ox_CdA=test_conditions["ox_CdA"],
+        A_star=test_conditions["A_star"],
+        ox_name=test_conditions["ox_name"],
+        state_ox=test_conditions["state_ox"],
+        state_fu=test_conditions["state_fu"],
+        fuel_upstream_col=test_conditions["fuel_upstream_col"],
+        ox_upstream_col=test_conditions["ox_upstream_col"],
+        downstream_col=test_conditions["downstream_col"],
+        downstream_col2=test_conditions["downstream_col2"]
+    )
 
 def gen_test_condition(request):
     test_conditions = {}
@@ -97,12 +103,10 @@ def gen_test_condition(request):
 def get_tests():
     data = get_json()
 
-    test_ids = []
-
     output = io.StringIO()
     writer = csv.writer(output)
 
-    writer.writerow(["filename"])  # header required
+    writer.writerow(["filename"])
 
     for test in data["tests"]:
         writer.writerow([test["test_id"]])
@@ -123,9 +127,47 @@ def get_test_data(test_id):
             path = test["data_file"]
 
     if path == "":
-        return None, 404
-    
-    return send_file(str(path), as_attachment=True), 200
+        return jsonify({"error": "Not found"}), 404
+
+    rows = []
+
+    with open(path, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+
+        for row in reader:
+            converted = {}
+
+            for key, value in row.items():
+                if value is None or value == "":
+                    converted[key] = None
+                    continue
+
+                if value.lower() in ["true", "false"]:
+                    converted[key] = value.lower() == "true"
+                else:
+                    try:
+                        converted[key] = float(value)
+                    except ValueError:
+                        converted[key] = value
+
+            rows.append(converted)
+
+    return jsonify(rows), 200
+
+@app.route("/get_test_params/<test_id>")
+def get_test_params(test_id):
+    data = get_json()
+
+    parameters = []
+
+    for test in data["tests"]:
+        if test["test_id"] == test_id:
+            parameters = test["parameters"]
+
+    if parameters == "":
+        return jsonify({"error": "Not found"}), 404
+
+    return jsonify(parameters), 200
 
 @app.route("/get_seq_data/<test_id>")
 def get_seq_data(test_id):
@@ -139,18 +181,17 @@ def get_seq_data(test_id):
 
     if path == "":
         return None, 404
-    
+
     return send_file(str(path), as_attachment=True), 200
 
 def get_json():
-    with open('./tests.json', 'r') as file:
+    with open("./tests.json", "r") as file:
         data = json.load(file)
-    
     return data
 
 def write_json(data):
-    with open('tests.json', 'w') as file:
+    with open("tests.json", "w") as file:
         json.dump(data, file, indent=2)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True, port=6767)
