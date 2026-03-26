@@ -1,0 +1,15 @@
+services:
+  grafana-dev:
+    image: grafana/grafana:latest
+    container_name: grafana-dev
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=chasecrawford-sensortimechart-panel
+    volumes:
+      - ./:/var/lib/grafana/plugins/chasecrawford-sensortimechart-panel
+      - ./provisioning:/etc/grafana/provisioning
+      - grafana-dev-data:/var/lib/grafana
+
+volumes:
+  grafana-dev-data:
