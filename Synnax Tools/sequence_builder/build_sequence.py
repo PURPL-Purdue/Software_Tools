@@ -147,15 +147,25 @@ def parse_main_sequence(path="test.csv"):
 
     redline_func = "func check_redline() u8 {\n" 
 
-    redline_func += "\tredline_count u8 := 0\n"
+    redline_func += "\tredline_count u8 := 0,\n"
 
     for key in redline_table:
         if not int(redline_table[key]) < 1:
-            redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +"\n"
+            redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +",\n"
 
-    redline_func += "\treturn redline_count\n"
+    redline_func += "\treturn redline_count,\n"
     
     redline_func += "}\n\n"
+
+    estop_func = "func estop() u8 {\n"
+    estop_func += "\tset_authority{value=255},\n"
+
+    for device in input_devices:
+        estop_func += "\t0 -> " + device + ",\n"
+
+    estop_func += "\tset_authority{value=0},\n"
+    estop_func += "\treturn 1,\n"
+    estop_func += "}\n\n"
 
     main_sequence = "sequence Main {\n"
 
@@ -186,6 +196,11 @@ def parse_main_sequence(path="test.csv"):
                 seq_name = row[0]
                 new_seq = False
 
+                if seq_name == "Redline":
+                    main_sequence += "authority 254\n\n"
+                else:
+                    main_sequence += "authority 250\n\n"
+
                 main_sequence += "sequence " + seq_name + " {\n"
                 continue
             
@@ -213,7 +228,9 @@ def parse_main_sequence(path="test.csv"):
 
             if rows[i + 1][0] != "END":
                 stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
-    
+            else:
+                stage_block += "\t\tset_authority{value=0},\n"
+
             stage_block += "\t}\n\n"
 
             main_sequence += stage_block
@@ -221,6 +238,7 @@ def parse_main_sequence(path="test.csv"):
         main_sequence += "\n\n"
 
         main_sequence += redline_func
+        main_sequence += estop_func
 
         print(main_sequence)
         pyperclip.copy(main_sequence)
