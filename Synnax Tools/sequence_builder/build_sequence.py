@@ -168,6 +168,7 @@ def parse_main_sequence(path="test.csv"):
 
     estop_func += "\tset_authority{value=0},\n"
     estop_func += "\treturn 1,\n"
+    estop_func += "\t1 > 0 => idle,\n"
     estop_func += "}\n\n"
 
     main_sequence = "sequence Main {\n"
