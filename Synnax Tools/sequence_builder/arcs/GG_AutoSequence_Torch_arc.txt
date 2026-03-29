@@ -1,0 +1,415 @@
+sequence Main {
+	stage ts0 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=1ms} => next
+	}
+
+	stage ts1 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		1 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=499ms} => next
+	}
+
+	stage ts500 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=300ms} => next
+	}
+
+	stage ts800 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		1 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=150ms} => next
+	}
+
+	stage ts950 {
+		1 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		1 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts1000 {
+		1 -> SN_H2_03,
+		1 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		1 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=200ms} => next
+	}
+
+	stage ts1200 {
+		1 -> SN_H2_03,
+		1 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=10ms} => next
+	}
+
+	stage ts1210 {
+		PT_TI_01 < 100 => SEQONE,
+		wait{duration=90ms} => next
+	}
+
+	stage ts1300 {
+		1 -> SN_H2_03,
+		1 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		1 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts1350 {
+		1 -> SN_H2_03,
+		1 -> SN_GO2_05,
+		1 -> PV_GO2_04,
+		1 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=250ms} => next
+	}
+
+	stage ts1600 {
+		1 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		1 -> PV_GO2_04,
+		1 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts1650 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		1 -> PV_GO2_04,
+		1 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=200ms} => next
+	}
+
+	stage ts1850 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		1 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts1900 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=30ms} => next
+	}
+
+	stage ts1930 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		1 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=520ms} => next
+	}
+
+	stage ts2450 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		1 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts2500 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+	}
+
+}
+
+sequence Redline {
+	stage ts0 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		0 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		wait{duration=50ms} => next
+	}
+
+	stage ts50 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		wait{duration=50ms} => next
+	}
+
+	stage ts100 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		wait{duration=400ms} => next
+	}
+
+	stage ts500 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		wait{duration=50ms} => next
+	}
+
+	stage ts550 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		1 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		wait{duration=1000ms} => next
+	}
+
+	stage ts1550 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+	}
+
+}
+
+sequence SEQONE {
+	stage ts0 {
+		1 -> SN_H2_03,
+		1 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts50 {
+		1 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts100 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=50ms} => next
+	}
+
+	stage ts150 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=400ms} => next
+	}
+
+	stage ts550 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		1 -> SN_N2_11,
+		1 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+		wait{duration=1000ms} => next
+	}
+
+	stage ts1550 {
+		0 -> SN_H2_03,
+		0 -> SN_GO2_05,
+		0 -> PV_GO2_04,
+		0 -> PV_FU_02,
+		0 -> SN_N2_11,
+		0 -> SN_N2_10,
+		1 -> SN_N2_08,
+		0 -> SN_N2_09,
+		0 -> Spark_Plug,
+		check_redline() > 0 => Redline,
+	}
+
+}
+
+
+
+func check_redline() u8 {
+	redline_count u8 := 0
+	redline_count += PT_TI_01 < 402
+	redline_count += PT_GG_01 < 497
+	redline_count += PT_O2_04 < 500
+	redline_count += PT_O2_05 < 610
+	redline_count += PT_FU_01 < 550
+	redline_count += PT_N2_08 < 1000
+	redline_count += TC_GG_01 < 1868
+	redline_count += TC_FU_02 < 300
+	redline_count += TC_GO2_04 < 300
+	redline_count += TC_GO2_05 < 300
+	redline_count += TC_H2_03 < 300
+	return redline_count
+}
+

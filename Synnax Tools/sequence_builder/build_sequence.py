@@ -1,4 +1,5 @@
 import csv
+import os
 import sys
 import pyperclip
 
@@ -47,17 +48,17 @@ def preprocess_file(path):
 
                 for j, value in enumerate(row[1:]):
                     row[j + 1] = value.replace("-", "_")
-                devices = row[1:]
-
+                    if value:
+                        devices.append(row[j+1])
                 print("Input Devices: " + str(devices))
 
             if i == 4:
-                if (len(row) > 1):
+                if (row[0] != "Main"):
                     return (False, "Error: Missing Main sequence start in row " + str(i + 1))
 
             if (i >= 5):
                 if row[0] == "END":
-                    if len(row) > 2:
+                    if len(row) < 2:
                         return (False, "Error: END statement should specify function name at row " + str(i + 1))
                     if row[1] != seq_name:
                         return (False, "Error: END statement should terminate " + seq_name + " but terminates " + row[1] + " at row " + str(i + 1))
@@ -74,7 +75,9 @@ def preprocess_file(path):
                         has_redline_seq = True
 
                     if len(row) > 1:
-                        return (False, "Error: Start of sequence should only have one column at row " + str(i + 1))
+                        for element in row[1:]:
+                            if element:
+                                return (False, "Error: Unexpected entries for start of sequence at row " + str(i + 1))
                     
                     last_time = -1
                     new_seq = False
@@ -222,9 +225,24 @@ def parse_main_sequence(path="test.csv"):
 
         main_sequence += redline_func
 
+        main_sequence += "start_cmd => main"
+
         print(main_sequence)
-        pyperclip.copy(main_sequence)
-    
+        # pyperclip.copy(main_sequence)
+        # Create arcs directory if it doesn't exist
+        os.makedirs("arcs", exist_ok=True)
+
+        # Build new filename
+        base_name = os.path.basename(path)
+        name, _ = os.path.splitext(base_name)
+        new_filename = f"{name}_arc.txt"
+        new_path = os.path.join("arcs", new_filename)
+
+        # Write to file
+        with open(new_path, "w", newline="") as f:
+            f.write(main_sequence)
+
+        print(f"Saved arc file to: {new_path}")
 
 if __name__ == "__main__":
     # Check if at least one argument (besides the script name) is provided
