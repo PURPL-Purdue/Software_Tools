@@ -39,12 +39,12 @@ for row in rows:
         else:
             name = card_type + "-" + str(card_num)
             device_map[name] = ni.Device(
-                                identifier="dev_mod" + str(modbus),
-                                name=name,
-                                model="NI " + card_type,
-                                location="cDAQ1/dev_mod" + str(modbus),
-                                rack=rack.key,
-                            )
+                                    identifier="dev_mod" + str(modbus),
+                                    name=name,
+                                    model="NI " + card_type,
+                                    location="cDAQ1/dev_mod" + str(modbus),
+                                    rack=rack.key,
+                                )
             
 
 """
@@ -143,6 +143,9 @@ with open('pigtails.csv', newline='') as f:
 
 
 for row in rows:
+    if row[0] == "":
+        continue
+
     channels[row[0]] = client.channels.create(
         name=row[0],
         index=channels["ai_time"].key,

@@ -11,7 +11,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=500ms} => next
 	}
 
@@ -27,7 +27,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=500ms} => next
 	}
 
@@ -43,7 +43,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=850ms} => next
 	}
 
@@ -59,7 +59,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		1 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=100ms} => next
 	}
 
@@ -75,7 +75,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		1 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -91,7 +91,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		1 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=250ms} => next
 	}
 
@@ -107,7 +107,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=10ms} => next
 	}
 
@@ -128,7 +128,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=10ms} => next
 	}
 
@@ -144,7 +144,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=500ms} => next
 	}
 
@@ -160,7 +160,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -176,7 +176,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -192,7 +192,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -208,7 +208,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=400ms} => next
 	}
 
@@ -224,7 +224,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -240,7 +240,7 @@ sequence Main {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -256,7 +256,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=400ms} => next
 	}
 
@@ -272,7 +272,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=1300ms} => next
 	}
 
@@ -288,7 +288,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=1000ms} => next
 	}
 
@@ -304,7 +304,7 @@ sequence Main {
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		set_authority{value=0},
 	}
 
@@ -324,7 +324,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -339,7 +339,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -354,7 +354,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -369,7 +369,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -384,7 +384,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -399,7 +399,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -414,7 +414,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -429,7 +429,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -444,7 +444,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -459,7 +459,7 @@ sequence Redline {
 		0 -> SN_N2_07,
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		set_authority{value=0},
 	}
 
@@ -480,7 +480,7 @@ sequence SEQONE {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -496,7 +496,7 @@ sequence SEQONE {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -512,7 +512,7 @@ sequence SEQONE {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		wait{duration=50ms} => next
 	}
 
@@ -528,14 +528,16 @@ sequence SEQONE {
 		1 -> SN_FU_01,
 		0 -> Spark_Plug,
 		check_redline() > 0 => Redline,
-		estop_cmd => estop,
+		estop_cmd => ESTOP,
 		set_authority{value=0},
 	}
 
 }
 
+
+
 authority 255
-sequence estop {
+sequence ESTOP {
 	stage estop_main{
 		0 -> SN_H2_01,
 		0 -> SN_O2_01,
@@ -547,13 +549,13 @@ sequence estop {
 		0 -> SN_N2_07,
 		0 -> SN_FU_01,
 		0 -> Spark_Plug,
-		wait{duration=500ms} => idle,
+		wait{duration=500ms} => IDLE,
 	}
 
 }
 
 authority 0
-sequence idle {
+sequence IDLE {
 	stage idle_main{
 		0 -> SN_H2_01,
 		0 -> SN_O2_01,
