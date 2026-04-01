@@ -3,7 +3,9 @@ import numpy as np
 import socket
 import math
 import threading
-import tkinter as tk  # For getting screen size
+import tkinter as tk
+import time
+import os
 
 # ------------------------------
 # CONFIGURATION
@@ -14,6 +16,10 @@ USERNAME = "admin"
 PASSWORD = "123456"
 STREAM_PATH = "stream1"
 TIMEOUT = 0.3
+FPS = 20  # Recording FPS
+
+SAVE_DIR = "recordings"
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 # ------------------------------
 # Get screen size
@@ -56,8 +62,30 @@ def open_streams(ip_list):
     caps = []
     for ip in ip_list:
         url = f"rtsp://{USERNAME}:{PASSWORD}@{ip}:{PORT}/{STREAM_PATH}"
-        caps.append(cv2.VideoCapture(url))
+        caps.append((ip, cv2.VideoCapture(url)))
     return caps
+
+def create_writers(caps):
+    writers = {}
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+
+    for ip, cap in caps:
+        ret, frame = cap.read()
+        if not ret:
+            print(f"Skipping writer for {ip} (no frame)")
+            continue
+
+        h, w = frame.shape[:2]
+        filename = f"{SAVE_DIR}/cam_{ip.replace('.', '_')}_{timestamp}.mp4"
+
+        writer = cv2.VideoWriter(filename, fourcc, FPS, (w, h))
+        writers[ip] = writer
+
+        print(f"Recording {ip} → {filename}")
+
+    return writers
 
 def resize_keep_aspect(frame, max_width, max_height):
     h, w = frame.shape[:2]
@@ -78,50 +106,73 @@ def main():
     print(f"Found cameras: {cameras}")
     caps = open_streams(cameras)
 
+    writers = create_writers(caps)
+
     num_cams = len(caps)
     cols = math.ceil(math.sqrt(num_cams))
     rows = math.ceil(num_cams / cols)
 
     while True:
         frames = []
-        # Calculate max cell size based on screen
+
         max_cell_w = SCREEN_WIDTH // cols
         max_cell_h = SCREEN_HEIGHT // rows
 
-        for cap in caps:
+        for ip, cap in caps:
             ret, frame = cap.read()
-            if not ret:
-                frame = np.zeros((max_cell_h, max_cell_w, 3), dtype=np.uint8)
-            else:
-                frame = resize_keep_aspect(frame, max_cell_w, max_cell_h)
-            frames.append(frame)
 
-        # Build grid row by row
+            if not ret:
+                frame_display = np.zeros((max_cell_h, max_cell_w, 3), dtype=np.uint8)
+            else:
+                # Write original frame (full resolution)
+                if ip in writers:
+                    writers[ip].write(frame)
+
+                # Resize for display
+                frame_display = resize_keep_aspect(frame, max_cell_w, max_cell_h)
+
+            frames.append(frame_display)
+
+        # Build grid
         grid_rows = []
         for r in range(rows):
             row_frames = frames[r*cols:(r+1)*cols]
-            # Fill empty cells
+
             while len(row_frames) < cols:
                 row_frames.append(np.zeros((max_cell_h, max_cell_w, 3), dtype=np.uint8))
-            # Horizontally stack frames with alignment
-            # Pad frames to same height for stacking
+
             heights = [f.shape[0] for f in row_frames]
             max_h = max(heights)
-            padded = [np.pad(f, ((0,max_h-f.shape[0]), (0,0), (0,0)), mode='constant') for f in row_frames]
+
+            padded = [
+                np.pad(f, ((0, max_h - f.shape[0]), (0, 0), (0, 0)), mode='constant')
+                for f in row_frames
+            ]
+
             grid_rows.append(np.hstack(padded))
 
-        # Vertically stack rows, pad to same width
         widths = [r.shape[1] for r in grid_rows]
         max_w = max(widths)
-        padded_rows = [np.pad(r, ((0,0),(0,max_w - r.shape[1]),(0,0)), mode='constant') for r in grid_rows]
+
+        padded_rows = [
+            np.pad(r, ((0, 0), (0, max_w - r.shape[1]), (0, 0)), mode='constant')
+            for r in grid_rows
+        ]
+
         grid = np.vstack(padded_rows)
 
         cv2.imshow("Camera Grid", grid)
+
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
-    for cap in caps:
+    # Cleanup
+    for _, cap in caps:
         cap.release()
+
+    for writer in writers.values():
+        writer.release()
+
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
