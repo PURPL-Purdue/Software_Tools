@@ -289,6 +289,7 @@ base_ai_task = ni.AnalogReadTask(
     name="Base Speed Analog Read Task",
     sample_rate=sy.Rate.HZ * BASE_SR,
     stream_rate=sy.Rate.HZ * STREAM_SR,
+    device=module_map["NI9205-2"].key,
     data_saving=True,
     channels=base_ai_channels,
 )
