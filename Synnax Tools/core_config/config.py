@@ -88,6 +88,8 @@ channels["time_chan"] = client.channels.create(
     retrieve_if_name_exists=True,
 )
 
+# Check if analog/digital time should be different, using same channel for now
+
 with open('channel_config.csv', newline='') as f:
     reader = csv.reader(f)
     for row in reader:
@@ -116,8 +118,12 @@ for row in rows:
             retrieve_if_name_exists=True,
         )
     elif device_type == "DI":
-        # TODO
-        print("DI to be implemented")
+        channels[row[0]] = client.channels.create(
+            name=row[0],
+            index=channels["time_chan"].key,
+            data_type=sy.DataType.UINT8,
+            retrieve_if_name_exists=True,
+        )
     elif device_type == "AO":
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
@@ -135,13 +141,13 @@ for row in rows:
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
             index=channels["time_chan"].key,
-            data_type=sy.DataType.FLOAT32,
+            data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
         channels[row[0] + "_state"] = client.channels.create(
             name=row[0] + "_state",
             index=channels["time_chan"].key,
-            data_type=sy.DataType.FLOAT32,
+            data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
     else:
