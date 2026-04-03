@@ -2,11 +2,10 @@ import csv
 import synnax as sy
 from synnax import ni
 
-from channel_obj import DeviceChannelObj
-
 BASE_SR = 1000 # Hz
 HIGH_SR = 150000 #Hz
 STREAM_SR = 10 # Hz
+
 # Connect to Synnax
 client = sy.Synnax(host="",
     port=9091,
