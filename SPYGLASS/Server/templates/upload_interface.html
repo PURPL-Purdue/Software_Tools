@@ -122,19 +122,19 @@
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="fuel_CdA"><b>Fuel CdA:</b></label>
-                        <input type="number" name="fuel_CdA" id="fuel_CdA" required>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="fuel_CdA"><b>Fuel CdA:</b></label>
-                        <input type="number" name="fuel_CdA" id="fuel_CdA" required>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="ox_CdA"><b>Oxidizer CdA:</b></label>
-                        <input type="number" name="ox_CdA" id="ox_CdA" required>
+                        <input type="number" name="ox_CdA" id="ox_CdA" step="any" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="A_star"><b>A*:</b></label>
-                        <input type="number" name="A_star" id="A_star" required>
+                        <input type="number" name="A_star" id="A_star" step="any" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="ox_name"><b>Oxidizer Name:</b></label>
@@ -150,19 +150,19 @@
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="fuel_upstream_col"><b>Fuel Upstream Column:</b></label>
-                        <input type="number" name="fuel_upstream_col" id="fuel_upstream_col" required>
+                        <input type="number" name="fuel_upstream_col" id="fuel_upstream_col" step="1" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="ox_upstream_col"><b>Oxidizer Upstream Column:</b></label>
-                        <input type="number" name="ox_upstream_col" id="ox_upstream_col" required>
+                        <input type="number" name="ox_upstream_col" id="ox_upstream_col" step="1" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="downstream_col"><b>Downstream Column:</b></label>
-                        <input type="number" name="downstream_col" id="downstream_col" required>
+                        <input type="number" name="downstream_col" id="downstream_col" step="1" required>
                     </div>
                     <div style="margin-bottom: 12px;">
                         <label for="downstream_col2"><b>Downstream Column 2:</b></label>
-                        <input type="number" name="downstream_col2" id="downstream_col2" required>
+                        <input type="number" name="downstream_col2" id="downstream_col2" step="1" required>
                     </div>
 
                     <button class="upload-btn">
@@ -180,8 +180,12 @@
                     const formData = new FormData(form);
 
                     let params = "/upload_test?";
+                    let filename = document.getElementById("test_data").files[0].name;
+                    filename = filename.substring(0, filename.length - 4);
 
-                    params += encodeURIComponent("test_id") + "=" + encodeURIComponent(document.getElementById("test_data").files[0].name) + "&";
+                    console.log(filename);
+
+                    params += encodeURIComponent("test_id") + "=" + encodeURIComponent(filename) + "&";
 
                     for (let [key, value] of formData.entries()) {
                         if (key === "test_data" || key === "seq_data") {
