@@ -2,8 +2,8 @@
   "tests": [
     {
       "test_id": "sampleObj_datetime",
-      "data_file": "Test_Data/placeholder.csv",
-      "sequence_file": "Sequences/placeholder.csv",
+      "data_file": "Test_Data/placeholder",
+      "sequence_file": "Sequences/placeholder",
       "test_conditions": {
         "fuel_choice": "fuel_choice",
         "fuel_CdA": "fuel_CdA",
@@ -37,8 +37,8 @@
     },
     {
       "test_id": "upload-test",
-      "data_file": "Test_Data/upload-test.csv",
-      "sequence_file": "Sequences/upload-test.csv",
+      "data_file": "Test_Data/upload-test",
+      "sequence_file": "Sequences/upload-test",
       "test_conditions": {
         "fuel_choice": "JetA",
         "fuel_CdA": "0.8",
