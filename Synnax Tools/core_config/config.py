@@ -4,14 +4,16 @@ from synnax import ni
 
 BASE_SR = 1000 # Hz
 HIGH_SR = 150000 #Hz
+
+STATE_SR = 150 # Hz
 STREAM_SR = 10 # Hz
 
 # Connect to Synnax
-client = sy.Synnax(host="",
+client = sy.Synnax(host="localhost",
     port=9091,
     username="synnax",
     password="seldon",
-    secure=True
+    secure=False
 )
 
 # Get the embedded rack (local driver rack)
@@ -42,7 +44,7 @@ for row in rows:
     card_num = 1
 
     while True:
-        if module_map[card_type + "-" + str(card_num)]:
+        if module_map.get(card_type + "-" + str(card_num)):
             card_num += 1
         else:
             name = card_type + "-" + str(card_num)
@@ -57,11 +59,11 @@ for row in rows:
             
 
 # Create the devices in Synnax
-for module in module_map:
-    device = client.devices.create(device)
+for module in module_map.values():
+    module = client.devices.create(module)
 
-for module in module_map:
-    print(f"Device configured: {device.name} (key={device.key})")
+for module in module_map.values():
+    print(f"Device configured: {module.name} (key={module.key})")
 
 rows = []
 channel_rows = False
@@ -98,12 +100,15 @@ with open('channel_config.csv', newline='') as f:
 for row in rows:
     if row[0] == "":
         continue
+    if row[3] == "NC":
+        continue
 
     device_type = row[1].split()[0]
+    print(f"Configuring channel {row[0]} of type {device_type}")
     ni_route = row[2].split("-")
     module_name = ni_route[0] + "-" + ni_route[1]
 
-    if device_type in "AI":
+    if device_type == "AI":
         channels[row[0]] = client.channels.create(
             name=row[0],
             index=channels["time_chan"].key,
@@ -214,6 +219,10 @@ for row in rows:
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
+            if device_chan:
+                base_ao_channels.append(device_chan)
+            else:
+                raise Exception("Failed to create AO device channel")
         case "DI":
             # TODO
             print("Digital Input not implemented")
@@ -229,6 +238,10 @@ for row in rows:
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
+            if device_chan:
+                base_do_channels.append(device_chan)
+            else:
+                raise Exception("Failed to create DO device channel")
         case _:
             raise ValueError("Device Type must be AI, AO, DI, or DO")
 
@@ -255,10 +268,10 @@ high_ai_task = ni.AnalogReadTask(
 )
 tasks.append(high_ai_task)
 
+print(f"BASE AO CHANNELS: {base_ao_channels}")
 base_ao_task = ni.AnalogWriteTask(
-    name="Base Speed Analog Write Task",
-    sample_rate=sy.Rate.HZ * BASE_SR,
-    stream_rate=sy.Rate.HZ * STREAM_SR,
+    name="Base Analog Write Task",
+    state_rate=sy.Rate.HZ * STATE_SR,
     data_saving=True,
     channels=base_ao_channels,
 )
@@ -273,10 +286,9 @@ base_di_task = ni.DigitalWriteTask(
 )
 tasks.append(base_di_task)
 
-base_do_task = ni.DigitaleadTask(
+base_do_task = ni.DigitalReadTask(
     name="Base Speed Digital Read Task",
-    sample_rate=sy.Rate.HZ * BASE_SR,
-    stream_rate=sy.Rate.HZ * STREAM_SR,
+    state_rate=sy.Rate.HZ * STATE_SR,
     data_saving=True,
     channels=base_do_channels,
 )
