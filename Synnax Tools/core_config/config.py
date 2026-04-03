@@ -84,16 +84,16 @@ for row in rows:
                     base_do_modules.append(name) # Track module for task config
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
+            print(f"Adding module {name} with modbus {modbus} to rack {rack.name}")
             module_map[name] = ni.Device(
                 identifier="dev_mod" + str(modbus),
                 name=name,
                 model="NI " + card_type,
-                location="cDAQ1/dev_mod" + str(modbus),
+                location="dev_mod" + str(modbus),
                 rack=rack.key,
             )
             break
             
-
 # Create the devices in Synnax
 for module in module_map:
     created = client.devices.create(module_map[module])
@@ -255,7 +255,6 @@ for row in rows:
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
             if device_chan:
-                print(f"THIS IS NI_ROUTE 1: {ni_route[1]}")
                 base_ao_channels[int(ni_route[1]) - 1].append(device_chan)
             else:
                 raise Exception("Failed to create AO device channel")
