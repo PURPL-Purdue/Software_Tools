@@ -19,6 +19,22 @@ client = sy.Synnax(host="localhost",
 # Get the embedded rack (local driver rack)
 rack = client.racks.retrieve_embedded_rack()
 
+# # Get the cRIO rack
+# rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
+
+# Channel Objs
+base_ai_channels = []
+high_ai_channels = [] # Kulites
+
+base_ao_channels = [] # AO channels for the same task must live on the same device, so this is an array of channel arrays
+base_ao_modules = [] # Track which modules have AO channels for task configuration
+
+base_di_channels = [] # See AO channels, but for DI
+base_di_modules = [] # Track which modules have DI channels for task configuration
+
+base_do_channels = [] # See AO channels, but for DO
+base_do_modules = [] # Track which modules have DO channels for task configuration
+
 # modules = []
 module_map = {} # Initialize from config file
 
@@ -48,6 +64,26 @@ for row in rows:
             card_num += 1
         else:
             name = "NI" + card_type + "-" + str(card_num)
+            match card_type:
+                case "9205":
+                    print("Configuring NI 9205 AI Card")
+                    # AI so no need to add a new channel array, all AI channels can be in the same task/device
+                case "9213":
+                    print("Configuring NI 9213 Thermocouple Card")
+                    # AI so no need to add a new channel array, all AI channels can be in the same task/device
+                case "9203":
+                    print("Configuring NI 9203 Current Card")
+                    # AI so no need to add a new channel array, all AI channels can be in the same task/device
+                case "9264":
+                    print("Configuring NI 9264 AO Card")
+                    base_ao_channels.append([]) # Add new array for AO channels on this card
+                    base_ao_modules.append(name) # Track module for task config
+                case "9476":
+                    print("Configuring NI 9476 DO Card")
+                    base_do_channels.append([]) # Add new array for DO channels on this card
+                    base_do_modules.append(name) # Track module for task config
+                case _:
+                    raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
             module_map[name] = ni.Device(
                 identifier="dev_mod" + str(modbus),
                 name=name,
@@ -59,8 +95,9 @@ for row in rows:
             
 
 # Create the devices in Synnax
-for module in module_map.values():
-    module = client.devices.create(module)
+for module in module_map:
+    created = client.devices.create(module_map[module])
+    module_map[module] = created
 
 for module in module_map.values():
     print(f"Device configured: {module.name} (key={module.key})")
@@ -69,16 +106,6 @@ rows = []
 channel_rows = False
 
 channels = {}
-
-# Channel Objs
-base_ai_channels = []
-high_ai_channels = [] # Kulites
-
-base_ao_channels = []
-
-base_di_channels = []
-
-base_do_channels = []
 
 # Time Channel
 channels["time_chan"] = client.channels.create(
@@ -162,12 +189,12 @@ for row in rows:
                 case "NI9205":
                     if row[4] != "V":
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
-                    if ni_route[1] == 1:
+                    if ni_route[1] == "1":
                         # Kulite card
                         high_ai_channels.append( ni.AIVoltageChan(
                             channel=channels[row[0]].key,
                             device=module_map[module_name].key,
-                            port=ni_route[2],
+                            port=int(ni_route[2]),
                             min_val=float(row[5]),
                             max_val=float(row[6]),
                             terminal_config=row[7],
@@ -178,7 +205,7 @@ for row in rows:
                     device_chan = ni.AIVoltageChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
-                        port=ni_route[2],
+                        port=int(ni_route[2]),
                         min_val=float(row[5]),
                         max_val=float(row[6]),
                         terminal_config=row[7],
@@ -189,7 +216,7 @@ for row in rows:
                     device_chan = ni.AIThermocoupleChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
-                        port=ni_route[2],
+                        port=int(ni_route[2]),
                         units="DegC",
                         thermocouple_type="K",
                         cjc_source="BuiltIn"
@@ -200,7 +227,7 @@ for row in rows:
                     device_chan = ni.AICurrentChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
-                        port=ni_route[2],
+                        port=int(ni_route[2]),
                         min_val=float(row[5]) * 0.001, # milliamps
                         max_val=float(row[6]) * 0.001, # milliamps
                         shunt_resistor_loc="Internal",
@@ -220,15 +247,16 @@ for row in rows:
                     device_chan = ni.AOVoltageChan(
                         cmd_channel=channels[row[0] + "_cmd"].key,
                         state_channel=channels[row[0] + "_state"].key,
-                        device=module_map[module_name].key,
-                        port=ni_route[2],
+                        port=int(ni_route[2]),
+                        units="Volts",
                         min_val=float(row[5]),
                         max_val=float(row[6]),
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
             if device_chan:
-                base_ao_channels.append(device_chan)
+                print(f"THIS IS NI_ROUTE 1: {ni_route[1]}")
+                base_ao_channels[int(ni_route[1]) - 1].append(device_chan)
             else:
                 raise Exception("Failed to create AO device channel")
         case "DI":
@@ -240,14 +268,13 @@ for row in rows:
                     device_chan = ni.DOChan(
                         cmd_channel=channels[row[0] + "_cmd"].key,
                         state_channel=channels[row[0] + "_state"].key,
-                        device=module_map[module_name].key,
-                        port=0, # module_map[module_name].key,
-                        line=ni_route[2]
+                        port=0,
+                        line=int(ni_route[2])
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
             if device_chan:
-                base_do_channels.append(device_chan)
+                base_do_channels[int(ni_route[1]) - 1].append(device_chan)
             else:
                 raise Exception("Failed to create DO device channel")
         case _:
@@ -276,35 +303,43 @@ high_ai_task = ni.AnalogReadTask(
 )
 tasks.append(high_ai_task)
 
-print(f"BASE AO CHANNELS: {base_ao_channels}")
-base_ao_task = ni.AnalogWriteTask(
-    name="Base Analog Write Task",
-    state_rate=sy.Rate.HZ * STATE_SR,
-    data_saving=True,
-    channels=base_ao_channels,
-)
-tasks.append(base_ao_task)
+# print(f"BASE AO CHANNELS: {base_ao_channels}")
+for i, ao_module in enumerate(base_ao_channels):
+    base_ao_task = ni.AnalogWriteTask(
+        name=f"Base Analog Write for Card AO {i} Task",
+        state_rate=sy.Rate.HZ * STATE_SR,
+        device=module_map[base_ao_modules[i]].key, # Get device from module tracking array
+        data_saving=True,
+        channels=ao_module,
+    )
+    tasks.append(base_ao_task)
 
-base_di_task = ni.DigitalWriteTask(
-    name="Digital Write Task",
-    sample_rate=sy.Rate.HZ * BASE_SR,
-    stream_rate=sy.Rate.HZ * STREAM_SR,
-    data_saving=True,
-    channels=base_di_channels,
-)
-tasks.append(base_di_task)
+# base_di_task = ni.DigitalReadTask(
+#     name="Digital Read Task",
+#     sample_rate=sy.Rate.HZ * BASE_SR,
+#     stream_rate=sy.Rate.HZ * STREAM_SR,
+#     data_saving=True,
+#     channels=base_di_channels,
+# )
+# tasks.append(base_di_task)
 
-base_do_task = ni.DigitalReadTask(
-    name="Base Speed Digital Read Task",
-    state_rate=sy.Rate.HZ * STATE_SR,
-    data_saving=True,
-    channels=base_do_channels,
-)
-tasks.append(base_do_task)
+for i, do_module in enumerate(base_do_channels):
+    base_do_task = ni.DigitalWriteTask(
+        name=f"Base Digital Write for Card DO {i} Task",
+        state_rate=sy.Rate.HZ * STATE_SR,
+        device=module_map[base_do_modules[i]].key, # Get device from module tracking array
+        data_saving=True,
+        channels=do_module,
+    )
+    tasks.append(base_do_task)
 
 for task in tasks:
-    client.tasks.configure(task)
-
+    try:
+        print(f"Configuring task: {task.name}, device={getattr(task, 'device', None)}")
+        client.tasks.configure(task)
+    except Exception as e:
+        print(f"FAILED TASK: {task.name}")
+        raise
 ### IDK WHAT THIS CODE DOES, MAYBE IT IS NEEDED TO START THE TASKS
 ### Hmmm, I think we need to do task_name.run() for each task, the other bit is just reading a frame of data
 # # Start task and read data
