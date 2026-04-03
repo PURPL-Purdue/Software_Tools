@@ -44,10 +44,10 @@ for row in rows:
     card_num = 1
 
     while True:
-        if module_map.get(card_type + "-" + str(card_num)):
+        if module_map.get("NI" + card_type + "-" + str(card_num)):
             card_num += 1
         else:
-            name = card_type + "-" + str(card_num)
+            name = "NI" + card_type + "-" + str(card_num)
             module_map[name] = ni.Device(
                 identifier="dev_mod" + str(modbus),
                 name=name,
@@ -160,7 +160,7 @@ for row in rows:
                         # Kulite card
                         high_ai_channels.append( ni.AIVoltageChan(
                             channel=channels[row[0]].key,
-                            device=module_name.key,
+                            device=module_map[module_name].key,
                             port=ni_route[2],
                             min_val=float(row[5]),
                             max_val=float(row[6]),
@@ -171,7 +171,7 @@ for row in rows:
                         raise ValueError("Unrecognized/Invalid NI Voltage AI Terminal Config")
                     device_chan = ni.AIVoltageChan(
                         channel=channels[row[0]].key,
-                        device=module_name.key,
+                        device=module_map[module_name].key,
                         port=ni_route[2],
                         min_val=float(row[5]),
                         max_val=float(row[6]),
@@ -182,7 +182,7 @@ for row in rows:
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
                     device_chan = ni.AIThermocoupleChan(
                         channel=channels[row[0]].key,
-                        device=module_name.key,
+                        device=module_map[module_name].key,
                         port=ni_route[2],
                         units="DegC",
                         thermocouple_type="K",
@@ -193,11 +193,13 @@ for row in rows:
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
                     device_chan = ni.AICurrentChan(
                         channel=channels[row[0]].key,
-                        device=module_name.key,
+                        device=module_map[module_name].key,
                         port=ni_route[2],
                         min_val=float(row[5]) * 0.001, # milliamps
                         max_val=float(row[6]) * 0.001, # milliamps
-                    ),
+                        shunt_resistor_loc="Internal",
+                        ext_shunt_resistor_val=1
+                    )
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI AI Card Type: {ni_route[0]}")
             if device_chan:
@@ -212,7 +214,7 @@ for row in rows:
                     device_chan = ni.AOVoltageChan(
                         cmd_channel=channels[row[0] + "_cmd"].key,
                         state_channel=channels[row[0] + "_state"].key,
-                        device=module_name.key,
+                        device=module_map[module_name].key,
                         port=ni_route[2],
                         min_val=float(row[5]),
                         max_val=float(row[6]),
@@ -232,8 +234,8 @@ for row in rows:
                     device_chan = ni.DOChan(
                         cmd_channel=channels[row[0] + "_cmd"].key,
                         state_channel=channels[row[0] + "_state"].key,
-                        device=module_name.key,
-                        port=module_name.key,
+                        device=module_map[module_name].key,
+                        port=0, # module_map[module_name].key,
                         line=ni_route[2]
                     )
                 case _:
@@ -245,7 +247,7 @@ for row in rows:
         case _:
             raise ValueError("Device Type must be AI, AO, DI, or DO")
 
-print(channels)
+# print(channels)
 
 tasks = []
 
@@ -298,9 +300,20 @@ for task in tasks:
     client.tasks.configure(task)
 
 ### IDK WHAT THIS CODE DOES, MAYBE IT IS NEEDED TO START THE TASKS
+### Hmmm, I think we need to do task_name.run() for each task, the other bit is just reading a frame of data
 # # Start task and read data
 # with base_ai_task.run():
 #     with client.open_streamer(["voltage_chan", "current_chan", "temp_chan"]) as streamer:
 #         for _ in range(10):
 #             frame = streamer.read()
 #             print(frame)
+
+
+### This should be sufficient to start all the tasks, GUI might be better for start though for speed toggling
+'''
+for task in tasks:
+    if task.name == "High Speed Analog Read Task":
+        continue
+
+    task.run()
+'''
