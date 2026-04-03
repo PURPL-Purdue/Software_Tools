@@ -283,6 +283,7 @@ for row in rows:
 
 tasks = []
 
+print(f"DEVICE FOR AI MODULE: {module_map['NI9205-2']}")
 # Create and configure tasks
 base_ai_task = ni.AnalogReadTask(
     name="Base Speed Analog Read Task",
