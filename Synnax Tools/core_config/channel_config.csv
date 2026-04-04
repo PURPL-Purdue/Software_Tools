@@ -59,11 +59,28 @@ PT_FU_01_2,AI 47,NI9203_2_06,ST1550,C,4,20,,"1 24 pos, 2 signal",SPEC SHEET?,,
 PT_LO2_03,AI 48,NI9205_3_01,druck,V,0,10,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg,",,,
 PT_LO2_04,AI 49,NI9205_3_02,druck,V,0,10,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg ",,,
 PT_TI_01,AI 50,NI9205_3_00,druck,V,0,10,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg",,,
-PT_GG_02,AI 51,NI9205_1_14,Kulite,V,0,0.075,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg",Need to wire kulite,,
+PT_GG_02,AI 51,NI9205_1_22,Kulite,V,0,0.075,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg",Need to wire kulite,,
 PT_GG_01,AI 52,NI9205_3_04,druck,V,0,10,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg",,,
 PT_FU_04,AI 53,NI9205_3_03,druck,V,0,10,Diff,"1 12 pos, 2 signal+, 3 signal-, 4 12 neg",,,
 ,AI 54,NI9205_2_14,NC,C,4,20,,"4 24 pos, 3 24 neg, 1 signal",,,
 ,AI 55,NI9203_2_04,NC,C,4,20,,"1 24 pos, 3 signal, 4 24 neg",Sinking not sourcing,,
+,,,,,,,,,,,
+TC_LO2_03,TC 1,NI9213_1_00,,V,,,,,,,
+TC_GO2_04_1,TC 2,NI9213_1_01,,V,,,,,,,
+TC_GO2_04_2,TC 3,NI9213_1_02,,V,,,,,,,
+TC_FU_01,TC 4,NI9213_1_03,,V,,,,,,,
+TC_GO2_05,TC 5,NI9213_1_UNKNOWN,NC,V,,,,,,,
+TC_H2_03,TC 6,NI9213_1_05,,V,,,,,,,
+TC_FU_02,TC 7,NI9213_1_07,,V,,,,,,,
+TC_LO2_04,TC 8,NI9213_1_08,,V,,,,,,,
+TC_GG_01,TC 9,NI9213_1_10,,V,,,,,,,
+TC_FU_04,TC 10,NI9213_1_11,,V,,,,,,,
+TC_FU_05,TC 11,NI9213_1_12,,V,,,,,,,
+TC_N2_12_1,TC 12,NI9213_1_13,,V,,,,,,,
+TC_LO2_05,TC 13,NI9213_1_15,,V,,,,,,,
+TC_LO2_07,TC 14,,NC,,,,,,,,
+,TC 15,,NC,,,,,,,,
+,TC 16,,NC,,,,,,,,
 ,,,,,,,,,,,
 ER_N2_06,AO 1,NI9264_1_00,E-reg,V,0,10,,,,,
 ER_GO2_03,AO 2,NI9264_1_01,E-reg,V,0,10,,,,,
@@ -76,10 +93,10 @@ Accel,AO 4,NI9264_1_03,Accelerometer,V,0,5,,,,,
 PV_N2_17,DO 1 ,NI9476_1_24,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
 PV_N2_18,DO 2,NI9476_1_17,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
 PV_N2_19,DO 3,NI9476_1_23,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
-PV_LO2_03,DO 4,NI9476_1_16,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
+PV_LO2_03,DO 4,NI9476_1_13,US Solid,"1 24 pos, 2 24 neg",16,,,,,,"inverted wiring, fix line"
 PV_LO2_05,DO 5,NI9476_1_03,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
 PV_LO2_01,DO 6,NI9476_1_14,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
-PV_G02_04,DO 7,NI9476_1_16,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
+PV_G02_04,DO 7,NI9476_1_16,US Solid,"1 24 pos, 2 24 neg",20,,,,,,"inverted wiring, fix line"
 PV_FU_02,DO 8,NI9476_1_19,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
 PV_FU_04,DO 9,NI9476_1_12,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"
 PV_LO2_04,DO 10,NI9476_1_21,US Solid,"1 24 pos, 2 24 neg",,,,,,,"inverted wiring, fix line"

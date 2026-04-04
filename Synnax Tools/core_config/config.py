@@ -1,12 +1,16 @@
 import csv
 import synnax as sy
 from synnax import ni
+from collections import deque
 
 BASE_SR = 1000 # Hz
-HIGH_SR = 150000 #Hz
+HIGH_SR = 150000 # Hz
+TC_SR = 80 # Hz 
 
 STATE_SR = 150 # Hz
 STREAM_SR = 10 # Hz
+
+CHASSIS = "NI-cRIO-9056-01DCA43E"
 
 # Connect to Synnax
 client = sy.Synnax(host="localhost",
@@ -34,6 +38,8 @@ di_modules = [] # Track which modules have DI channels for task configuration
 
 do_mod_chan_map = {} # DO channels for the same task must live on the same device, so this is an array of channel arrays
 do_modules = [] # Track which modules have DO channels for task configuration
+
+channels = {}
 
 # modules = []
 module_map = {} # Initialize from config file
@@ -100,10 +106,28 @@ for row in rows:
                     # base_do_modules.append(name) # Track module for task config
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
+            # Appropriate Time Channel
+            channels["time_chan" + name] = client.channels.create(
+                name="time_chan" + name,
+                is_index=True,
+                data_type=sy.DataType.TIMESTAMP,
+                retrieve_if_name_exists=True,
+            )
             print(f"Adding module {name} with modbus {modbus} to rack {rack.name}")
-            module_map[name] = client.devices.retrieve(location="Mod" + str(modbus))
+            # [CLAUDE] Retrieve by the NI-DAQmx local device name (Mod1-Mod8 on cRIO)
+            # Previous attempts used chassis-prefixed names (NI-cRIO-9056-01DCA43EMod/SlotN) — incorrect
+            # module_map[name] = client.devices.retrieve(location="Mod" + str(modbus))  # original line
+            full_location = "Mod" + str(modbus)
+            device = client.devices.retrieve(location=full_location, ignore_not_found=True)
+            if device is None:
+                device = client.devices.retrieve(location=CHASSIS + "Slot" + str(modbus), ignore_not_found=True)
+            if device is None:
+                device = client.devices.retrieve(location=CHASSIS + "Mod" + str(modbus))
+            module_map[name] = device
+            module_map[name].location = full_location
             module_map[name].name = name
-            module_map[name].properties["identifier"] = "Mod" + str(modbus)
+            # [CLAUDE] Removed: module_map[name].properties["identifier"] = name
+            # identifier is a display prefix in Synnax Console, not the NI DAQmx device name; overwriting it was incorrect
             # module_map[name] = ni.Device(
             #     identifier="Mod" + str(modbus),
             #     name=name,
@@ -124,15 +148,6 @@ for module in module_map.values():
 rows = []
 channel_rows = False
 
-channels = {}
-
-# Time Channel
-channels["time_chan"] = client.channels.create(
-    name="time_chan",
-    is_index=True,
-    data_type=sy.DataType.TIMESTAMP,
-    retrieve_if_name_exists=True,
-)
 
 # Check if analog/digital time should be different, using same channel for now
 
@@ -156,43 +171,43 @@ for row in rows:
     ni_route = row[2].split("_")
     module_name = ni_route[0] + "_" + ni_route[1]
 
-    if device_type == "AI":
+    if device_type == "AI" or device_type == "TC":
         channels[row[0]] = client.channels.create(
             name=row[0],
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.FLOAT32,
             retrieve_if_name_exists=True,
         )
     elif device_type == "DI":
         channels[row[0]] = client.channels.create(
             name=row[0],
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
     elif device_type == "AO":
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.FLOAT32,
             retrieve_if_name_exists=True,
         )
         channels[row[0] + "_state"] = client.channels.create(
             name=row[0] + "_state",
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.FLOAT32,
             retrieve_if_name_exists=True,
         )
     elif device_type == "DO":
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
         channels[row[0] + "_state"] = client.channels.create(
             name=row[0] + "_state",
-            index=channels["time_chan"].key,
+            index=channels["time_chan" + module_name].key,
             data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
@@ -203,7 +218,7 @@ for row in rows:
     # Python switches do NOT fall through, no break required
     device_chan = None
     match device_type:
-        case "AI":
+        case "AI" | "TC":
             match ni_route[0]:
                 case "NI9205":
                     if row[4] != "V":
@@ -228,7 +243,9 @@ for row in rows:
                         port=int(ni_route[2]),
                         units="DegC",
                         thermocouple_type="K",
-                        cjc_source="BuiltIn"
+                        cjc_source="BuiltIn",
+                        cjc_port=0,
+                        cjc_val=0,
                     )
                 case "NI9203":
                     if row[4] != "C":
@@ -292,18 +309,11 @@ for row in rows:
 
 tasks = []
 
-# print(f"DEVICE FOR AI MODULE: {module_map['NI9205_2']}")
-# chan_set = set()
-# for chan in base_ai_channels:
-#     print(f"AI Channel: {chan.channel}, Device: {chan.device}, Port: {chan.port}")
-#     if (chan.device, chan.port) in chan_set:
-#         raise Exception(f"Duplicate channel in base_ai_channels: {chan.channel}")
-#     chan_set.add((chan.device, chan.port))
-# print("CLEAR DUPES")
-# print(f"BASE AI CHANNELS: {base_ai_mod_chan_map[module_name]}")
-
 # Create and configure tasks
-for module_name, channels in ai_mod_chan_map.items():
+for module_name, channel_arr in ai_mod_chan_map.items():
+    if not channel_arr:                                                                                                                                
+        print(f"Skipping task for {module_name}: no channels configured")                                                                           
+        continue 
     ai_task = None
     if module_name == "NI9205_1":
         # Kulite tasks need to run at high speed for pressure data, so configure a separate task for them
@@ -313,29 +323,39 @@ for module_name, channels in ai_mod_chan_map.items():
             stream_rate=sy.Rate.HZ * STREAM_SR,
             device=module_map[module_name].key,
             data_saving=True,
-            channels=channels,
+            channels=channel_arr,
+        )
+    elif module_name.split("_")[0] == "NI9213":
+        # Thermocouple tasks can run at a lower rate since temp changes more slowly, and this reduces CPU load and risk of dropped samples
+        ai_task = ni.AnalogReadTask(
+            name=f"Thermocouple Analog Read Task for {module_name}",
+            sample_rate=sy.Rate.HZ * TC_SR,
+            stream_rate=sy.Rate.HZ * STREAM_SR,
+            device=module_map[module_name].key,
+            data_saving=True,
+            channels=channel_arr,
         )
     else:
         ai_task = ni.AnalogReadTask(
             name=f"Base Speed Analog Read Task for {module_name}",
             sample_rate=sy.Rate.HZ * BASE_SR,
             stream_rate=sy.Rate.HZ * STREAM_SR,
-            device=module_map["NI9205_2"].key,
+            device=module_map[module_name].key,
             data_saving=True,
-            channels=channels,
+            channels=channel_arr,
         )
     if not ai_task:
         raise Exception(f"Failed to create AI task for module {module_name}")
     tasks.append(ai_task)
 
 # print(f"BASE AO CHANNELS: {base_ao_channels}")
-for module_name, channels in ao_mod_chan_map.items():
+for module_name, channel_arr in ao_mod_chan_map.items():
     ao_task = ni.AnalogWriteTask(
         name=f"Analog Write for Card AO {module_name} Task",
         state_rate=sy.Rate.HZ * STATE_SR,
         device=module_map[module_name].key, # Get device from module tracking array
         data_saving=True,
-        channels=channels,
+        channels=channel_arr,
     )
     if not ao_task:
         raise Exception(f"Failed to create AO task for module {module_name}")
@@ -350,17 +370,19 @@ for module_name, channels in ao_mod_chan_map.items():
 # )
 # tasks.append(base_di_task)
 
-for module_name, channels in do_mod_chan_map.items():
+for module_name, channel_arr in do_mod_chan_map.items():
     do_task = ni.DigitalWriteTask(
         name=f"Digital Write for Card DO {module_name} Task",
         state_rate=sy.Rate.HZ * STATE_SR,
         device=module_map[module_name].key, # Get device from module tracking array
         data_saving=True,
-        channels=channels,
+        channels=channel_arr,
     )
     if not do_task:
         raise Exception(f"Failed to create DO task for module {module_name}")
     tasks.append(do_task)
+
+client.tasks._default_rack = rack  # Route tasks to the cRIO rack, not the embedded Windows rack
 
 for task in tasks:
     try:
@@ -369,21 +391,63 @@ for task in tasks:
     except Exception as e:
         print(f"FAILED TASK: {task.name}")
         raise
-### IDK WHAT THIS CODE DOES, MAYBE IT IS NEEDED TO START THE TASKS
-### Hmmm, I think we need to do task_name.run() for each task, the other bit is just reading a frame of data
-# # Start task and read data
-# with base_ai_task.run():
-#     with client.open_streamer(["voltage_chan", "current_chan", "temp_chan"]) as streamer:
-#         for _ in range(10):
-#             frame = streamer.read()
-#             print(frame)
-
 
 ### This should be sufficient to start all the tasks, GUI might be better for start though for speed toggling
-'''
 for task in tasks:
-    if task.name == "High Speed Analog Read Task":
-        continue
+    task.start()
 
-    task.run()
-'''
+all_ai_channels_buffers = {}
+all_ai_channels_names = []
+
+med_ai_channels_names = []
+
+for channel_array in ai_mod_chan_map.values():
+    for channel in channel_array:
+        print("Adding channel to buffer tracking and med channel creation: " + client.channels.retrieve(channel.channel).name)
+        all_ai_channels_names.append(client.channels.retrieve(channel.channel).name)
+
+for channel_name in all_ai_channels_names:
+    channels[channel_name + "_med"] = client.channels.create(
+        name=channel_name + "_med",
+        data_type=sy.DataType.FLOAT32,
+        virtual=True,
+        retrieve_if_name_exists=True,
+    )
+
+    med_ai_channels_names.append(channel_name + "_med")
+    all_ai_channels_buffers[channel_name] = deque(maxlen=9)
+
+with client.open_writer(
+    start=sy.TimeStamp.now(),
+    channels=med_ai_channels_names,
+) as writer:
+    with client.open_streamer(
+        all_ai_channels_names,
+    ) as streamer:
+        for frame in streamer:
+            for channel_name in all_ai_channels_names:
+                print(frame[channel_name].to_numpy())
+                all_ai_channels_buffers[channel_name].append(frame[channel_name].to_numpy())
+                
+                s = sorted(all_ai_channels_buffers[channel_name])
+                median = s[len(s)//2]
+
+                writer.write({
+                    channel_name + "_med": median
+                })
+                #if len(all_ai_channels_buffers[channel_name]) == 9:
+                    
+                    # buffer_average = 0.0
+
+                    # for element in all_ai_channels_buffers[channel_name]:
+                    #     buffer_average += element
+
+                    # buffer_average /= 10
+
+                    # writer.write(
+                    #     {
+                    #         # Write back the same timestamps as raw data so they align
+                    #         # correctly.
+                    #         channel_name + "_med": buffer_average
+                    #     }
+                    # )
