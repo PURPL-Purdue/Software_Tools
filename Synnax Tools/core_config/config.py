@@ -149,7 +149,20 @@ rows = []
 channel_rows = False
 
 
-# Check if analog/digital time should be different, using same channel for now
+# start_cmd and estop_cmd
+channels["start_cmd"] = client.channels.create(
+    name="start_cmd",
+    data_type=sy.DataType.UINT8,
+    virtual=True,
+    retrieve_if_name_exists=True,
+)
+
+channels["estop_cmd"] = client.channels.create(
+    name="estop_cmd",
+    data_type=sy.DataType.UINT8,
+    virtual=True,
+    retrieve_if_name_exists=True,
+)
 
 with open('channel_config.csv', newline='') as f:
     reader = csv.reader(f)

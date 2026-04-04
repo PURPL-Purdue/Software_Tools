@@ -284,4 +284,4 @@ if __name__ == "__main__":
         path = sys.argv[1]
         parse_main_sequence(path)
     else:
-        parse_main_sequence
+        parse_main_sequence()
