@@ -154,7 +154,7 @@ def parse_main_sequence(path="test.csv"):
 
     for key in redline_table:
         if not int(redline_table[key]) < 1:
-            redline_func += "\tredline_count += " + key + " < " + str(redline_table[key]) +",\n"
+            redline_func += "\tredline_count += " + key + "_med < " + str(redline_table[key]) +",\n"
 
     redline_func += "\treturn redline_count,\n"
     
@@ -224,7 +224,7 @@ def parse_main_sequence(path="test.csv"):
             stage_block = "\tstage ts" + str(timestamp) + " {\n"
 
             if ("BLUELINE" in row[1]):
-                stage_block += "\t\t" + row[3].replace("-", "_") + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
+                stage_block += "\t\t" + row[3].replace("-", "_") + "_med" + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
 
                 if rows[i + 1][0] != "END":
                     stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
