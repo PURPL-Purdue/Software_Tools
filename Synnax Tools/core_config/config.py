@@ -23,17 +23,17 @@ client = sy.Synnax(host="localhost",
 rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
 
 # Channel Objs
-base_ai_channels = []
-high_ai_channels = [] # Kulites
+ai_mod_chan_map = {} # AI channels for the same task must live on the same device, so this is an array of channel arrays
+ai_modules = [] # Track which modules have AI channels for task configuration, should all be on same module but just in case
 
-base_ao_channels = [] # AO channels for the same task must live on the same device, so this is an array of channel arrays
-base_ao_modules = [] # Track which modules have AO channels for task configuration
+ao_mod_chan_map = {} # AO channels for the same task must live on the same device, so this is an array of channel arrays
+ao_modules = [] # Track which modules have AO channels for task configuration
 
-base_di_channels = [] # See AO channels, but for DI
-base_di_modules = [] # Track which modules have DI channels for task configuration
+di_mod_chan_map = {} # DI channels for the same task must live on the same device, so this is an array of channel arrays
+di_modules = [] # Track which modules have DI channels for task configuration
 
-base_do_channels = [] # See AO channels, but for DO
-base_do_modules = [] # Track which modules have DO channels for task configuration
+do_mod_chan_map = {} # DO channels for the same task must live on the same device, so this is an array of channel arrays
+do_modules = [] # Track which modules have DO channels for task configuration
 
 # modules = []
 module_map = {} # Initialize from config file
@@ -60,28 +60,44 @@ for row in rows:
     card_num = 1
 
     while True:
-        if module_map.get("NI" + card_type + "-" + str(card_num)):
+        if module_map.get("NI" + card_type + "_" + str(card_num)):
             card_num += 1
         else:
-            name = "NI" + card_type + "-" + str(card_num)
+            name = "NI" + card_type + "_" + str(card_num)
             match card_type:
                 case "9205":
                     print("Configuring NI 9205 AI Card")
+                    if ai_mod_chan_map.get(name):
+                        raise Exception(f"Duplicate module name in config: {name}")
+                    ai_mod_chan_map[name] = []
+                    # TODO: The following comment is untrue for now, due to synnax double port 0 bind error
                     # AI so no need to add a new channel array, all AI channels can be in the same task/device
                 case "9213":
                     print("Configuring NI 9213 Thermocouple Card")
+                    if ai_mod_chan_map.get(name):
+                        raise Exception(f"Duplicate module name in config: {name}")
+                    ai_mod_chan_map[name] = []
+                    # TODO: The following comment is untrue for now, due to synnax double port 0 bind error
                     # AI so no need to add a new channel array, all AI channels can be in the same task/device
                 case "9203":
                     print("Configuring NI 9203 Current Card")
+                    if ai_mod_chan_map.get(name):
+                        raise Exception(f"Duplicate module name in config: {name}")
+                    ai_mod_chan_map[name] = []
+                    # TODO: The following comment is untrue for now, due to synnax double port 0 bind error
                     # AI so no need to add a new channel array, all AI channels can be in the same task/device
                 case "9264":
                     print("Configuring NI 9264 AO Card")
-                    base_ao_channels.append([]) # Add new array for AO channels on this card
-                    base_ao_modules.append(name) # Track module for task config
+                    if ao_mod_chan_map.get(name):
+                        raise Exception(f"Duplicate module name in config: {name}")
+                    ao_mod_chan_map[name] = []
+                    # base_ao_modules.append(name) # Track module for task config
                 case "9476":
                     print("Configuring NI 9476 DO Card")
-                    base_do_channels.append([]) # Add new array for DO channels on this card
-                    base_do_modules.append(name) # Track module for task config
+                    if do_mod_chan_map.get(name):
+                        raise Exception(f"Duplicate module name in config: {name}")
+                    do_mod_chan_map[name] = []
+                    # base_do_modules.append(name) # Track module for task config
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
             print(f"Adding module {name} with modbus {modbus} to rack {rack.name}")
@@ -137,8 +153,8 @@ for row in rows:
 
     device_type = row[1].split()[0]
     print(f"Configuring channel {row[0]} of type {device_type}")
-    ni_route = row[2].split("-")
-    module_name = ni_route[0] + "-" + ni_route[1]
+    ni_route = row[2].split("_")
+    module_name = ni_route[0] + "_" + ni_route[1]
 
     if device_type == "AI":
         channels[row[0]] = client.channels.create(
@@ -192,19 +208,9 @@ for row in rows:
                 case "NI9205":
                     if row[4] != "V":
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
-                    if ni_route[1] == "1":
-                        # Kulite card
-                        high_ai_channels.append( ni.AIVoltageChan(
-                            channel=channels[row[0]].key,
-                            device=module_map[module_name].key,
-                            port=int(ni_route[2]),
-                            min_val=float(row[5]),
-                            max_val=float(row[6]),
-                            terminal_config=row[7],
-                        ))
-                        continue
                     if row[7] not in {"Diff", "NRSE", "RSE"}:
                         raise ValueError("Unrecognized/Invalid NI Voltage AI Terminal Config")
+                    # TODO: Implement custom scaling
                     device_chan = ni.AIVoltageChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
@@ -239,7 +245,7 @@ for row in rows:
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI AI Card Type: {ni_route[0]}")
             if device_chan:
-                base_ai_channels.append(device_chan)
+                ai_mod_chan_map[module_name].append(device_chan)
             else:
                 raise Exception("Failed to create AI device channel")
         case "AO":
@@ -258,7 +264,7 @@ for row in rows:
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
             if device_chan:
-                base_ao_channels[int(ni_route[1]) - 1].append(device_chan)
+                ao_mod_chan_map[module_name].append(device_chan)
             else:
                 raise Exception("Failed to create AO device channel")
         case "DI":
@@ -276,7 +282,7 @@ for row in rows:
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
             if device_chan:
-                base_do_channels[int(ni_route[1]) - 1].append(device_chan)
+                do_mod_chan_map[module_name].append(device_chan)
             else:
                 raise Exception("Failed to create DO device channel")
         case _:
@@ -286,45 +292,54 @@ for row in rows:
 
 tasks = []
 
-print(f"DEVICE FOR AI MODULE: {module_map['NI9205-2']}")
-chan_set = set()
-for chan in base_ai_channels:
-    print(f"AI Channel: {chan.channel}, Device: {chan.device}, Port: {chan.port}")
-    if (chan.device, chan.port) in chan_set:
-        raise Exception(f"Duplicate channel in base_ai_channels: {chan.channel}")
-    chan_set.add((chan.device, chan.port))
-print("CLEAR DUPES")
-print(f"BASE AI CHANNELS: {base_ai_channels}")
-# Create and configure tasks
-base_ai_task = ni.AnalogReadTask(
-    name="Base Speed Analog Read Task",
-    sample_rate=sy.Rate.HZ * BASE_SR,
-    stream_rate=sy.Rate.HZ * STREAM_SR,
-    device=module_map["NI9205-2"].key,
-    data_saving=True,
-    channels=base_ai_channels,
-)
-tasks.append(base_ai_task)
+# print(f"DEVICE FOR AI MODULE: {module_map['NI9205_2']}")
+# chan_set = set()
+# for chan in base_ai_channels:
+#     print(f"AI Channel: {chan.channel}, Device: {chan.device}, Port: {chan.port}")
+#     if (chan.device, chan.port) in chan_set:
+#         raise Exception(f"Duplicate channel in base_ai_channels: {chan.channel}")
+#     chan_set.add((chan.device, chan.port))
+# print("CLEAR DUPES")
+# print(f"BASE AI CHANNELS: {base_ai_mod_chan_map[module_name]}")
 
-high_ai_task = ni.AnalogReadTask(
-    name="High Speed Analog Read Task",
-    sample_rate=sy.Rate.HZ * HIGH_SR,
-    stream_rate=sy.Rate.HZ * STREAM_SR,
-    data_saving=True,
-    channels=high_ai_channels,
-)
-tasks.append(high_ai_task)
+# Create and configure tasks
+for module_name, channels in ai_mod_chan_map.items():
+    ai_task = None
+    if module_name == "NI9205_1":
+        # Kulite tasks need to run at high speed for pressure data, so configure a separate task for them
+        ai_task = ni.AnalogReadTask(
+            name=f"High Speed Analog Read Task for {module_name}",
+            sample_rate=sy.Rate.HZ * HIGH_SR,
+            stream_rate=sy.Rate.HZ * STREAM_SR,
+            device=module_map[module_name].key,
+            data_saving=True,
+            channels=channels,
+        )
+    else:
+        ai_task = ni.AnalogReadTask(
+            name=f"Base Speed Analog Read Task for {module_name}",
+            sample_rate=sy.Rate.HZ * BASE_SR,
+            stream_rate=sy.Rate.HZ * STREAM_SR,
+            device=module_map["NI9205_2"].key,
+            data_saving=True,
+            channels=channels,
+        )
+    if not ai_task:
+        raise Exception(f"Failed to create AI task for module {module_name}")
+    tasks.append(ai_task)
 
 # print(f"BASE AO CHANNELS: {base_ao_channels}")
-for i, ao_module in enumerate(base_ao_channels):
-    base_ao_task = ni.AnalogWriteTask(
-        name=f"Base Analog Write for Card AO {i} Task",
+for module_name, channels in ao_mod_chan_map.items():
+    ao_task = ni.AnalogWriteTask(
+        name=f"Analog Write for Card AO {module_name} Task",
         state_rate=sy.Rate.HZ * STATE_SR,
-        device=module_map[base_ao_modules[i]].key, # Get device from module tracking array
+        device=module_map[module_name].key, # Get device from module tracking array
         data_saving=True,
-        channels=ao_module,
+        channels=channels,
     )
-    tasks.append(base_ao_task)
+    if not ao_task:
+        raise Exception(f"Failed to create AO task for module {module_name}")
+    tasks.append(ao_task)
 
 # base_di_task = ni.DigitalReadTask(
 #     name="Digital Read Task",
@@ -335,15 +350,17 @@ for i, ao_module in enumerate(base_ao_channels):
 # )
 # tasks.append(base_di_task)
 
-for i, do_module in enumerate(base_do_channels):
-    base_do_task = ni.DigitalWriteTask(
-        name=f"Base Digital Write for Card DO {i} Task",
+for module_name, channels in do_mod_chan_map.items():
+    do_task = ni.DigitalWriteTask(
+        name=f"Digital Write for Card DO {module_name} Task",
         state_rate=sy.Rate.HZ * STATE_SR,
-        device=module_map[base_do_modules[i]].key, # Get device from module tracking array
+        device=module_map[module_name].key, # Get device from module tracking array
         data_saving=True,
-        channels=do_module,
+        channels=channels,
     )
-    tasks.append(base_do_task)
+    if not do_task:
+        raise Exception(f"Failed to create DO task for module {module_name}")
+    tasks.append(do_task)
 
 for task in tasks:
     try:
