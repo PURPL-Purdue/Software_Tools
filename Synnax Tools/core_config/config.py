@@ -26,18 +26,24 @@ client = sy.Synnax(host="localhost",
 # Get the cRIO rack
 rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
 
+# Delete all existing tasks
+# Potentially all channels to since retrieve_if_name_exists doesn't seem to work
+tasks = client.tasks.retrieve(keys=[])
+for task in tasks:
+    # Stop task if running
+    task.stop()
+
+    # Delete task
+    client.tasks.delete(task.key)
+
 # Channel Objs
 ai_mod_chan_map = {} # AI channels for the same task must live on the same device, so this is an array of channel arrays
-ai_modules = [] # Track which modules have AI channels for task configuration, should all be on same module but just in case
 
 ao_mod_chan_map = {} # AO channels for the same task must live on the same device, so this is an array of channel arrays
-ao_modules = [] # Track which modules have AO channels for task configuration
 
 di_mod_chan_map = {} # DI channels for the same task must live on the same device, so this is an array of channel arrays
-di_modules = [] # Track which modules have DI channels for task configuration
 
 do_mod_chan_map = {} # DO channels for the same task must live on the same device, so this is an array of channel arrays
-do_modules = [] # Track which modules have DO channels for task configuration
 
 channels = {}
 
@@ -114,9 +120,6 @@ for row in rows:
                 retrieve_if_name_exists=True,
             )
             print(f"Adding module {name} with modbus {modbus} to rack {rack.name}")
-            # [CLAUDE] Retrieve by the NI-DAQmx local device name (Mod1-Mod8 on cRIO)
-            # Previous attempts used chassis-prefixed names (NI-cRIO-9056-01DCA43EMod/SlotN) — incorrect
-            # module_map[name] = client.devices.retrieve(location="Mod" + str(modbus))  # original line
             full_location = "Mod" + str(modbus)
             device = client.devices.retrieve(location=full_location, ignore_not_found=True)
             if device is None:
@@ -126,15 +129,6 @@ for row in rows:
             module_map[name] = device
             module_map[name].location = full_location
             module_map[name].name = name
-            # [CLAUDE] Removed: module_map[name].properties["identifier"] = name
-            # identifier is a display prefix in Synnax Console, not the NI DAQmx device name; overwriting it was incorrect
-            # module_map[name] = ni.Device(
-            #     identifier="Mod" + str(modbus),
-            #     name=name,
-            #     model="NI " + card_type,
-            #     location="Mod" + str(modbus),
-            #     rack=rack.key,
-            # )
             break
             
 # Create the devices in Synnax
