@@ -16,11 +16,11 @@ client = sy.Synnax(host="localhost",
     secure=False
 )
 
-# Get the embedded rack (local driver rack)
-rack = client.racks.retrieve_embedded_rack()
+# # Get the embedded rack (local driver rack)
+# rack = client.racks.retrieve_embedded_rack()
 
-# # Get the cRIO rack
-# rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
+# Get the cRIO rack
+rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
 
 # Channel Objs
 base_ai_channels = []
@@ -85,13 +85,16 @@ for row in rows:
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
             print(f"Adding module {name} with modbus {modbus} to rack {rack.name}")
-            module_map[name] = ni.Device(
-                identifier="dev_mod" + str(modbus),
-                name=name,
-                model="NI " + card_type,
-                location="dev_mod" + str(modbus),
-                rack=rack.key,
-            )
+            module_map[name] = client.devices.retrieve(location="Mod" + str(modbus))
+            module_map[name].name = name
+            module_map[name].properties["identifier"] = "Mod" + str(modbus)
+            # module_map[name] = ni.Device(
+            #     identifier="Mod" + str(modbus),
+            #     name=name,
+            #     model="NI " + card_type,
+            #     location="Mod" + str(modbus),
+            #     rack=rack.key,
+            # )
             break
             
 # Create the devices in Synnax
@@ -284,6 +287,14 @@ for row in rows:
 tasks = []
 
 print(f"DEVICE FOR AI MODULE: {module_map['NI9205-2']}")
+chan_set = set()
+for chan in base_ai_channels:
+    print(f"AI Channel: {chan.channel}, Device: {chan.device}, Port: {chan.port}")
+    if (chan.device, chan.port) in chan_set:
+        raise Exception(f"Duplicate channel in base_ai_channels: {chan.channel}")
+    chan_set.add((chan.device, chan.port))
+print("CLEAR DUPES")
+print(f"BASE AI CHANNELS: {base_ai_channels}")
 # Create and configure tasks
 base_ai_task = ni.AnalogReadTask(
     name="Base Speed Analog Read Task",
