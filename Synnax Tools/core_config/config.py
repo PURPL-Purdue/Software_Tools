@@ -1,4 +1,5 @@
 import csv
+import time
 import synnax as sy
 from synnax import ni
 from collections import deque
@@ -8,7 +9,8 @@ HIGH_SR = 150000 # Hz
 TC_SR = 80 # Hz 
 
 STATE_SR = 150 # Hz
-STREAM_SR = 10 # Hz
+STREAM_SR = 50 # Hz
+TC_STREAM_SR = 50 # Hz, thermocouple data is slower changing so can stream at a lower rate to reduce CPU load and risk of dropped samples
 
 CHASSIS = "NI-cRIO-9056-01DCA43E"
 
@@ -25,16 +27,19 @@ client = sy.Synnax(host="localhost",
 
 # Get the cRIO rack
 rack = client.racks.retrieve(name="NI-cRIO-9056-01DCA43E")
+client.tasks._default_rack = rack  # Route tasks to the cRIO rack, not the embedded Windows rack
 
 # Delete all existing tasks
-# Potentially all channels to since retrieve_if_name_exists doesn't seem to work
-tasks = client.tasks.retrieve(keys=[])
-for task in tasks:
-    # Stop task if running
-    task.stop()
-
-    # Delete task
-    client.tasks.delete(task.key)
+# Potentially all channels too since retrieve_if_name_exists doesn't seem to work
+existing_tasks = client.tasks.list()
+for task in existing_tasks:
+    try:
+        task.execute_command("stop")
+    except Exception:
+        pass
+time.sleep(2)  # Wait for cRIO to stop tasks and release NI hardware resources before deleting
+client.tasks.delete([task.key for task in existing_tasks])
+time.sleep(2)  # Wait for cRIO to fully release resources before creating new tasks
 
 # Channel Objs
 ai_mod_chan_map = {} # AI channels for the same task must live on the same device, so this is an array of channel arrays
@@ -158,6 +163,20 @@ channels["estop_cmd"] = client.channels.create(
     retrieve_if_name_exists=True,
 )
 
+channels["seq_running"] = client.channels.create(
+    name="seq_running",
+    data_type=sy.DataType.UINT8,
+    virtual=True,
+    retrieve_if_name_exists=True,
+)
+
+channels["redline_triggered"] = client.channels.create(
+    name="redline_triggered",
+    data_type=sy.DataType.UINT8,
+    virtual=True,
+    retrieve_if_name_exists=True,
+)
+
 with open('channel_config.csv', newline='') as f:
     reader = csv.reader(f)
     for row in reader:
@@ -193,9 +212,22 @@ for row in rows:
             retrieve_if_name_exists=True,
         )
     elif device_type == "AO":
+        # CHANGED: cmd channels now use a per-channel time index instead of the shared module index.
+        # Previously: index=channels["time_chan" + module_name].key for both cmd and state.
+        # Reason: Synnax requires ALL channels sharing an index to be written in the same frame.
+        # With a shared index, clicking one schematic switch would fail because it's missing
+        # the other cmd channels. Each cmd channel now has its own index so writes are independent.
+        # To revert: remove the _cmd_time channel creation and change cmd index back to
+        # channels["time_chan" + module_name].key (same as state channel).
+        channels[row[0] + "_cmd_time"] = client.channels.create(
+            name=row[0] + "_cmd_time",
+            is_index=True,
+            data_type=sy.DataType.TIMESTAMP,
+            retrieve_if_name_exists=True,
+        )
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels["time_chan" + module_name].key,
+            index=channels[row[0] + "_cmd_time"].key,
             data_type=sy.DataType.FLOAT32,
             retrieve_if_name_exists=True,
         )
@@ -206,9 +238,18 @@ for row in rows:
             retrieve_if_name_exists=True,
         )
     elif device_type == "DO":
+        # CHANGED: same as AO above — per-channel time index for cmd, shared module index for state.
+        # To revert: remove _cmd_time creation and change cmd index back to
+        # channels["time_chan" + module_name].key.
+        channels[row[0] + "_cmd_time"] = client.channels.create(
+            name=row[0] + "_cmd_time",
+            is_index=True,
+            data_type=sy.DataType.TIMESTAMP,
+            retrieve_if_name_exists=True,
+        )
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels["time_chan" + module_name].key,
+            index=channels[row[0] + "_cmd_time"].key,
             data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
@@ -240,6 +281,12 @@ for row in rows:
                         min_val=float(row[5]),
                         max_val=float(row[6]),
                         terminal_config=row[7],
+                        custom_scale=ni.LinScale(
+                            slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Map the voltage range to the engineering unit range
+                            y_intercept = float(row[11]),
+                            pre_scaled_units = "Volts",
+                            scaled_units = row[10],
+                        )
                     )
                 case "NI9213":
                     if row[4] != "V":
@@ -264,7 +311,13 @@ for row in rows:
                         min_val=float(row[5]) * 0.001, # milliamps
                         max_val=float(row[6]) * 0.001, # milliamps
                         shunt_resistor_loc="Internal",
-                        ext_shunt_resistor_val=1
+                        ext_shunt_resistor_val=1,
+                        custom_scale=ni.LinScale(
+                            slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) * 0.001 - float(row[5]) * 0.001), # Map the voltage range to the engineering unit range
+                            y_intercept = float(row[11]),
+                            pre_scaled_units = "Amps",
+                            scaled_units = row[10],
+                        )
                     )
                 case _:
                     raise ValueError(f"Unrecognized/Invalid NI AI Card Type: {ni_route[0]}")
@@ -277,13 +330,22 @@ for row in rows:
                 raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
             match ni_route[0]:
                 case "NI9264":
+                    # NI requires pre_scaled_units="Volts" when units="Volts" on AO channels.
+                    # So the scale goes Volts (cmd input) → engineering units (state readback).
+                    # Write cmd_channel in Volts; state_channel reads back in engineering units.
                     device_chan = ni.AOVoltageChan(
                         cmd_channel=channels[row[0] + "_cmd"].key,
                         state_channel=channels[row[0] + "_state"].key,
                         port=int(ni_route[2]),
-                        units="Volts",
+                        units= "Volts",
                         min_val=float(row[5]),
                         max_val=float(row[6]),
+                        custom_scale=ni.LinScale(
+                            slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Volts → engineering units
+                            y_intercept = float(row[11]),
+                            pre_scaled_units = "Volts",  # NI requires this to match channel units
+                            scaled_units = row[10],       # Engineering units for state readback
+                        )
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")
@@ -337,7 +399,7 @@ for module_name, channel_arr in ai_mod_chan_map.items():
         ai_task = ni.AnalogReadTask(
             name=f"Thermocouple Analog Read Task for {module_name}",
             sample_rate=sy.Rate.HZ * TC_SR,
-            stream_rate=sy.Rate.HZ * STREAM_SR,
+            stream_rate=sy.Rate.HZ * TC_STREAM_SR,
             device=module_map[module_name].key,
             data_saving=True,
             channels=channel_arr,
@@ -389,8 +451,6 @@ for module_name, channel_arr in do_mod_chan_map.items():
         raise Exception(f"Failed to create DO task for module {module_name}")
     tasks.append(do_task)
 
-client.tasks._default_rack = rack  # Route tasks to the cRIO rack, not the embedded Windows rack
-
 for task in tasks:
     try:
         print(f"Configuring task: {task.name}, device={getattr(task, 'device', None)}")
@@ -424,37 +484,37 @@ for channel_name in all_ai_channels_names:
     med_ai_channels_names.append(channel_name + "_med")
     all_ai_channels_buffers[channel_name] = deque(maxlen=9)
 
-with client.open_writer(
-    start=sy.TimeStamp.now(),
-    channels=med_ai_channels_names,
-) as writer:
-    with client.open_streamer(
-        all_ai_channels_names,
-    ) as streamer:
-        for frame in streamer:
-            for channel_name in all_ai_channels_names:
-                print(frame[channel_name].to_numpy())
-                all_ai_channels_buffers[channel_name].append(frame[channel_name].to_numpy())
+# with client.open_writer(
+#     start=sy.TimeStamp.now(),
+#     channels=med_ai_channels_names,
+# ) as writer:
+#     with client.open_streamer(
+#         all_ai_channels_names,
+#     ) as streamer:
+#         for frame in streamer:
+#             for channel_name in all_ai_channels_names:
+#                 print(frame[channel_name].to_numpy())
+#                 all_ai_channels_buffers[channel_name].append(frame[channel_name].to_numpy())
                 
-                s = sorted(all_ai_channels_buffers[channel_name])
-                median = s[len(s)//2]
+#                 s = sorted(all_ai_channels_buffers[channel_name])
+#                 median = s[len(s)//2]
 
-                writer.write({
-                    channel_name + "_med": median
-                })
-                #if len(all_ai_channels_buffers[channel_name]) == 9:
+#                 writer.write({
+#                     channel_name + "_med": median
+#                 })
+#                 #if len(all_ai_channels_buffers[channel_name]) == 9:
                     
-                    # buffer_average = 0.0
+#                     # buffer_average = 0.0
 
-                    # for element in all_ai_channels_buffers[channel_name]:
-                    #     buffer_average += element
+#                     # for element in all_ai_channels_buffers[channel_name]:
+#                     #     buffer_average += element
 
-                    # buffer_average /= 10
+#                     # buffer_average /= 10
 
-                    # writer.write(
-                    #     {
-                    #         # Write back the same timestamps as raw data so they align
-                    #         # correctly.
-                    #         channel_name + "_med": buffer_average
-                    #     }
-                    # )
+#                     # writer.write(
+#                     #     {
+#                     #         # Write back the same timestamps as raw data so they align
+#                     #         # correctly.
+#                     #         channel_name + "_med": buffer_average
+#                     #     }
+#                     # )
