@@ -481,6 +481,8 @@ for channel_array in ai_mod_chan_map.values():
         print("Adding channel to buffer tracking and med channel creation: " + client.channels.retrieve(channel.channel).name)
         all_ai_channels_names.append(client.channels.retrieve(channel.channel).name)
 
+import json
+
 for channel_name in all_ai_channels_names:
     channels[channel_name + "_med"] = client.channels.create(
         name=channel_name + "_med",
@@ -492,24 +494,9 @@ for channel_name in all_ai_channels_names:
     med_ai_channels_names.append(channel_name + "_med")
     all_ai_channels_buffers[channel_name] = deque(maxlen=9)
 
-with client.open_writer(
-    start=sy.TimeStamp.now(),
-    channels=med_ai_channels_names,
-) as writer:
-    with client.open_streamer(all_ai_channels_names) as streamer:
-        for frame in streamer:
-            write_data = {}
-            for channel_name in all_ai_channels_names:
-                series = frame[channel_name]
-                if series is not None and len(series) > 0:
-                    for val in series.to_numpy():
-                        all_ai_channels_buffers[channel_name].append(float(val))
+# Export channel names so run_median.py can start independently
+with open("median_channels.json", "w") as f:
+    json.dump({"ai_channels": all_ai_channels_names, "med_channels": med_ai_channels_names}, f, indent=2)
+print("Exported median channel config to median_channels.json")
 
-                buf = all_ai_channels_buffers[channel_name]
-                if len(buf) > 0:
-                    s = sorted(buf)
-                    med = s[len(s) // 2]
-                    write_data[channel_name + "_med"] = np.array([med], dtype=np.float32)
-
-            if write_data:
-                writer.write(write_data)
+print("Configuration complete. Run run_median.py to start the median channel writer.")
