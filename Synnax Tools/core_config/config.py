@@ -1,5 +1,6 @@
 import csv
 import time
+import numpy as np
 import synnax as sy
 from synnax import ni
 from collections import deque
@@ -10,7 +11,7 @@ TC_SR = 80 # Hz
 
 STATE_SR = 150 # Hz
 STREAM_SR = 50 # Hz
-TC_STREAM_SR = 50 # Hz, thermocouple data is slower changing so can stream at a lower rate to reduce CPU load and risk of dropped samples
+TC_STREAM_SR = 20 # Hz, thermocouple data is slower changing so can stream at a lower rate to reduce CPU load and risk of dropped samples
 
 CHASSIS = "NI-cRIO-9056-01DCA43E"
 
@@ -172,6 +173,13 @@ channels["seq_running"] = client.channels.create(
 
 channels["redline_triggered"] = client.channels.create(
     name="redline_triggered",
+    data_type=sy.DataType.UINT8,
+    virtual=True,
+    retrieve_if_name_exists=True,
+)
+
+channels["blueline_triggered"] = client.channels.create(
+    name="blueline_triggered",
     data_type=sy.DataType.UINT8,
     virtual=True,
     retrieve_if_name_exists=True,
@@ -484,37 +492,24 @@ for channel_name in all_ai_channels_names:
     med_ai_channels_names.append(channel_name + "_med")
     all_ai_channels_buffers[channel_name] = deque(maxlen=9)
 
-# with client.open_writer(
-#     start=sy.TimeStamp.now(),
-#     channels=med_ai_channels_names,
-# ) as writer:
-#     with client.open_streamer(
-#         all_ai_channels_names,
-#     ) as streamer:
-#         for frame in streamer:
-#             for channel_name in all_ai_channels_names:
-#                 print(frame[channel_name].to_numpy())
-#                 all_ai_channels_buffers[channel_name].append(frame[channel_name].to_numpy())
-                
-#                 s = sorted(all_ai_channels_buffers[channel_name])
-#                 median = s[len(s)//2]
+with client.open_writer(
+    start=sy.TimeStamp.now(),
+    channels=med_ai_channels_names,
+) as writer:
+    with client.open_streamer(all_ai_channels_names) as streamer:
+        for frame in streamer:
+            write_data = {}
+            for channel_name in all_ai_channels_names:
+                series = frame[channel_name]
+                if series is not None and len(series) > 0:
+                    for val in series.to_numpy():
+                        all_ai_channels_buffers[channel_name].append(float(val))
 
-#                 writer.write({
-#                     channel_name + "_med": median
-#                 })
-#                 #if len(all_ai_channels_buffers[channel_name]) == 9:
-                    
-#                     # buffer_average = 0.0
+                buf = all_ai_channels_buffers[channel_name]
+                if len(buf) > 0:
+                    s = sorted(buf)
+                    med = s[len(s) // 2]
+                    write_data[channel_name + "_med"] = np.array([med], dtype=np.float32)
 
-#                     # for element in all_ai_channels_buffers[channel_name]:
-#                     #     buffer_average += element
-
-#                     # buffer_average /= 10
-
-#                     # writer.write(
-#                     #     {
-#                     #         # Write back the same timestamps as raw data so they align
-#                     #         # correctly.
-#                     #         channel_name + "_med": buffer_average
-#                     #     }
-#                     # )
+            if write_data:
+                writer.write(write_data)

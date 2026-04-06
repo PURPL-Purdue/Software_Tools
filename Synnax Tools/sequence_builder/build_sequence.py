@@ -49,7 +49,7 @@ def preprocess_file(path):
                 for j, value in enumerate(row[1:]):
                     row[j + 1] = value.replace("-", "_")
                     if value:
-                        devices.append(row[j+1])
+                        devices.append(row[j+1] + "_cmd")
                 print("Input Devices: " + str(devices))
 
             if i == 4:
@@ -150,19 +150,21 @@ def parse_main_sequence(path="test.csv"):
 
     redline_func = "func check_redline() u8 {\n" 
 
-    redline_func += "\tredline_count u8 := 0,\n"
+    redline_func += "\tredline_count u8 := 0\n"
 
     for key in redline_table:
         if not int(redline_table[key]) < 1:
-            redline_func += "\tredline_count += " + key + "_med < " + str(redline_table[key]) +",\n"
+            redline_func += "\tredline_count += " + key + "_med > " + str(redline_table[key]) +"\n"
 
-    redline_func += "\treturn redline_count,\n"
+    redline_func += "\treturn redline_count\n"
     
     redline_func += "}\n\n"
 
-    estop_seq = "authority 255\n"
-    estop_seq += "sequence ESTOP {\n"
+    # estop_seq = "authority 255\n"
+    estop_seq = "sequence ESTOP {\n"
     estop_seq += "\tstage estop_main{\n"
+    estop_seq += "\t\tset_authority{value=255},\n"
+    estop_seq += "\t\t0 -> seq_running,\n"
 
     for device in input_devices:
         estop_seq += "\t\t0 -> " + device + ",\n"
@@ -171,18 +173,22 @@ def parse_main_sequence(path="test.csv"):
     estop_seq += "\t}\n\n"
     estop_seq += "}\n\n"
 
-    idle_seq = "authority 0\n"
-    idle_seq += "sequence IDLE {\n"
+    idle_seq = "sequence IDLE {\n"
     idle_seq += "\tstage idle_main{\n"
+    idle_seq += "\t\t0 -> seq_running,\n"
+    idle_seq += "\t\tset_authority{value=0},\n"
 
     for device in input_devices:
         idle_seq += "\t\t0 -> " + device + ",\n"
+    
+    idle_seq += "\t\testop_cmd => ESTOP, \n"
+    idle_seq += "\t\tstart_cmd => Main \n"
 
-    idle_seq += "\t\tset_authority{value=0},\n"
     idle_seq += "\t}\n\n"
     idle_seq += "}\n\n"
 
-    main_sequence = "sequence Main {\n"
+    main_sequence = "authority 250\n"
+    main_sequence += "sequence Main {\n"
 
     with open(path, newline="") as f:
 
@@ -190,6 +196,7 @@ def parse_main_sequence(path="test.csv"):
         reader = csv.reader(cleaned)
 
         new_seq = False
+        first_stage = True
         seq_name = "Main"
 
         rows = []
@@ -208,13 +215,9 @@ def parse_main_sequence(path="test.csv"):
                 continue
 
             if new_seq:
-                seq_name = row[0]
                 new_seq = False
-
-                if seq_name == "Redline":
-                    main_sequence += "authority 254\n\n"
-                else:
-                    main_sequence += "authority 250\n\n"
+                first_stage = True
+                seq_name = row[0]
 
                 main_sequence += "sequence " + seq_name + " {\n"
                 continue
@@ -222,6 +225,18 @@ def parse_main_sequence(path="test.csv"):
             timestamp = row[0]
 
             stage_block = "\tstage ts" + str(timestamp) + " {\n"
+
+            if first_stage: # First block has a set authority 
+                first_stage = False
+                if seq_name == "Main":
+                    stage_block += "\t\tset_authority{value=250},\n"
+                    stage_block += "\t\t1 -> seq_running,\n"
+                elif seq_name == "Redline":
+                    stage_block += "\t\tset_authority{value=254},\n"
+                    stage_block += "\t\t1 -> redline_triggered,\n"
+                else:
+                    stage_block += "\t\tset_authority{value=250},\n"
+                    stage_block += "\t\t1 -> blueline_triggered,\n"
 
             if ("BLUELINE" in row[1]):
                 stage_block += "\t\t" + row[3].replace("-", "_") + "_med" + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
@@ -246,20 +261,22 @@ def parse_main_sequence(path="test.csv"):
             if rows[i + 1][0] != "END":
                 stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
             else:
-                stage_block += "\t\tset_authority{value=0},\n"
+                stage_block += "\t\t0 -> seq_running,\n"
+                stage_block += "\t\twait{duration=1ms} => IDLE\n"
 
             stage_block += "\t}\n\n"
 
             main_sequence += stage_block
+            new_seq = False
 
         main_sequence += "\n\n"
 
         main_sequence += estop_seq
         main_sequence += idle_seq
         main_sequence += redline_func
-        
 
-        main_sequence += "start_cmd => main"
+
+        main_sequence += "start_cmd => Main"
 
         print(main_sequence)
         # pyperclip.copy(main_sequence)
