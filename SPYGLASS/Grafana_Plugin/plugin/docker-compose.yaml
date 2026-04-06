@@ -9,6 +9,7 @@ services:
     volumes:
       - ./:/var/lib/grafana/plugins/chasecrawford-sensortimechart-panel
       - ./provisioning:/etc/grafana/provisioning
+      - ./dashboards:/var/lib/grafana/dashboards
       - grafana-dev-data:/var/lib/grafana
 
 volumes:

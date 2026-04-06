@@ -39,6 +39,18 @@ docker compose up
 
 You may then interface with the grafana instance through http://localhost:3001/
 
+After making any changes to the plugin dashboard, it will not automatically save to files and be uploadable to Github. In order to save your changes properly, you must:
+  1. If you are currently editing the dashboard, select the "Exit Edit" option on the whole dashboard
+  2. Select "Export", then "Export as Code"
+  3. You then have two different options:
+     1. Export
+        1. Select "Download File" to download it as a separate file
+        2. Replace the file in `./plugin/dashboards/dashboard.json` with the downloaded file
+     2. Copy & Paste
+        1. Select "Copy to Clipboard" to copy the whole file contents
+        2. Replace the file contents in `./plugin/dashboards/dashboard.json` with your clipboard content
+
+
 #### Plugin Password
 Initially, username = admin password = admin.
 After that, change the password to something different. For parity's sake, just use "purpl".
@@ -46,8 +58,10 @@ After that, change the password to something different. For parity's sake, just 
 ### Development
 In order to run the __Full Deployment__ instance of grafana to access server data and read it on the panel, you must work in the plugin piece:
 
+**NOTE**: You must run `npm run dev` or `npm run build` in the plugin folderspace before being able to use the panel.
+
 `
-cd ./Grafana_plugin/deployment
+cd ./Grafana_Plugin/deployment
 docker compose up
 `
 
@@ -56,3 +70,18 @@ You may then interface with the grafana instance through http://localhost:3000/
 #### Development Password
 Initially, username = admin password = admin.
 After that, change the password to something different. For parity's sake, just use "purpl".
+
+After making any changes to the development dashboard, it will not automatically save to files and be uploadable to Github. In order to save your changes properly, you must:
+  1. If you are currently editing the dashboard, select the "Exit Edit" option on the whole dashboard
+  2. Select "Export", then "Export as Code"
+  3. You then have two different options:
+     1. Export
+        1. Select "Download File" to download it as a separate file
+        2. Replace the file in `./deployment/dashboards/deployment-dashboard.json` with the downloaded file
+     2. Copy & Paste
+        1. Select "Copy to Clipboard" to copy the whole file contents
+        2. Replace the file contents in `./deployment/dashboards/deployment-dashboard.json` with your clipboard content
+
+## Common Problems
+
+- If when using `npm run dev` you see errors with your webpack, use `npm install` to fix the problem. Yes, the `npm install` command does take a **LONG** time, but I promise it is working
