@@ -163,7 +163,7 @@ def parse_main_sequence(path="test.csv"):
     # estop_seq = "authority 255\n"
     estop_seq = "sequence ESTOP {\n"
     estop_seq += "\tstage estop_main{\n"
-    estop_seq += "\t\tset_authority{value=255},\n"
+    estop_seq += "\t\tset_authority{value=254},\n"
     estop_seq += "\t\t0 -> seq_running,\n"
 
     for device in input_devices:
@@ -232,7 +232,7 @@ def parse_main_sequence(path="test.csv"):
                     stage_block += "\t\tset_authority{value=250},\n"
                     stage_block += "\t\t1 -> seq_running,\n"
                 elif seq_name == "Redline":
-                    stage_block += "\t\tset_authority{value=254},\n"
+                    stage_block += "\t\tset_authority{value=253},\n"
                     stage_block += "\t\t1 -> redline_triggered,\n"
                 else:
                     stage_block += "\t\tset_authority{value=250},\n"

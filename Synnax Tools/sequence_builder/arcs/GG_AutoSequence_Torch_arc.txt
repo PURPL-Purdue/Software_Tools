@@ -252,7 +252,7 @@ sequence Main {
 
 sequence Redline {
 	stage ts0 {
-		set_authority{value=254},
+		set_authority{value=253},
 		1 -> redline_triggered,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
@@ -440,7 +440,7 @@ sequence SEQONE {
 
 sequence ESTOP {
 	stage estop_main{
-		set_authority{value=255},
+		set_authority{value=254},
 		0 -> seq_running,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,

@@ -281,7 +281,6 @@ for row in rows:
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
                     if row[7] not in {"Diff", "NRSE", "RSE"}:
                         raise ValueError("Unrecognized/Invalid NI Voltage AI Terminal Config")
-                    # TODO: Implement custom scaling
                     device_chan = ni.AIVoltageChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
@@ -291,7 +290,7 @@ for row in rows:
                         terminal_config=row[7],
                         custom_scale=ni.LinScale(
                             slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Map the voltage range to the engineering unit range
-                            y_intercept = float(row[11]),
+                            y_intercept =  float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
                             pre_scaled_units = "Volts",
                             scaled_units = row[10],
                         )
@@ -322,7 +321,7 @@ for row in rows:
                         ext_shunt_resistor_val=1,
                         custom_scale=ni.LinScale(
                             slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) * 0.001 - float(row[5]) * 0.001), # Map the voltage range to the engineering unit range
-                            y_intercept = float(row[11]),
+                            y_intercept = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
                             pre_scaled_units = "Amps",
                             scaled_units = row[10],
                         )
@@ -350,7 +349,7 @@ for row in rows:
                         max_val=float(row[6]),
                         custom_scale=ni.LinScale(
                             slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Volts → engineering units
-                            y_intercept = float(row[11]),
+                            y_intercept =float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
                             pre_scaled_units = "Volts",  # NI requires this to match channel units
                             scaled_units = row[10],       # Engineering units for state readback
                         )
