@@ -1,5 +1,5 @@
 Test_Data/
-Sequences/
+# Sequences/
 __pycache__/
 Server/tests.json
 *.mp4
