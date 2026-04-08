@@ -347,12 +347,12 @@ for row in rows:
                         units= "Volts",
                         min_val=float(row[5]),
                         max_val=float(row[6]),
-                        custom_scale=ni.LinScale(
-                            slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Volts → engineering units
-                            y_intercept =float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
-                            pre_scaled_units = "Volts",  # NI requires this to match channel units
-                            scaled_units = row[10],       # Engineering units for state readback
-                        )
+                        # custom_scale=ni.LinScale(
+                        #     slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Volts → engineering units
+                        #     y_intercept =float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
+                        #     pre_scaled_units = "Volts",  # NI requires this to match channel units
+                        #     scaled_units = row[10],       # Engineering units for state readback
+                        # )
                     )
                 case _:
                     raise ValueError("Unrecognized/Invalid NI Voltage AO Card Type")

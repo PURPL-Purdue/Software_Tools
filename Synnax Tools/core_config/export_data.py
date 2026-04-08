@@ -88,7 +88,7 @@ for i, channel in enumerate(data_channels):
 
 # TODO: Make the writer/rows actually work
 
-with open("output.csv", "w", newline="") as f:
+with open(new_path, "w", newline="") as f:
     writer = csv.writer(f)
 
     for row in rows:
