@@ -1,7 +1,6 @@
 import csv
 import os
 import sys
-import pyperclip
 
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
@@ -254,7 +253,7 @@ def parse_main_sequence(path="test.csv"):
                 stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
 
             if seq_name != "Redline":
-                stage_block += "\t\tcheck_redline() > 0 => Redline,\n"
+                stage_block += "\t\tinterval{period=10ms} -> check_redline{} => Redline,\n"
 
             stage_block += "\t\testop_cmd => ESTOP,\n"
 
