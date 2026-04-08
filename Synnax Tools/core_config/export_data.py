@@ -1,5 +1,5 @@
 import synnax as sy
-from synnax import node
+from synnax import ni
 import pandas as pd
 
 client = sy.Synnax(host="localhost",
