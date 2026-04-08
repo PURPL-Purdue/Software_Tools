@@ -220,22 +220,24 @@ for row in rows:
             retrieve_if_name_exists=True,
         )
     elif device_type == "AO":
-        # CHANGED: cmd channels now use a per-channel time index instead of the shared module index.
-        # Previously: index=channels["time_chan" + module_name].key for both cmd and state.
-        # Reason: Synnax requires ALL channels sharing an index to be written in the same frame.
-        # With a shared index, clicking one schematic switch would fail because it's missing
-        # the other cmd channels. Each cmd channel now has its own index so writes are independent.
-        # To revert: remove the _cmd_time channel creation and change cmd index back to
-        # channels["time_chan" + module_name].key (same as state channel).
-        channels[row[0] + "_cmd_time"] = client.channels.create(
-            name=row[0] + "_cmd_time",
-            is_index=True,
-            data_type=sy.DataType.TIMESTAMP,
-            retrieve_if_name_exists=True,
-        )
+        # TODO: Verify that the new virtual command channels work as intended
+        # # CHANGED: cmd channels now use a per-channel time index instead of the shared module index.
+        # # Previously: index=channels["time_chan" + module_name].key for both cmd and state.
+        # # Reason: Synnax requires ALL channels sharing an index to be written in the same frame.
+        # # With a shared index, clicking one schematic switch would fail because it's missing
+        # # the other cmd channels. Each cmd channel now has its own index so writes are independent.
+        # # To revert: remove the _cmd_time channel creation and change cmd index back to
+        # # channels["time_chan" + module_name].key (same as state channel).
+        # channels[row[0] + "_cmd_time"] = client.channels.create(
+        #     name=row[0] + "_cmd_time",
+        #     is_index=True,
+        #     data_type=sy.DataType.TIMESTAMP,
+        #     retrieve_if_name_exists=True,
+        # )
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels[row[0] + "_cmd_time"].key,
+            virtual=True,
+            # index=channels[row[0] + "_cmd_time"].key,
             data_type=sy.DataType.FLOAT32,
             retrieve_if_name_exists=True,
         )
