@@ -246,18 +246,20 @@ for row in rows:
             retrieve_if_name_exists=True,
         )
     elif device_type == "DO":
-        # CHANGED: same as AO above — per-channel time index for cmd, shared module index for state.
-        # To revert: remove _cmd_time creation and change cmd index back to
-        # channels["time_chan" + module_name].key.
-        channels[row[0] + "_cmd_time"] = client.channels.create(
-            name=row[0] + "_cmd_time",
-            is_index=True,
-            data_type=sy.DataType.TIMESTAMP,
-            retrieve_if_name_exists=True,
-        )
+        # TODO: Verify that the new virtual command channels work as intended
+        # # CHANGED: same as AO above — per-channel time index for cmd, shared module index for state.
+        # # To revert: remove _cmd_time creation and change cmd index back to
+        # # channels["time_chan" + module_name].key.
+        # channels[row[0] + "_cmd_time"] = client.channels.create(
+        #     name=row[0] + "_cmd_time",
+        #     is_index=True,
+        #     data_type=sy.DataType.TIMESTAMP,
+        #     retrieve_if_name_exists=True,
+        # )
         channels[row[0] + "_cmd"] = client.channels.create(
             name=row[0] + "_cmd",
-            index=channels[row[0] + "_cmd_time"].key,
+            # index=channels[row[0] + "_cmd_time"].key,
+            virtual=True,
             data_type=sy.DataType.UINT8,
             retrieve_if_name_exists=True,
         )
