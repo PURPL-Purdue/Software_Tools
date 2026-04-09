@@ -67,6 +67,8 @@ for channel in all_channels:
 
     channels_by_device[time_chan_to_card_name[channel.index]].append(channel.name)
 
+os.makedirs("output_data", exist_ok=True)
+
 for device in channels_by_device.keys():
     device_cols = []
     read_channels = channels_by_device[device]
@@ -84,7 +86,7 @@ for device in channels_by_device.keys():
 
         device_cols.append(column)
 
-    with open(device + ".csv", "w", newline="") as f:
+    with open(os.path.join("output_data", device + ".csv"), "w", newline="") as f:
         writer = csv.writer(f)
 
         for row in zip_longest(*device_cols, fillvalue=""):
