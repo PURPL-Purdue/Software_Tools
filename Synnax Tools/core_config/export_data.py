@@ -76,7 +76,7 @@ for device in channels_by_device.keys():
 
         column = [channel]
 
-        for i, value in enumerate(data[channel]):
+        for value in data[channel]:
             column.append(float(value))
 
         device_cols.append(column)
