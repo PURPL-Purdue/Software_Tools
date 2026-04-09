@@ -1,5 +1,6 @@
 import synnax as sy
 from synnax import ni
+from itertools import zip_longest
 import pandas as pd
 import os
 import csv
@@ -51,18 +52,43 @@ time_range = sy.TimeRange(start=start_timestamp, end=end_timestamp)
 # test_name = "test_data.csv"
 
 all_channels = client.channels.retrieve(["*"])
-all_channels_names = []
+
+time_chans = client.channels.retrieve(["time_chan[a-zA-Z0-9_]*"]) # Get all time channels
+time_chan_to_card_name = {chan.key: chan.name[10:] for i,chan in enumerate(time_chans)}
+
+channels_by_device = {}
+
+for device in time_chan_to_card_name.values():
+    channels_by_device[device] = ["time_chan" + device]
 
 for channel in all_channels:
-    if channel.virtual:
-        print(f"Skipping virtual channel: {channel.name}")
-        continue
+    if channel.virtual or channel.index not in time_chan_to_card_name:
+        continue;
 
-    print(f"Adding channel: {channel.name}")
-    all_channels_names.append(channel.name)
+    channels_by_device[time_chan_to_card_name[channel.index]].append(channel.name)
 
-print(f"Reading data for channels: {all_channels_names}")
+for device in channels_by_device.keys():
+    device_cols = []
+    read_channels = channels_by_device[device]
 
+    for channel in read_channels:
+        data = client.read(time_range, [channel])
+
+        column = [channel]
+
+        for i, value in enumerate(data[channel]):
+            column.append(float(value))
+
+        device_cols.append(column)
+
+    with open(device + ".csv", "w", newline="") as f:
+        writer = csv.writer(f)
+
+        for row in zip_longest(*device_cols, fillvalue=""):
+            writer.writerow(row)
+
+
+'''
 data = client.read(time_range, all_channels_names)
 
 os.makedirs("test_data", exist_ok=True)
@@ -93,3 +119,4 @@ with open(new_path, "w", newline="") as f:
 
     for row in rows:
         writer.writerow(row)
+'''
