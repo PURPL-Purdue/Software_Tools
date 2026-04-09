@@ -59,7 +59,7 @@ time_chan_to_card_name = {chan.key: chan.name[10:] for i,chan in enumerate(time_
 channels_by_device = {}
 
 for device in time_chan_to_card_name.values():
-    channels_by_device[device] = ["time_chan" + device]
+    channels_by_device[device] = []
 
 for channel in all_channels:
     if channel.virtual or channel.index not in time_chan_to_card_name:
@@ -72,11 +72,14 @@ for device in channels_by_device.keys():
     read_channels = channels_by_device[device]
 
     for channel in read_channels:
+        if "time_chan" in channel:
+            continue
+
         data = client.read(time_range, [channel])
 
         column = [channel]
 
-        for value in data[channel]:
+        for value in data:
             column.append(float(value))
 
         device_cols.append(column)
@@ -86,37 +89,3 @@ for device in channels_by_device.keys():
 
         for row in zip_longest(*device_cols, fillvalue=""):
             writer.writerow(row)
-
-
-'''
-data = client.read(time_range, all_channels_names)
-
-os.makedirs("test_data", exist_ok=True)
-
-test_name = input("Enter a name for the test data (without extension): ")
-
-# Build new filename
-base_name = os.path.basename("test")
-name, _ = os.path.splitext(base_name)
-new_filename = f"{test_name}.csv"
-new_path = os.path.join("test_data", new_filename)
-
-data_channels = data.channels
-
-rows = []
-rows.append(data_channels)
-
-for i, channel in enumerate(data_channels):
-    for j, value in enumerate(data[channel]):
-        if len(rows) <= j + 1:
-            rows.append([])
-        rows[j + 1].append(float(value))
-
-# TODO: Make the writer/rows actually work
-
-with open(new_path, "w", newline="") as f:
-    writer = csv.writer(f)
-
-    for row in rows:
-        writer.writerow(row)
-'''
