@@ -155,6 +155,10 @@ def parse_main_sequence(path="test.csv"):
         if not int(redline_table[key]) < 1:
             redline_func += "\tredline_count += " + key + "_med > " + str(redline_table[key]) +"\n"
 
+    # TODO GENERALIZE THIS, HARDCODED FOR EREGS LOWER BOUND IN CASE OF DISCONNECT
+    redline_func += "\tredline_count += PT_GO2_03_1_med < -100 \n"
+    redline_func += "\tredline_count += PT_N2_06_med < -100 \n"
+
     redline_func += "\treturn redline_count\n"
     
     redline_func += "}\n\n"
