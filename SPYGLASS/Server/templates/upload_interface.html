@@ -100,7 +100,7 @@
         </style>
         <body style="font-family: Arial, sans-serif; ">
             <header class="header-bar">
-                <img src="{{ url_for('static', filename='PURPL_wordmark_white.png') }}" alt="logo" class="header-logo">
+                <a href="https://purpl.space"><img src="{{ url_for('static', filename='PURPL_wordmark_white.png') }}" alt="logo" class="header-logo"></a>
             </header>
             
 
@@ -117,52 +117,52 @@
                         <input type="file" name="seq_data" id="seq_data" accept=".csv" required>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="fuel_choice"><b>Fuel Choice:</b></label>
-                        <input type="text" name="fuel_choice" id="fuel_choice" required>
+                        <label for="fuel_choice"><b>Fuel Choice: (Disabled)</b></label>
+                        <input type="text" name="fuel_choice" id="fuel_choice" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="fuel_CdA"><b>Fuel CdA:</b></label>
-                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" required>
+                        <label for="fuel_CdA"><b>Fuel CdA: (Disabled)</b></label>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="fuel_CdA"><b>Fuel CdA:</b></label>
-                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" required>
+                        <label for="fuel_CdA"><b>Fuel CdA: (Disabled)</b></label>
+                        <input type="number" name="fuel_CdA" id="fuel_CdA" step="any" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="ox_CdA"><b>Oxidizer CdA:</b></label>
-                        <input type="number" name="ox_CdA" id="ox_CdA" step="any" required>
+                        <label for="ox_CdA"><b>Oxidizer CdA: (Disabled)</b></label>
+                        <input type="number" name="ox_CdA" id="ox_CdA" step="any" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="A_star"><b>A*:</b></label>
-                        <input type="number" name="A_star" id="A_star" step="any" required>
+                        <label for="A_star"><b>A*: (Disabled)</b></label>
+                        <input type="number" name="A_star" id="A_star" step="any" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="ox_name"><b>Oxidizer Name:</b></label>
-                        <input type="text" name="ox_name" id="ox_name" required>
+                        <label for="ox_name"><b>Oxidizer Name: (Disabled)</b></label>
+                        <input type="text" name="ox_name" id="ox_name" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="state_ox"><b>Oxidizer State:</b></label>
-                        <input type="text" name="state_ox" id="state_ox" required>
+                        <label for="state_ox"><b>Oxidizer State: (Disabled)</b></label>
+                        <input type="text" name="state_ox" id="state_ox" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="state_fu"><b>Fuel State:</b></label>
-                        <input type="text" name="state_fu" id="state_fu" required>
+                        <label for="state_fu"><b>Fuel State: (Disabled)</b></label>
+                        <input type="text" name="state_fu" id="state_fu" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="fuel_upstream_col"><b>Fuel Upstream Column:</b></label>
-                        <input type="number" name="fuel_upstream_col" id="fuel_upstream_col" step="1" required>
+                        <label for="fuel_upstream_col"><b>Fuel Upstream Column: (Disabled)</b></label>
+                        <input type="number" name="fuel_upstream_col" id="fuel_upstream_col" step="1" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="ox_upstream_col"><b>Oxidizer Upstream Column:</b></label>
-                        <input type="number" name="ox_upstream_col" id="ox_upstream_col" step="1" required>
+                        <label for="ox_upstream_col"><b>Oxidizer Upstream Column: (Disabled)</b></label>
+                        <input type="number" name="ox_upstream_col" id="ox_upstream_col" step="1" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="downstream_col"><b>Downstream Column:</b></label>
-                        <input type="number" name="downstream_col" id="downstream_col" step="1" required>
+                        <label for="downstream_col"><b>Downstream Column: (Disabled)</b></label>
+                        <input type="number" name="downstream_col" id="downstream_col" step="1" disabled>
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label for="downstream_col2"><b>Downstream Column 2:</b></label>
-                        <input type="number" name="downstream_col2" id="downstream_col2" step="1" required>
+                        <label for="downstream_col2"><b>Downstream Column 2: (Disabled)</b></label>
+                        <input type="number" name="downstream_col2" id="downstream_col2" step="1" disabled>
                     </div>
 
                     <button class="upload-btn">
