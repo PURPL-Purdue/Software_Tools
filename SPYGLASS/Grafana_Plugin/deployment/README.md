@@ -1,12 +1,12 @@
-# Grafana Panel Plugin Development
+# Grafana Panel Deployment
 
-This holds the whole Grafana panel React code.
+This holds the local Grafana code for deployment-ready usage.
 
 ## Table of Contents
 
-- [Grafana Panel Plugin Development](#grafana-panel-plugin-development)
+- [Grafana Panel Deployment](#grafana-panel-deployment)
   - [Table of Contents](#table-of-contents)
-  - [What are Grafana panel plugins?](#what-are-grafana-panel-plugins)
+  - [What is this used for?](#what-is-this-used-for)
   - [Pre-Requisites](#pre-requisites)
     - [1. WSL](#1-wsl)
       - [Steps](#steps)
@@ -14,23 +14,17 @@ This holds the whole Grafana panel React code.
       - [Steps](#steps-1)
   - [Setup](#setup)
     - [One-Time Setup](#one-time-setup)
-    - [Plugin](#plugin)
-      - [Plugin Password](#plugin-password)
+    - [Deployment](#deployment)
+      - [Deployment Password](#deployment-password)
       - [Saving Edits](#saving-edits)
   - [Folder Contents](#folder-contents)
-    - [**src**](#src)
     - [**dashboards**](#dashboards)
     - [**docker-compose.yaml**](#docker-composeyaml)
-    - [**.config/**](#config)
-    - [**dist**](#dist)
-    - [**node\_modules**](#node_modules)
     - [**provisioning**](#provisioning)
 
-## What are Grafana panel plugins?
+## What is this used for?
 
-Panel plugins allow you to add new types of visualizations to your dashboard, such as maps, clocks, pie charts, lists, and more.
-
-In our case, our panel plugin is a multi-axes chart used to display the test data, fit with options to alter the number of axes, toggle data lines on or off, export or import data and visualization options, etc.
+This portion of the repository is used specifically to run a version of grafana that can connect to external data sources (the server, for example) and connect that data to the panel plugin for display.
 
 ## Pre-Requisites 
 
@@ -73,57 +67,46 @@ cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
 npm install
 ```
 
-### Plugin
+### Deployment
 
-In order to run the __Testing Development__ instance of grafana to edit the panel, you must work in the plugin piece:
+In order to run the **Full Deployment** instance of grafana to access server data and read it on the panel, you must work in the plugin piece:
 
-```bash
-cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
-npm run dev
-```
-
-Then, in another console:
+>**NOTE**: You must run `npm run dev` or `npm run build` in the plugin folderspace before being able to use the deployment panel.
 
 ```bash
-cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
+cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/deployment
 docker compose up
 ```
 
-You may then interface with the development grafana instance through **http://localhost:3001/**
+You may then interface with the grafana instance through **http://localhost:3000/**
 
-#### Plugin Password
+#### Deployment Password
 
 Initially, username = admin password = admin.
 After that, change the password to something different. For parity's sake, just use "purpl".
 
 #### Saving Edits
 
-After making any changes to the plugin dashboard, it will not automatically save to files and be uploadable to Github. In order to save your changes properly, you must:
+After making any changes to the development dashboard, it will not automatically save to files and be uploadable to Github. In order to save your changes properly, you must:
   1. If you are currently editing the dashboard, select the "Exit Edit" option on the whole dashboard
   2. Select "Export", then "Export as Code"
   3. You then have two different options:
      1. Export
         1. Select "Download File" to download it as a separate file
-        2. Replace the file in `./plugin/dashboards/dashboard.json` with the downloaded file
+        2. Replace the file in `./deployment/dashboards/deployment-dashboard.json` with the downloaded file
      2. Copy & Paste
         1. Select "Copy to Clipboard" to copy the whole file contents
-        2. Replace the file contents in `./plugin/dashboards/dashboard.json` with your clipboard content
+        2. Replace the file contents in `./deployment/dashboards/deployment-dashboard.json` with your clipboard content
 
 ## Folder Contents
 
 Here we will explain what each folder contains and what each file does. In each section there is an **<u>Importance</u>** modifier that represents how often this folder is accessed or used.
 
-### **src**
-
-This holds the actual React component for the panel plugin, including any images used or extra info necessary for TypeScript to be happy. The primary component code lies within `src/components/SimplePanel.tsx`.
-
-**<u>Importance: High</u>**
-
 ### **dashboards**
 
-This holds the .json version of the grafana dashboard that is used. Grafana Dashboards essentially hold a bunch of different visualizations (with the panel plugin being one such visualization). Making any changes to the Plugin dashboards will be made here.
+This holds the .json version of the grafana dashboard that is used. Grafana Dashboards essentially hold a bunch of different visualizations (with the panel plugin being one such visualization). Making any changes to the Deployment dashboards will be made here, and this is the filepath specifically when it comes to [saving edits](#saving-edits).
 
-**<u>Importance: Moderate</u>**
+**<u>Importance: High</u>**
 
 ### **docker-compose.yaml**
 
@@ -131,26 +114,8 @@ This is the docker composition that creates the grafana container instance, sets
 
 **<u>Importance: Moderate</u>**
 
-### **.config/**
-
-This holds a lot of version info and data for what is being used or ran and any specification configurations to the modules that must be done.
-
-**<u>Importance: Minimal</u>**
-
-### **dist**
-
-This is build information made every time `npm run build` is executed.
-
-**<u>Importance: Minimal</u>**
-
-### **node_modules**
-
-This is a HUGE list of ever single node module downloaded from `npm install`.
-
-**<u>Importance: Minimal</u>**
-
 ### **provisioning**
 
-Like [dashboards](#dashboards), this holds more info about grafana dashboards, specifically any test datasources, dashboard filepaths and update intervals.
+Like [dashboards](#dashboards), this holds more info about grafana dashboards, specifically any dashboard filepaths and update intervals.
 
 **<u>Importance: Minimal</u>**
