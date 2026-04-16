@@ -1,117 +1,156 @@
-# Grafana panel plugin template
+# Grafana Panel Plugin Development
 
-This template is a starting point for building a panel plugin for Grafana.
+This holds the whole Grafana panel React code.
+
+## Table of Contents
+
+- [Grafana Panel Plugin Development](#grafana-panel-plugin-development)
+  - [Table of Contents](#table-of-contents)
+  - [What are Grafana panel plugins?](#what-are-grafana-panel-plugins)
+  - [Pre-Requisites](#pre-requisites)
+    - [1. WSL](#1-wsl)
+      - [Steps](#steps)
+    - [2. Docker Desktop](#2-docker-desktop)
+      - [Steps](#steps-1)
+  - [Setup](#setup)
+    - [One-Time Setup](#one-time-setup)
+    - [Plugin](#plugin)
+      - [Plugin Password](#plugin-password)
+      - [Saving Edits](#saving-edits)
+  - [Folder Contents](#folder-contents)
+    - [**src**](#src)
+    - [**dashboards**](#dashboards)
+    - [**docker-compose.yaml**](#docker-composeyaml)
+    - [**.config/**](#config)
+    - [**dist**](#dist)
+    - [**node\_modules**](#node_modules)
+    - [**provisioning**](#provisioning)
 
 ## What are Grafana panel plugins?
 
 Panel plugins allow you to add new types of visualizations to your dashboard, such as maps, clocks, pie charts, lists, and more.
 
-Use panel plugins when you want to do things like visualize data returned by data source queries, navigate between dashboards, or control external systems (such as smart home devices).
+In our case, our panel plugin is a multi-axes chart used to display the test data, fit with options to alter the number of axes, toggle data lines on or off, export or import data and visualization options, etc.
 
-## Getting started
+## Pre-Requisites 
 
-### Frontend
+>**NOTE:** This is the same process that the `../README.md` describes.
 
-1. Install dependencies
+>**Please note that all instructions are completed using a Windows computer. Mac is possible but must use a different Linux approach.**
 
-   ```bash
-   npm install
-   ```
+### 1. WSL
 
-2. Build plugin in development mode and run in watch mode
+This is the Windows Subsystem for Linux (WSL) and what will be used for the operating system.
 
-   ```bash
-   npm run dev
-   ```
+#### Steps
 
-3. Build plugin in production mode
+1. Navigate to https://learn.microsoft.com/en-us/windows/wsl/install
+2. Follow the steps to install and create a username/password
 
-   ```bash
-   npm run build
-   ```
+>**NOTE:** In order to clone your repository in the windows subsystem, you can type in `\\wsl$` in the File Explorer filepath (Windows only), navigate to your Ubuntu distro (NOT the docker-desktop folder), navigate to home, then to your username made when creating your WSL. <u>Essentially, the filepath to clone the repository on Windows is `\\wsl$/Ubuntu/home/YOUR-USERNAME`</u>. Your `Ubuntu` folder may have a different name, like `Ubuntu-22.04`, for example. Just don't choose the docker-desktop one.
 
-4. Run the tests (using Jest)
+### 2. Docker Desktop
 
-   ```bash
-   # Runs the tests and watches for changes, requires git init first
-   npm run test
+This will encapsulate all parts of the processes in their own "containers" or sandboxes that isolate version types and storage into their own trackable boxes. In the case of making a bunch of different processes (ex. a deployment Grafana site and a plugin development Grafana site) it will keep them in their own divided spaces to be turned on or off at will.
 
-   # Exits after running all the tests
-   npm run test:ci
-   ```
+#### Steps
 
-5. Spin up a Grafana instance and run the plugin inside it (using Docker)
+1. Navigate to https://www.docker.com/products/docker-desktop/
+2. Follow the steps to installation, choosing your own computer type appropriate
 
-   ```bash
-   npm run server
-   ```
+>**NOTE:** In order for the WSL code to use and recognize your Docker Desktop to create containers, the application must be open during runtime.
 
-6. Run the E2E tests (using Playwright)
+## Setup
 
-   ```bash
-   # Spins up a Grafana instance first that we tests against
-   npm run server
+>**NOTE:** This is the same process that the `../README.md` describes.
 
-   # If you wish to start a certain Grafana version. If not specified will use latest by default
-   GRAFANA_VERSION=11.3.0 npm run server
+### One-Time Setup
 
-   # Starts the tests
-   npm run e2e
-   ```
+In order to install npm and dependencies, this must be ran once after cloning the repo:
 
-7. Run the linter
+```bash
+cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
+npm install
+```
 
-   ```bash
-   npm run lint
+### Plugin
 
-   # or
+In order to run the __Testing Development__ instance of grafana to edit the panel, you must work in the plugin piece:
 
-   npm run lint:fix
-   ```
+```bash
+cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
+npm run dev
+```
 
-# Distributing your plugin
+Then, in another console:
 
-When distributing a Grafana plugin either within the community or privately the plugin must be signed so the Grafana application can verify its authenticity. This can be done with the `@grafana/sign-plugin` package.
+```bash
+cd ~/Software_Tools/SPYGLASS/Grafana_Plugin/plugin
+docker compose up
+```
 
-_Note: It's not necessary to sign a plugin during development. The docker development environment that is scaffolded with `@grafana/create-plugin` caters for running the plugin without a signature._
+You may then interface with the development grafana instance through **http://localhost:3001/**
 
-## Initial steps
+#### Plugin Password
 
-Before signing a plugin please read the Grafana [plugin publishing and signing criteria](https://grafana.com/legal/plugins/#plugin-publishing-and-signing-criteria) documentation carefully.
+Initially, username = admin password = admin.
+After that, change the password to something different. For parity's sake, just use "purpl".
 
-`@grafana/create-plugin` has added the necessary commands and workflows to make signing and distributing a plugin via the grafana plugins catalog as straightforward as possible.
+#### Saving Edits
 
-Before signing a plugin for the first time please consult the Grafana [plugin signature levels](https://grafana.com/legal/plugins/#what-are-the-different-classifications-of-plugins) documentation to understand the differences between the types of signature level.
+After making any changes to the plugin dashboard, it will not automatically save to files and be uploadable to Github. In order to save your changes properly, you must:
+  1. If you are currently editing the dashboard, select the "Exit Edit" option on the whole dashboard
+  2. Select "Export", then "Export as Code"
+  3. You then have two different options:
+     1. Export
+        1. Select "Download File" to download it as a separate file
+        2. Replace the file in `./plugin/dashboards/dashboard.json` with the downloaded file
+     2. Copy & Paste
+        1. Select "Copy to Clipboard" to copy the whole file contents
+        2. Replace the file contents in `./plugin/dashboards/dashboard.json` with your clipboard content
 
-1. Create a [Grafana Cloud account](https://grafana.com/signup).
-2. Make sure that the first part of the plugin ID matches the slug of your Grafana Cloud account.
-   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `acmecorp`, you need to prefix the plugin ID with `acmecorp-`._
-3. Create a Grafana Cloud API key with the `PluginPublisher` role.
-4. Keep a record of this API key as it will be required for signing a plugin
+## Folder Contents
 
-## Signing a plugin
+Here we will explain what each folder contains and what each file does. In each section there is an **<u>Importance</u>** modifier that represents how often this folder is accessed or used.
 
-### Using Github actions release workflow
+### **src**
 
-If the plugin is using the github actions supplied with `@grafana/create-plugin` signing a plugin is included out of the box. The [release workflow](./.github/workflows/release.yml) can prepare everything to make submitting your plugin to Grafana as easy as possible. Before being able to sign the plugin however a secret needs adding to the Github repository.
+This holds the actual React component for the panel plugin, including any images used or extra info necessary for TypeScript to be happy. The primary component code lies within `src/components/SimplePanel.tsx`.
 
-1. Please navigate to "settings > secrets > actions" within your repo to create secrets.
-2. Click "New repository secret"
-3. Name the secret "GRAFANA_API_KEY"
-4. Paste your Grafana Cloud API key in the Secret field
-5. Click "Add secret"
+**<u>Importance: High</u>**
 
-#### Push a version tag
+### **dashboards**
 
-To trigger the workflow we need to push a version tag to github. This can be achieved with the following steps:
+This holds the .json version of the grafana dashboard that is used. Grafana Dashboards essentially hold a bunch of different visualizations (with the panel plugin being one such visualization). Making any changes to the Plugin dashboards will be made here.
 
-1. Run `npm version <major|minor|patch>`
-2. Run `git push origin main --follow-tags`
+**<u>Importance: Moderate</u>**
 
-## Learn more
+### **docker-compose.yaml**
 
-Below you can find source code for existing app plugins and other related documentation.
+This is the docker composition that creates the grafana container instance, sets the volume files, and chooses the port to run on. This is useful to get a better understanding of the docker container, what port to open via `localhost:####`, and where to find folders inside the docker filesystem.
 
-- [Basic panel plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/panel-basic#readme)
-- [`plugin.json` documentation](https://grafana.com/developers/plugin-tools/reference/plugin-json)
-- [How to sign a plugin?](https://grafana.com/developers/plugin-tools/publish-a-plugin/sign-a-plugin)
+**<u>Importance: Moderate</u>**
+
+### **.config/**
+
+This holds a lot of version info and data for what is being used or ran and any specification configurations to the modules that must be done.
+
+**<u>Importance: Minimal</u>**
+
+### **dist**
+
+This is build information made every time `npm run build` is executed.
+
+**<u>Importance: Minimal</u>**
+
+### **node_modules**
+
+This is a HUGE list of ever single node module downloaded from `npm install`.
+
+**<u>Importance: Minimal</u>**
+
+### **provisioning**
+
+Like [dashboards](#dashboards), this holds more info about grafana dashboards, specifically any test datasources, dashboard filepaths and update intervals.
+
+**<u>Importance: Minimal</u>**
