@@ -16,7 +16,7 @@ TC_STREAM_SR = 20 # Hz, thermocouple data is slower changing so can stream at a 
 CHASSIS = "NI-cRIO-9056-01DCA43E"
 
 # Connect to Synnax
-client = sy.Synnax(host="localhost",
+client = sy.Synnax(host="169.254.71.1",
     port=9091,
     username="synnax",
     password="seldon",
