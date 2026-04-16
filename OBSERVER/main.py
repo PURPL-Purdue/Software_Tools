@@ -66,8 +66,8 @@ def open_streams(ip_list):
     return caps
 
 def create_writers(caps):
+    """Initialize VideoWriter objects for all active cameras."""
     writers = {}
-
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     timestamp = time.strftime("%Y%m%d_%H%M%S")
 
@@ -79,19 +79,76 @@ def create_writers(caps):
 
         h, w = frame.shape[:2]
         filename = f"{SAVE_DIR}/cam_{ip.replace('.', '_')}_{timestamp}.mp4"
-
         writer = cv2.VideoWriter(filename, fourcc, FPS, (w, h))
         writers[ip] = writer
-
         print(f"Recording {ip} → {filename}")
 
     return writers
+
+def release_writers(writers):
+    """Release and clear all VideoWriter objects."""
+    for writer in writers.values():
+        writer.release()
+    writers.clear()
+    print("Recording stopped.")
 
 def resize_keep_aspect(frame, max_width, max_height):
     h, w = frame.shape[:2]
     scale = min(max_width / w, max_height / h)
     new_w, new_h = int(w * scale), int(h * scale)
     return cv2.resize(frame, (new_w, new_h))
+
+def draw_rec_indicator(grid, is_recording, frame_count):
+    """
+    Draw a recording status indicator in the top-left corner of the grid.
+    - Recording: pulsing red dot + "REC"
+    - Standby:   grey dot + "STANDBY"
+    """
+    indicator_x, indicator_y = 18, 18
+    dot_radius = 10
+    font = cv2.FONT_HERSHEY_DUPLEX
+    font_scale = 0.65
+    thickness = 2
+
+    if is_recording:
+        # Pulse: alternate opacity every ~15 frames
+        pulse_on = (frame_count // 15) % 2 == 0
+        dot_color = (0, 0, 220) if pulse_on else (0, 0, 130)  # bright/dim red (BGR)
+        label = "REC"
+        text_color = (0, 0, 220)
+    else:
+        dot_color = (100, 100, 100)  # grey
+        label = "STANDBY"
+        text_color = (160, 160, 160)
+
+    # Semi-transparent background pill
+    pill_x1 = indicator_x - dot_radius - 6
+    pill_y1 = indicator_y - dot_radius - 6
+    pill_x2 = indicator_x + dot_radius + 120
+    pill_y2 = indicator_y + dot_radius + 6
+
+    overlay = grid.copy()
+    cv2.rectangle(overlay, (pill_x1, pill_y1), (pill_x2, pill_y2), (20, 20, 20), -1)
+    cv2.addWeighted(overlay, 0.55, grid, 0.45, 0, grid)
+
+    # Dot
+    cv2.circle(grid, (indicator_x, indicator_y), dot_radius, dot_color, -1)
+    cv2.circle(grid, (indicator_x, indicator_y), dot_radius, (255, 255, 255), 1)
+
+    # Label
+    cv2.putText(
+        grid, label,
+        (indicator_x + dot_radius + 8, indicator_y + 6),
+        font, font_scale, text_color, thickness, cv2.LINE_AA
+    )
+
+    # Hint text bottom-left
+    hint = "Press R to toggle recording  |  ESC to quit"
+    cv2.putText(
+        grid, hint,
+        (10, grid.shape[0] - 10),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (180, 180, 180), 1, cv2.LINE_AA
+    )
 
 # ------------------------------
 # MAIN
@@ -106,15 +163,18 @@ def main():
     print(f"Found cameras: {cameras}")
     caps = open_streams(cameras)
 
-    writers = create_writers(caps)
-
     num_cams = len(caps)
     cols = math.ceil(math.sqrt(num_cams))
     rows = math.ceil(num_cams / cols)
 
+    is_recording = False
+    writers = {}
+    frame_count = 0
+
+    print("Press R to start/stop recording. Press ESC to quit.")
+
     while True:
         frames = []
-
         max_cell_w = SCREEN_WIDTH // cols
         max_cell_h = SCREEN_HEIGHT // rows
 
@@ -124,11 +184,10 @@ def main():
             if not ret:
                 frame_display = np.zeros((max_cell_h, max_cell_w, 3), dtype=np.uint8)
             else:
-                # Write original frame (full resolution)
-                if ip in writers:
+                # Write original frame only when recording
+                if is_recording and ip in writers:
                     writers[ip].write(frame)
 
-                # Resize for display
                 frame_display = resize_keep_aspect(frame, max_cell_w, max_cell_h)
 
             frames.append(frame_display)
@@ -136,42 +195,52 @@ def main():
         # Build grid
         grid_rows = []
         for r in range(rows):
-            row_frames = frames[r*cols:(r+1)*cols]
+            row_frames = frames[r * cols:(r + 1) * cols]
 
             while len(row_frames) < cols:
                 row_frames.append(np.zeros((max_cell_h, max_cell_w, 3), dtype=np.uint8))
 
             heights = [f.shape[0] for f in row_frames]
             max_h = max(heights)
-
             padded = [
                 np.pad(f, ((0, max_h - f.shape[0]), (0, 0), (0, 0)), mode='constant')
                 for f in row_frames
             ]
-
             grid_rows.append(np.hstack(padded))
 
         widths = [r.shape[1] for r in grid_rows]
         max_w = max(widths)
-
         padded_rows = [
             np.pad(r, ((0, 0), (0, max_w - r.shape[1]), (0, 0)), mode='constant')
             for r in grid_rows
         ]
-
         grid = np.vstack(padded_rows)
+
+        # Draw indicator overlay
+        draw_rec_indicator(grid, is_recording, frame_count)
+        frame_count += 1
 
         cv2.imshow("Camera Grid", grid)
 
-        if cv2.waitKey(1) & 0xFF == 27:
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == 27:  # ESC — quit
             break
+        elif key == ord('r') or key == ord('R'):
+            if not is_recording:
+                print("Starting recording...")
+                writers = create_writers(caps)
+                is_recording = True
+            else:
+                release_writers(writers)
+                is_recording = False
 
     # Cleanup
+    if is_recording:
+        release_writers(writers)
+
     for _, cap in caps:
         cap.release()
-
-    for writer in writers.values():
-        writer.release()
 
     cv2.destroyAllWindows()
 
