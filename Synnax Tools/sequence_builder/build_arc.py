@@ -301,7 +301,11 @@ def parse_main_sequence(path="test.csv"):
 if __name__ == "__main__":
     # Check if at least one argument (besides the script name) is provided
     if len(sys.argv) > 1:
-        path = sys.argv[1]
-        parse_main_sequence(path)
+        for num in range(len(sys.argv)):
+            if num == 0:
+                continue
+
+            path = sys.argv[num]
+            parse_main_sequence(path)
     else:
         parse_main_sequence()

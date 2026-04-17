@@ -8,8 +8,7 @@ sequence Main {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -22,10 +21,9 @@ sequence Main {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		1 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -40,8 +38,7 @@ sequence Main {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -62,8 +59,7 @@ sequence Redline {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -85,8 +81,7 @@ sequence ESTOP {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -104,8 +99,7 @@ sequence IDLE {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_10_cmd,
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
@@ -119,11 +113,13 @@ func check_redline() u8 {
 	redline_count u8 := 0
 	redline_count += PT_TI_01_med > 402
 	redline_count += PT_GG_01_med > 497
-	redline_count += PT_GO2_04_2_med > 500
-	redline_count += PT_GO2_05_med > 610
+	redline_count += PT_O2_04_med > 500
+	redline_count += PT_O2_05_med > 610
 	redline_count += PT_FU_01_med > 550
 	redline_count += PT_N2_08_med > 1000
 	redline_count += TC_GG_01_med > 1868
+	redline_count += TC_FU_02_med > 300
+	redline_count += TC_GO2_04_med > 300
 	redline_count += TC_GO2_05_med > 300
 	redline_count += TC_H2_03_med > 300
 	redline_count += PT_GO2_03_1_med < -100 
