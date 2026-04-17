@@ -6,6 +6,7 @@ import threading
 import tkinter as tk
 import time
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ------------------------------
 # CONFIGURATION
@@ -34,27 +35,26 @@ root.destroy()
 # ------------------------------
 def scan_rtsp(subnet):
     found = []
-    threads = []
 
     def scan_ip(ip):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(TIMEOUT)
         try:
-            sock.connect((ip, PORT))
-            found.append(ip)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(TIMEOUT)
+                sock.connect((ip, PORT))
+                return ip
         except:
-            pass
-        finally:
-            sock.close()
+            return None
 
-    for i in range(1, 255):
-        ip = f"{subnet}.{i}"
-        t = threading.Thread(target=scan_ip, args=(ip,))
-        threads.append(t)
-        t.start()
+    ips = [f"{subnet}.{i}" for i in range(1, 255)]
 
-    for t in threads:
-        t.join()
+    # LIMIT concurrency here 👇
+    with ThreadPoolExecutor(max_workers=40) as executor:
+        futures = [executor.submit(scan_ip, ip) for ip in ips]
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                found.append(result)
 
     return found
 
