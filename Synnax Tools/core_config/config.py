@@ -285,18 +285,26 @@ for row in rows:
                         raise Exception(f"Voltage/Current Type does not match card type, got {row[4]} but expecting 'V' for {ni_route[0]}")
                     if row[7] not in {"Diff", "NRSE", "RSE"}:
                         raise ValueError("Unrecognized/Invalid NI Voltage AI Terminal Config")
+                    # Compute scale parameters once for reuse in both min/max and LinScale.
+                    # min_val/max_val must be in engineering units (PSI, g, etc.) because
+                    # Synnax's cRIO driver configures NI DAQmx with FROM_CUSTOM_SCALE, which
+                    # interprets these as post-scale values. NI then back-computes the voltage
+                    # range to select the correct ADC gain. Passing raw voltages (e.g. 1–6V)
+                    # causes NI to pick a ±1V ADC range and saturate any signal above ~1V.
+                    _slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5]))
+                    _y_int = _slope * -1 * float(row[5]) + float(row[11])
                     device_chan = ni.AIVoltageChan(
                         channel=channels[row[0]].key,
                         device=module_map[module_name].key,
                         port=int(ni_route[2]),
-                        min_val=float(row[5]),
-                        max_val=float(row[6]),
+                        min_val=_slope * float(row[5]) + _y_int,  # engineering units at MinOut voltage
+                        max_val=_slope * float(row[6]) + _y_int,  # engineering units at MaxOut voltage
                         terminal_config=row[7],
                         custom_scale=ni.LinScale(
-                            slope = float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])), # Map the voltage range to the engineering unit range
-                            y_intercept =  float(row[12]) * (float(row[9]) - float(row[8])) / (float(row[6]) - float(row[5])) * -1 * float(row[5]) + float(row[11]),
-                            pre_scaled_units = "Volts",
-                            scaled_units = row[10],
+                            slope=_slope,
+                            y_intercept=_y_int,
+                            pre_scaled_units="Volts",
+                            scaled_units=row[10],
                         )
                     )
                 case "NI9213":
