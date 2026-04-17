@@ -31,8 +31,19 @@ for element in elements.keys():
             print(f"Channel {label} not found in Synnax, skipping...")
 
         #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"])
+    elif elements[element]["key"] == "setpoint":
+        label = elements[element]["label"]["label"]
 
-    if elements[element]["key"] == "solenoidValve" or elements[element]["key"] == "ballValve" or elements[element]["key"] == "switch" or elements[element]["key"] == "ejectorCompressor":
+        label = label.replace(" ", "_")
+        label = label.replace("-", "_")
+
+        try:
+            elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
+            elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
+        except:
+            print(f"Channel {label} not found in Synnax, skipping...")
+
+    elif elements[element]["key"] == "solenoidValve" or elements[element]["key"] == "ballValve" or elements[element]["key"] == "switch" or elements[element]["key"] == "ejectorCompressor":
         #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
         #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
 

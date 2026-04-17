@@ -121,7 +121,7 @@ func check_redline() u8 {
 	redline_count += PT_GG_01_med > 497
 	redline_count += PT_GO2_04_2_med > 500
 	redline_count += PT_GO2_05_med > 610
-	redline_count += PT_FU_01_med > 550
+	redline_count += PT_FU_02_med > 550
 	redline_count += PT_N2_08_med > 1000
 	redline_count += TC_GG_01_med > 1868
 	redline_count += TC_GO2_05_med > 300

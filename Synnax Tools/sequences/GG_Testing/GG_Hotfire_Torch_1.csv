@@ -1,5 +1,5 @@
 Limits,,,,,,,,,,,,,,
-PT-TI-01,PT-GG-01,PT-H2-03,PT-GO2-04-2,PT-GO2-05,PT-N2-02,PT-N2-07,PT-FU-01,PT-N2-08,TC-GG-01,TC-FU-02,TC-GO2-04-1,TC-GO2-04-2,TC-GO2-05,TC-H2-03
+PT-TI-01,PT-GG-01,PT-H2-03,PT-GO2-04-2,PT-GO2-05,PT-N2-02,PT-N2-07,PT-FU-02,PT-N2-08,TC-GG-01,TC-FU-02,TC-GO2-04-1,TC-GO2-04-2,TC-GO2-05,TC-H2-03
 440,497,2100,630,610,-1,-1,550,1000,1868,300,300,300,300,300
 Timestamp (ms),SN-H2-03,SN-GO2-05,PV-GO2-04,PV-FU-02,SN-N2-11,SN-N2-10-1,SN-N2-10-2,SN-N2-08,SN-N2-09,Spark_Plug,,,,
 Main,,,,,,,,,,,,,,
@@ -16,10 +16,10 @@ Main,,,,,,,,,,,,,,
 2800,0,0,0,0,0,0,0,0,0,0 / purge all off,,,,
 3800,0,0,0,0,1,0,0,0,0,0 / TI purge on,,,,
 4200,0,0,0,0,0,0,0,0,0,0 / purge all off,,,,
-END, Main,,,,,,,,,,,,,
+END,Main,,,,,,,,,,,,,
 Redline,,,,,,,,,,,,,,
 0,0,0,0,0,0,0,0,0,0,0 / close all prop,,,,
 50,0,0,0,0,1,0,0,0,0,0 / ti purge,,,,
 400,0,0,0,0,1,1,1,0,0,0 / purge all on,,,,
 1400,0,0,0,0,0,0,0,0,0,0 / purge all off,,,,
-END, Redline,,,,,,,,,,,,,
+END,Redline,,,,,,,,,,,,,

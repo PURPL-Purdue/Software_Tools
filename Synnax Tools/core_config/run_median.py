@@ -3,7 +3,7 @@ import numpy as np
 import synnax as sy
 from collections import deque
 
-client = sy.Synnax(host="localhost", port=9091, username="synnax", password="seldon", secure=False)
+client = sy.Synnax(host="169.254.71.1", port=9091, username="synnax", password="seldon", secure=False)
 
 with open("median_channels.json") as f:
     cfg = json.load(f)
