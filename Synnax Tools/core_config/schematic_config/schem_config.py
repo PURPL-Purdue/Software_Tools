@@ -1,14 +1,14 @@
 import synnax as sy
 import json
 
-client = sy.Synnax(host="localhost",
+client = sy.Synnax(host="169.254.71.1",
     port=9091,
     username="synnax",
     password="seldon",
     secure=False
 )
 
-with open('../tpump_schem_4-8-26-3.json', 'r') as file:
+with open('./empty_schems/tpump_schem_4-8-26-3.json', 'r') as file:
     data = json.load(file)
 
 elements = data["props"]
@@ -123,5 +123,5 @@ for element in elements.keys():
         except:
             print(f"Channel {label} not found in Synnax, skipping...")
 
-with open("../tpump_schem_4-8-26-3.json", "w") as file:
+with open("./filled_schems/tpump_schem_4-8-26-3.json", "w") as file:
     json.dump(data, file)
