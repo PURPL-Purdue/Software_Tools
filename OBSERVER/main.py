@@ -143,7 +143,7 @@ def draw_rec_indicator(grid, is_recording, frame_count):
     )
 
     # Hint text bottom-left
-    hint = "Press R to toggle recording  |  ESC to quit"
+    hint = "Press R to toggle recording  |  ESC to quit | 1-3 to switch cameras | 0 for all"
     cv2.putText(
         grid, hint,
         (10, grid.shape[0] - 10),
@@ -232,6 +232,8 @@ def main():
             num_cams = len(caps)
             cols = math.ceil(math.sqrt(num_cams))
             rows = math.ceil(num_cams / cols)
+            max_cell_w = SCREEN_WIDTH // cols
+            max_cell_h = SCREEN_HEIGHT // rows
         elif key == ord('1'):
             print("Switching to Camera 1")
             max_cell_w = SCREEN_WIDTH
