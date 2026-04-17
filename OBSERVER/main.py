@@ -162,6 +162,7 @@ def main():
 
     print(f"Found cameras: {cameras}")
     caps = open_streams(cameras)
+    orig_caps = caps.copy()  # Keep original list for recording
 
     num_cams = len(caps)
     cols = math.ceil(math.sqrt(num_cams))
@@ -226,6 +227,35 @@ def main():
 
         if key == 27:  # ESC — quit
             break
+        elif key == ord('0'):
+            caps = orig_caps.copy()  # Show all cameras
+            num_cams = len(caps)
+            cols = math.ceil(math.sqrt(num_cams))
+            rows = math.ceil(num_cams / cols)
+        elif key == ord('1'):
+            print("Switching to Camera 1")
+            max_cell_w = SCREEN_WIDTH
+            max_cell_h = SCREEN_HEIGHT
+            num_cams = 1
+            cols = 1
+            rows = 1
+            caps = [orig_caps[0]]  # Show only first camera
+        elif key == ord('2'):
+            print("Switching to Camera 1")
+            max_cell_w = SCREEN_WIDTH
+            max_cell_h = SCREEN_HEIGHT
+            num_cams = 1
+            cols = 1
+            rows = 1
+            caps = [orig_caps[1]]
+        elif key == ord('3'):
+            print("Switching to Camera 3")
+            max_cell_w = SCREEN_WIDTH
+            max_cell_h = SCREEN_HEIGHT
+            num_cams = 1
+            cols = 1
+            rows = 1
+            caps = [orig_caps[2]]
         elif key == ord('r') or key == ord('R'):
             if not is_recording:
                 print("Starting recording...")
