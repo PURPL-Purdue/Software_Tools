@@ -30,7 +30,7 @@ def export_data_loop():
                     continue
 
                 if frame["start_cmd"][0] == 1:
-                    start_timestamp = sy.TimeStamp.now() - sy.TimeSpan.MINUTE - sy.TimeSpan.SECOND * 45
+                    start_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 30
                     break
 
         print(f"Start timestamp: {start_timestamp}")
@@ -53,7 +53,7 @@ def export_data_loop():
 
         print(f"End timestamp: {end_timestamp}")
 
-        test_nickname = input("Enter a name for this test: (end name with \":e\" if this is the final test)")
+        test_nickname = input("Enter a name for this test (end name with \":e\" if this is the final test): ")
 
         if test_nickname.endswith(":e"):
             test_nickname = test_nickname[:-2]
