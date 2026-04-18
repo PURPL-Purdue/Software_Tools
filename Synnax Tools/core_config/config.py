@@ -512,3 +512,6 @@ def configure_synnax():
     print("Exported median channel config to median_channels.json")
 
     print("Configuration complete. Run run_median.py to start the median channel writer.")
+
+if __name__ == "__main__":
+    configure_synnax()

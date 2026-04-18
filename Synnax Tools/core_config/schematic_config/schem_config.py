@@ -12,7 +12,7 @@ def configure_schematic():
     )
 
     BASE_DIR = Path(__file__).resolve().parent
-    file_path = BASE_DIR / "schematic_config/empty_schems/tpump_schem_4-8-26-3.json"
+    file_path = BASE_DIR / "empty_schems/tpump_schem_4-8-26-3.json"
 
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -142,3 +142,6 @@ def configure_schematic():
 
     with open("./filled_schems/tpump_schem_4-8-26-3.json", "w") as file:
         json.dump(data, file)
+
+if __name__ == "__main__":
+    configure_schematic()

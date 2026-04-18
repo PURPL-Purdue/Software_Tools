@@ -18,6 +18,7 @@ def export_data_loop():
     keep_running = True
 
     while keep_running:
+        print("export_data loaded and running")
         channels = ["start_cmd"]
 
         with client.open_streamer(channels) as streamer:
@@ -29,7 +30,7 @@ def export_data_loop():
                     continue
 
                 if frame["start_cmd"][0] == 1:
-                    start_timestamp = sy.TimeStamp.now()
+                    start_timestamp = sy.TimeStamp.now() - sy.TimeSpan.MINUTE - sy.TimeSpan.SECOND * 45
                     break
 
         print(f"Start timestamp: {start_timestamp}")
@@ -47,7 +48,7 @@ def export_data_loop():
                     continue
 
                 if frame["seq_running"][0] == 0:
-                    end_timestamp = sy.TimeStamp.now()
+                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 45
                     break
 
         print(f"End timestamp: {end_timestamp}")
@@ -135,3 +136,6 @@ def export_data_loop():
 
             for row in rows:
                 writer.writerow(row)
+
+if __name__ == "__main__":
+    export_data_loop()
