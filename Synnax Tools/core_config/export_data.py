@@ -7,12 +7,13 @@ import csv
 from merge_data import merge
 from pathlib import Path
 
-client = sy.Synnax(host="169.254.71.1",
-    port=9091,
-    username="synnax",
-    password="seldon",
-    secure=False
-)
+def export_data_loop():
+    client = sy.Synnax(host="169.254.71.1",
+        port=9091,
+        username="synnax",
+        password="seldon",
+        secure=False
+    )
 
     keep_running = True
 
@@ -96,20 +97,19 @@ client = sy.Synnax(host="169.254.71.1",
 
 
 
-    with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_" + device + ".csv"), "w", newline="") as f:
-        writer = csv.writer(f)
+            with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_" + device + ".csv"), "w", newline="") as f:
+                writer = csv.writer(f)
 
                 for row in zip_longest(*device_cols, fillvalue=""):
                     writer.writerow(row)
 
-merge(os.path.join("output_data", test_dir), test_nickname + "_" + test_timestamp + "_combined.csv")
-
+        merge(os.path.join("output_data", test_dir), test_nickname + "_" + test_timestamp + "_combined.csv")
         rows = []
 
-with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), newline="") as f:
-    reader = csv.reader(f)
-    for row in reader:
-        rows.append(row)
+        with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), newline="") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                rows.append(row)
 
         for i, row in enumerate(rows):
             if i == 0:
@@ -130,8 +130,8 @@ with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_times
                     rows[i - n][j] = rows[i][j]
                     n += 1 
 
-with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), "w", newline="") as f:
-        writer = csv.writer(f)
+        with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), "w", newline="") as f:
+            writer = csv.writer(f)
 
-                for row in rows:
-                    writer.writerow(row)
+            for row in rows:
+                writer.writerow(row)
