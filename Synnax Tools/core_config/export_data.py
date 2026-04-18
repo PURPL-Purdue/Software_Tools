@@ -7,7 +7,7 @@ import csv
 from merge_data import merge
 from pathlib import Path
 
-client = sy.Synnax(host="localhost",
+client = sy.Synnax(host="169.254.71.1",
     port=9091,
     username="synnax",
     password="seldon",
@@ -90,17 +90,17 @@ for device in channels_by_device.keys():
 
 
 
-    with open(os.path.join("output_data", test_dir, test_timestamp + "_" + device + ".csv"), "w", newline="") as f:
+    with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_" + device + ".csv"), "w", newline="") as f:
         writer = csv.writer(f)
 
         for row in zip_longest(*device_cols, fillvalue=""):
             writer.writerow(row)
 
-merge(os.path.join("output_data", test_dir), test_timestamp + "_combined.csv")
+merge(os.path.join("output_data", test_dir), test_nickname + "_" + test_timestamp + "_combined.csv")
 
 rows = []
 
-with open(os.path.join("output_data", test_dir, test_timestamp + "_combined.csv"), newline="") as f:
+with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), newline="") as f:
     reader = csv.reader(f)
     for row in reader:
         rows.append(row)
@@ -124,7 +124,7 @@ for i, row in enumerate(rows):
             rows[i - n][j] = rows[i][j]
             n += 1 
 
-with open(os.path.join("output_data", test_dir, test_timestamp + "_combined.csv"), "w", newline="") as f:
+with open(os.path.join("output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), "w", newline="") as f:
         writer = csv.writer(f)
 
         for row in rows:
