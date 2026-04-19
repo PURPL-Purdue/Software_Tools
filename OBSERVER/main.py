@@ -257,10 +257,10 @@ def main():
 
         if key == 27:  # ESC — quit
             break
-        elif key == ord('d'):
+        elif key == ord('d') or key == ord('D'):
             print("Switching to Day Mode (IR Cut ON)")
             set_ir_cut_mode("DayMode", cameras)
-        elif key == ord('n'):
+        elif key == ord('n') or key == ord('N'):
             print("Switching to Night Mode (IR Cut OFF)")
             set_ir_cut_mode("NightMode", cameras)
         elif key == ord('0'):
