@@ -1,3 +1,4 @@
+from urllib import response
 import cv2
 import numpy as np
 import socket
@@ -5,6 +6,7 @@ import math
 import threading
 import tkinter as tk
 import time
+import requests
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -143,12 +145,40 @@ def draw_rec_indicator(grid, is_recording, frame_count):
     )
 
     # Hint text bottom-left
-    hint = "Press R to toggle recording  |  ESC to quit | 1-3 to switch cameras | 0 for all"
+    hint = "Press R to toggle recording  |  ESC to quit | 1-3 to switch cameras | 0 for all | d for day mode | n for night mode"
     cv2.putText(
         grid, hint,
         (10, grid.shape[0] - 10),
         cv2.FONT_HERSHEY_SIMPLEX, 0.45, (180, 180, 180), 1, cv2.LINE_AA
     )
+
+
+def set_ir_cut_mode(mode: str, ips: list):
+    HEADERS = {
+        "Referer": "",  # filled per camera below
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "text/javascript, text/html, application/xml, text/xml, */*",
+        "Content-type": "application/x-www-form-urlencoded",
+    }
+
+    for cam in ips:
+        session = requests.Session()
+
+        soap_body = f"""<?xml version="1.0"?><soap:Envelope xmlns:soap="http://www.w3.org/2001/12/soap-envelope"><soap:Header>\t<userid>52851dbd7918bbae</userid>\t<passwd>a17faccd02661e4c</passwd></soap:Header><soap:Body>{mode}</soap:Body></soap:Envelope>"""
+        headers = {**HEADERS, "Referer": f"http://{cam}/"}
+
+        print(f"Setting {cam} to {mode}...")
+        response = session.post(
+            f"http://{cam}/setIRCutManual_DayNight",
+            data=soap_body,
+            headers=headers,
+            timeout=5,
+        )
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text}\n")
+    return response
+
 
 # ------------------------------
 # MAIN
@@ -227,6 +257,12 @@ def main():
 
         if key == 27:  # ESC — quit
             break
+        elif key == ord('d') or key == ord('D'):
+            print("Switching to Day Mode (IR Cut ON)")
+            set_ir_cut_mode("DayMode", cameras)
+        elif key == ord('n') or key == ord('N'):
+            print("Switching to Night Mode (IR Cut OFF)")
+            set_ir_cut_mode("NightMode", cameras)
         elif key == ord('0'):
             caps = orig_caps.copy()  # Show all cameras
             num_cams = len(caps)
