@@ -2,7 +2,7 @@ import time
 import synnax as sy
 
 client = sy.Synnax(
-    host="localhost",
+    host="169.254.71.1",
     port=9091,
     username="synnax",
     password="seldon",

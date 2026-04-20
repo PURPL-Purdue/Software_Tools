@@ -168,6 +168,7 @@ def parse_main_sequence(path="test.csv"):
     estop_seq += "\tstage estop_main{\n"
     estop_seq += "\t\tset_authority{value=254},\n"
     estop_seq += "\t\t0 -> seq_running,\n"
+    estop_seq += "\t\t0 -> data_logging,\n"
 
     for device in input_devices:
         estop_seq += "\t\t0 -> " + device + ",\n"
@@ -179,6 +180,7 @@ def parse_main_sequence(path="test.csv"):
     idle_seq = "sequence IDLE {\n"
     idle_seq += "\tstage idle_main{\n"
     idle_seq += "\t\t0 -> seq_running,\n"
+    idle_seq += "\t\t0 -> data_logging,\n"
     idle_seq += "\t\tset_authority{value=0},\n"
 
     for device in input_devices:
@@ -234,6 +236,7 @@ def parse_main_sequence(path="test.csv"):
                 if seq_name == "Main":
                     stage_block += "\t\tset_authority{value=250},\n"
                     stage_block += "\t\t1 -> seq_running,\n"
+                    stage_block += "\t\t1 -> data_logging,\n"
                 elif seq_name == "Redline":
                     stage_block += "\t\tset_authority{value=253},\n"
                     stage_block += "\t\t1 -> redline_triggered,\n"
@@ -265,6 +268,7 @@ def parse_main_sequence(path="test.csv"):
                 stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"
             else:
                 stage_block += "\t\t0 -> seq_running,\n"
+                stage_block += "\t\t0 -> data_logging,\n"
                 stage_block += "\t\twait{duration=1ms} => IDLE\n"
 
             stage_block += "\t}\n\n"
