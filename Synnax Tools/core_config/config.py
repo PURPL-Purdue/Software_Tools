@@ -186,6 +186,13 @@ def configure_synnax():
         retrieve_if_name_exists=True,
     )
 
+    channels["data_logging"] = client.channels.create(
+        name="data_logging",
+        data_type=sy.DataType.UINT8,
+        virtual=True,
+        retrieve_if_name_exists=True,
+    )
+
     with open('channel_config.csv', newline='') as f:
         reader = csv.reader(f)
         for row in reader:

@@ -19,24 +19,24 @@ def export_data_loop():
 
     while keep_running:
         print("export_data loaded and running")
-        channels = ["start_cmd"]
+        channels = ["data_logging"]
 
         with client.open_streamer(channels) as streamer:
             # Loop through the frames in the streamer. Each iteration will block until a new
             # frame is available, then we'll print out the frame of data.
             while True:
                 frame = streamer.read()
-                if not "start_cmd" in frame:
+                if not "data_logging" in frame:
                     continue
 
-                if frame["start_cmd"][0] == 1:
-                    start_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 30
+                if frame["data_logging"][0] == 1:
+                    start_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 35
                     break
 
         print(f"Start timestamp: {start_timestamp}")
         test_timestamp = str(start_timestamp)[:18].replace(":", ".")
                         
-        channels = ["seq_running"]
+        channels = ["data_logging"]
 
         with client.open_streamer(channels) as streamer:
             # Loop through the frames in the streamer. Each iteration will block until a new
@@ -44,11 +44,11 @@ def export_data_loop():
             while True:
                 frame = streamer.read()
 
-                if not "seq_running" in frame:
+                if not "data_logging" in frame:
                     continue
 
-                if frame["seq_running"][0] == 0:
-                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 45
+                if frame["data_logging"][0] == 0:
+                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 40
                     break
 
         print(f"End timestamp: {end_timestamp}")

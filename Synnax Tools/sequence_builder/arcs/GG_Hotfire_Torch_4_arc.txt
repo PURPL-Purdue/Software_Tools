@@ -15,39 +15,7 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=1ms} => next
-	}
-
-	stage ts1 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=499ms} => next
-	}
-
-	stage ts500 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=500ms} => next
+		wait{duration=1000ms} => next
 	}
 
 	stage ts1000 {
@@ -63,10 +31,10 @@ sequence Main {
 		1 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=74ms} => next
+		wait{duration=50ms} => next
 	}
 
-	stage ts1074 {
+	stage ts1050 {
 		1 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -79,7 +47,7 @@ sequence Main {
 		1 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=31ms} => next
+		wait{duration=55ms} => next
 	}
 
 	stage ts1105 {
@@ -143,10 +111,10 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=119ms} => next
+		wait{duration=245ms} => next
 	}
 
-	stage ts1924 {
+	stage ts2050 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -159,7 +127,7 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=858ms} => next
+		wait{duration=732ms} => next
 	}
 
 	stage ts2782 {
