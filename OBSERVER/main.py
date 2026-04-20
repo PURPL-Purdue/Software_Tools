@@ -145,7 +145,7 @@ def draw_rec_indicator(grid, is_recording, frame_count):
     )
 
     # Hint text bottom-left
-    hint = "Press R to toggle recording  |  ESC to quit | 1-3 to switch cameras | 0 for all | d for day mode | n for night mode"
+    hint = "Press R to toggle recording  |  ESC to quit | 1-3 to switch cameras | 0 for all | D for day mode | N for night mode | L for light on | O for light off"
     cv2.putText(
         grid, hint,
         (10, grid.shape[0] - 10),
@@ -179,6 +179,39 @@ def set_ir_cut_mode(mode: str, ips: list):
         print(f"Response: {response.text}\n")
     return response
 
+
+def set_light_mode(mode: str, ips: list):
+    HEADERS = {
+        "Referer": "",  # filled per camera below
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "text/javascript, text/html, application/xml, text/xml, */*",
+        "Content-type": "application/x-www-form-urlencoded",
+    }
+
+    if mode == "On":
+        mode = 100
+    elif mode == "Off":
+        mode = 0
+
+    for cam in ips:
+        session = requests.Session()
+
+        soap_body = f"""<?xml version="1.0"?><soap:Envelope xmlns:soap="http://www.w3.org/2001/12/soap-envelope"><soap:Header>	<userid>52851dbd7918bbae</userid>	<passwd>a17faccd02661e4c</passwd></soap:Header><soap:Body><Video><Capture Brightness="128" Contrast="128" Saturation="128" Sharpness="128" TVSystem="0" forct_antiflicker="0" cropxpix="0" cropypix="0" HFlip="1" VFlip="1" rotate="0" WB_RGB="8421504" BackLight="0" HLC="0" TNF="128" SNF="128" IrcutMode="3" IrcutSensitivity="50" IrcutOpenLedDelay="14" led_brightness_mode="1" led_brightness_value="{mode}" led_brightness_alarm="0" IrcutNightStartTime="18:00:00" IrcutNightEndTime="08:00:00" IrcutKeepColor="0" led_mode="1" ispadvmode="0" bManualGain="0" gainValue="0" WDRMode="0" WDRValue="128" DfrogFlag="0" DfrogValue="128" WDRStartTime="00:00:00" WDREndTime="00:00:00" shutter_mode="0" shutter_mode_night="0" shutter_speed_day="1000" shutter_speed_night="1000" isp_mode_color="0" isp_mode_night="0" videoEncodeMode="0" aov_mode="2" aov_fps="1" light_off_sensitivity="56" face_exposure_sensitivity="60">
+<FishEyeCfg Enable="0" autocrop="0" diameter_ppm="0" center_ppm_x="0" center_ppm_y="0"/>
+</Capture></Video></soap:Body></soap:Envelope>"""
+        headers = {**HEADERS, "Referer": f"http://{cam}/"}
+
+        print(f"Setting {cam} to {mode}...")
+        response = session.post(
+            f"http://{cam}/setMediaVideoCaptureConfig",
+            data=soap_body,
+            headers=headers,
+            timeout=5,
+        )
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text}\n")
+    return response
 
 # ------------------------------
 # MAIN
@@ -263,6 +296,10 @@ def main():
         elif key == ord('n') or key == ord('N'):
             print("Switching to Night Mode (IR Cut OFF)")
             set_ir_cut_mode("NightMode", cameras)
+        elif key == ord('l') or key == ord('L'):
+            set_light_mode("On", cameras)
+        elif key == ord('o') or key == ord('O'):
+            set_light_mode("Off", cameras)
         elif key == ord('0'):
             caps = orig_caps.copy()  # Show all cameras
             num_cams = len(caps)
