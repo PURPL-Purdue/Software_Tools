@@ -3,6 +3,7 @@ sequence Main {
 	stage ts0 {
 		set_authority{value=250},
 		1 -> seq_running,
+		0 -> data_logging,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -176,6 +177,7 @@ sequence Main {
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
 		0 -> seq_running,
+		0 -> data_logging,
 		wait{duration=1ms} => IDLE
 	}
 
@@ -242,6 +244,7 @@ sequence Redline {
 		0 -> Spark_Plug_cmd,
 		estop_cmd => ESTOP,
 		0 -> seq_running,
+		0 -> data_logging,
 		wait{duration=1ms} => IDLE
 	}
 
@@ -253,6 +256,7 @@ sequence ESTOP {
 	stage estop_main{
 		set_authority{value=254},
 		0 -> seq_running,
+		0 -> data_logging,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -271,6 +275,7 @@ sequence ESTOP {
 sequence IDLE {
 	stage idle_main{
 		0 -> seq_running,
+		0 -> data_logging,
 		set_authority{value=0},
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,

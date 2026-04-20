@@ -236,7 +236,7 @@ def parse_main_sequence(path="test.csv"):
                 if seq_name == "Main":
                     stage_block += "\t\tset_authority{value=250},\n"
                     stage_block += "\t\t1 -> seq_running,\n"
-                    stage_block += "\t\t0 -> data_logging,\n"
+                    stage_block += "\t\t1 -> data_logging,\n"
                 elif seq_name == "Redline":
                     stage_block += "\t\tset_authority{value=253},\n"
                     stage_block += "\t\t1 -> redline_triggered,\n"
