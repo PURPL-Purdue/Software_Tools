@@ -3,7 +3,7 @@ sequence Main {
 	stage ts0 {
 		set_authority{value=250},
 		1 -> seq_running,
-		0 -> data_logging,
+		1 -> data_logging,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
