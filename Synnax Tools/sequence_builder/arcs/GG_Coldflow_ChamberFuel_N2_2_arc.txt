@@ -122,17 +122,12 @@ sequence IDLE {
 
 func check_redline() u8 {
 	redline_count u8 := 0
-	redline_count += PT_TI_01_med > 402
-	redline_count += PT_GG_01_med > 497
-	redline_count += PT_GO2_04_med > 500
-	redline_count += PT_GO2_05_med > 610
-	redline_count += PT_FU_02_med > 550
-	redline_count += PT_N2_08_med > 1000
-	redline_count += TC_GG_01_med > 1868
-	redline_count += TC_FU_02_med > 300
-	redline_count += TC_GO2_04_med > 300
-	redline_count += TC_GO2_05_med > 300
-	redline_count += TC_H2_03_med > 300
+	redline_count += PT_TI_01 > 402
+	redline_count += PT_GG_01 > 497
+	redline_count += PT_GO2_04_2 > 500
+	redline_count += PT_GO2_05 > 610
+	redline_count += PT_FU_02 > 550
+	redline_count += PT_N2_08 > 1000
 	return redline_count
 }
 

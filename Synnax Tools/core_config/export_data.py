@@ -48,7 +48,7 @@ def export_data_loop():
                     continue
 
                 if frame["data_logging"][0] == 0:
-                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 40
+                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 45
                     break
 
         print(f"End timestamp: {end_timestamp}")

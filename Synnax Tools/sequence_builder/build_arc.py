@@ -6,6 +6,7 @@ def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
 
 def preprocess_file(path):
+    print("Parsing file: " + path)
     with open(path, newline="") as f:
         cleaned = (strip_comment(line) for line in f)
         reader = csv.reader(cleaned)
@@ -29,16 +30,31 @@ def preprocess_file(path):
                 print(row[0])
                 return (False, "Error: missing Limits flag")
             if i == 1:
+                empty = False
                 for j, value in enumerate(row):
+                    if row[j] == '':
+                        empty = True 
+                        continue
+                    else:
+                        if empty == True:
+                            return(False, "Weird ass empty redline jitsky")
                     row[j] = value.replace("-", "_")
-                redline_devices = row
+                    redline_devices.append(row[j])
             if i == 2:
-                if len(row) != len(redline_devices):
-                    return (False, "Error: number of redline devices does not match number of redlines in row 3")
+                empty = False
                 for j, value in enumerate(row):
+                    if row[j] == '':
+                        empty = True 
+                        continue
+                    else:
+                        if empty == True:
+                            return(False, "Weird ass empty redline jitsky")
+                    redline_values.append(row[j])
+                if len(redline_values) != len(redline_devices):
+                    return (False, "Error: number of redline devices does not match number of redlines in row 3")
+                for j, value in enumerate(redline_values):
                     if int(value) != -1 and int(value) < 0:
                         return (False, "Error: invalid redline value for device " + redline_devices[j])
-                redline_values = row
             
             
             if i == 3:
@@ -153,7 +169,7 @@ def parse_main_sequence(path="test.csv"):
 
     for key in redline_table:
         if not int(redline_table[key]) < 1:
-            redline_func += "\tredline_count += " + key + "_med > " + str(redline_table[key]) +"\n"
+            redline_func += "\tredline_count += " + key + " > " + str(redline_table[key]) +"\n" #"\tredline_count += " + key + "_med > " + str(redline_table[key]) +"\n"
 
     # # TODO GENERALIZE THIS, HARDCODED FOR EREGS LOWER BOUND IN CASE OF DISCONNECT
     # redline_func += "\tredline_count += PT_GO2_03_1_med < -100 \n"
@@ -245,7 +261,7 @@ def parse_main_sequence(path="test.csv"):
                     stage_block += "\t\t1 -> blueline_triggered,\n"
 
             if ("BLUELINE" in row[1]):
-                stage_block += "\t\t" + row[3].replace("-", "_") + "_med" + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
+                stage_block += "\t\t" + row[3].replace("-", "_") + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n" # "\t\t" + row[3].replace("-", "_") + "_med" + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
 
                 if rows[i + 1][0] != "END":
                     stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"

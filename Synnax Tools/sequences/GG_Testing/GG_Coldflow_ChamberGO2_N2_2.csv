@@ -1,0 +1,12 @@
+Limits,,,,,,,,,,
+PT-TI-01,PT-GG-01,PT-H2-03,PT-GO2-04-2,PT-GO2-05,PT-N2-02,PT-N2-07,PT-FU-02,PT-N2-08,,
+402,497,-1,500,610,-1,-1,550,1000,,
+Timestamp (ms),SN-H2-03,SN-GO2-05,PV-GO2-04,PV-FU-02,SN-N2-11,SN-N2-10-1,SN-N2-10-2,SN-N2-08,SN-N2-09,Spark_Plug
+Main,,,,,,,,,,
+0,0,0,0,0,0,0,0,0,0,0 / Rest state
+1,0,0,0,0,0,0,1,0,0,0 /Main fuel Purge start
+1000,0,0,0,0,0,0,0,0,0,0 / purge 1 end
+END,Main,,,,,,,,,
+Redline,,,,,,,,,,
+0,0,0,0,0,0,0,0,0,0,0 / close all prop
+END,Redline,,,,,,,,,

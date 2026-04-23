@@ -12,7 +12,8 @@ def configure_schematic():
     )
 
     BASE_DIR = Path(__file__).resolve().parent
-    file_path = BASE_DIR / "empty_schems/tpump_schem_4-22-26-1.json"
+    file_name = "tpump_schem_4-23-26-2.json"
+    file_path = BASE_DIR / "empty_schems" / file_name
 
     with open(file_path, 'r') as file:
         data = json.load(file)
@@ -153,7 +154,7 @@ def configure_schematic():
             except:
                 print(f"Channel {label} not found in Synnax, skipping...")
 
-    with open("./filled_schems/tpump_schem_4-22-26-1.json", "w") as file:
+    with open("./filled_schems/" + file_name, "w") as file:
         json.dump(data, file)
 
 if __name__ == "__main__":
