@@ -26,6 +26,7 @@ def configure_schematic():
             
             label = elements[element]["label"]["label"]
             label = label.replace("-", "_")
+            label = label.replace(" ", "_")
 
             if label[:2] == "SN" or label[:2] == "ER":
                 label = label + "_state"
