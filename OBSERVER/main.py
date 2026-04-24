@@ -1,3 +1,4 @@
+from datetime import datetime
 from urllib import response
 import cv2
 import numpy as np
@@ -224,6 +225,25 @@ def draw_rec_indicator(grid, is_recording, frame_count):
     )
 
 
+def set_time(ips: list):
+    HEADERS = {
+        "Referer": "",
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "text/javascript, text/html, application/xml, text/xml, */*",
+        "Content-type": "application/x-www-form-urlencoded",
+    }
+
+    for cam in ips:
+        session = requests.Session()
+        soap_body = f"""<?xml version="1.0"?><soap:Envelope xmlns:soap="http://www.w3.org/2001/12/soap-envelope"><soap:Header>	<userid>52851dbd7918bbae</userid>	<passwd>a17faccd02661e4c</passwd></soap:Header><soap:Body><TimeConfig TimeMode="MANUAL" TimeZone="480" CurTime="{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"><NTPConfig ServerIP="ipvs.icamra.com" ServerPort="123" RefreshInterval="60"/><SummerTime enable="0" auto="0" offset="60" ><start month="3" week="3" weekday="0" hour="2" /><end month="11" week="2" weekday="0" hour="2" /></SummerTime></TimeConfig></soap:Body></soap:Envelope>"""
+        headers = {**HEADERS, "Referer": f"http://{cam}/"}
+        print(f"Setting time")
+        response = session.post(f"http://{cam}/setTimeConfig", data=soap_body, headers=headers, timeout=5)
+        print(f"Status: {response.status_code}")
+        print(f"Response: {response.text}\n")
+    return response
+
 def set_ir_cut_mode(mode: str, ips: list):
     HEADERS = {
         "Referer": "",
@@ -294,7 +314,8 @@ def main():
     frame_count = 0
 
     print("Press R to start/stop recording. Press ESC to quit.")
-
+    set_time(cameras)
+    
     while True:
         frames = []
         max_cell_w = SCREEN_WIDTH // cols
@@ -348,6 +369,9 @@ def main():
 
         if key == 27:  # ESC
             break
+        elif key == ord('t') or key == ord('T'):
+            print("Syncing camera times... ")
+            set_time(cameras)
         elif key == ord('d') or key == ord('D'):
             print("Switching to Day Mode (IR Cut ON)")
             set_ir_cut_mode("DayMode", cameras)
