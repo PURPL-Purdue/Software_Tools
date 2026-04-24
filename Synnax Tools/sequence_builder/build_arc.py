@@ -211,6 +211,8 @@ def parse_main_sequence(path="test.csv"):
     main_sequence = "authority 250\n"
     main_sequence += "sequence Main {\n"
 
+    blueline_num = 1
+
     with open(path, newline="") as f:
 
         cleaned = (strip_comment(line) for line in f)
@@ -262,6 +264,9 @@ def parse_main_sequence(path="test.csv"):
 
             if ("BLUELINE" in row[1]):
                 stage_block += "\t\t" + row[3].replace("-", "_") + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n" # "\t\t" + row[3].replace("-", "_") + "_med" + (" > " if row[2] == "UPPER" else " < ") + row[4] + " => " + row[5] + ",\n"
+
+                stage_block += "\t\t" + str(blueline_num) + " -> blueline_count,\n"
+                blueline_num += 1
 
                 if rows[i + 1][0] != "END":
                     stage_block += "\t\twait{duration=" + str(int(rows[i+1][0]) - int(row[0])) + "ms} => next\n"

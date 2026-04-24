@@ -1,0 +1,154 @@
+{"level":"info","ts":1776984365.894006,"caller":"start/cmd.go:74","msg":"\u001b[34mSynnax version 0.54.4 starting\u001b[0m"}
+{"level":"info","ts":1776984365.8955069,"caller":"start/start.go:146","msg":"starting synnax node","version":"0.54.4","commit":"c2a439c5757c6f4a95a512d761bbc00da60e4ca1","build":1775856975}
+{"level":"info","ts":1776984365.9542458,"caller":"start/start.go:184","msg":"using working directory","dir":"/Users/brettpaden/Library/Caches/synnax/core/workdir/35759"}
+{"level":"info","ts":1776984365.954344,"logger":"storage","caller":"storage/layer.go:193","msg":"starting with memory-backed storage. no data will be persisted"}
+{"level":"info","ts":1776984365.958107,"logger":"storage.kv","caller":"v2@v2.1.4/version_set.go:206","msg":"[JOB 1] MANIFEST created 000001"}
+{"level":"info","ts":1776984365.959892,"logger":"storage.kv","caller":"storage/layer.go:394","msg":"Found 0 WALs"}
+{"level":"info","ts":1776984365.960758,"logger":"storage.kv","caller":"v2@v2.1.4/open.go:1318","msg":"[JOB 1] WAL created 000002"}
+{"level":"info","ts":1776984365.9610822,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 014"}
+{"level":"info","ts":1776984365.961277,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 015"}
+{"level":"info","ts":1776984365.9612842,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 016"}
+{"level":"info","ts":1776984365.961291,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 017"}
+{"level":"info","ts":1776984365.9612968,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 018"}
+{"level":"info","ts":1776984365.961303,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 019"}
+{"level":"info","ts":1776984365.961309,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 020"}
+{"level":"info","ts":1776984365.961319,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 021"}
+{"level":"info","ts":1776984365.9613252,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 022"}
+{"level":"info","ts":1776984365.96133,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 023"}
+{"level":"info","ts":1776984365.9613361,"logger":"storage.kv","caller":"v2@v2.1.4/format_major_version.go:491","msg":"upgraded to format version: 024"}
+{"level":"info","ts":1776984365.9624069,"logger":"storage.kv","caller":"v2@v2.1.4/table_stats.go:130","msg":"[JOB 2] all initial table stats loaded"}
+{"level":"info","ts":1776984365.96657,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:91","msg":"beginning cluster startup"}
+{"level":"info","ts":1776984365.966974,"logger":"distribution.aspen.cluster","caller":"cluster/cluster.go:126","msg":"no peers provided, bootstrapping new cluster","cluster_key":"8297087d-f1bf-422f-adc8-2df59612efa1"}
+{"level":"info","ts":1776984365.96703,"logger":"distribution.aspen.cluster.gossip","caller":"gossip/gossip.go:40","msg":"starting cluster gossip"}
+{"level":"info","ts":1776984365.96892,"logger":"distribution.aspen.kv.recovery","caller":"kv/recovery.go:102","msg":"recovering lost key-value operations","peer_node_count":0}
+{"level":"info","ts":1776984365.969887,"logger":"distribution.ontology","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984365.9699268,"logger":"distribution.ontology","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.970054,"logger":"distribution.ontology","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.970062,"logger":"distribution.ontology","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.970311,"logger":"distribution.ontology","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.971401,"logger":"distribution.ontology","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984365.971425,"logger":"distribution.ontology","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.971437,"logger":"distribution.ontology","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.971444,"logger":"distribution.ontology","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.971453,"logger":"distribution.ontology","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.973241,"logger":"distribution.group","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984365.973257,"logger":"distribution.group","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.973268,"logger":"distribution.group","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.9732742,"logger":"distribution.group","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.9733179,"logger":"distribution.group","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.973443,"logger":"distribution","caller":"verification/service.go:146","msg":"new license key registered, limit is 5000 channels"}
+{"level":"info","ts":1776984365.974067,"logger":"distribution.channel","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984365.9740741,"logger":"distribution.channel","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.974082,"logger":"distribution.channel","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.974088,"logger":"distribution.channel","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.9741309,"logger":"distribution.channel","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.980083,"logger":"service.auth","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys"]}
+{"level":"info","ts":1776984365.980097,"logger":"service.auth","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.980105,"logger":"service.auth","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.980785,"logger":"service.user","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984365.9807959,"logger":"service.user","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.9808052,"logger":"service.user","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984365.980811,"logger":"service.user","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984365.9809668,"logger":"service.user","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.038789,"logger":"service.rbac.policy","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","v0.policy_conversion","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.038819,"logger":"service.rbac.policy","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.03883,"logger":"service.rbac.policy","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.038835,"logger":"service.rbac.policy","caller":"migrate/migrate.go:83","msg":"running migration","migration":"v0.policy_conversion"}
+{"level":"info","ts":1776984366.038846,"logger":"service.rbac.policy","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"v0.policy_conversion"}
+{"level":"info","ts":1776984366.038851,"logger":"service.rbac.policy","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.038892,"logger":"service.rbac.policy","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0396118,"logger":"service.rbac.role","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.039626,"logger":"service.rbac.role","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.039635,"logger":"service.rbac.role","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.039642,"logger":"service.rbac.role","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.039653,"logger":"service.rbac.role","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.041825,"logger":"service.rbac","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["v0.permission_assignment"]}
+{"level":"info","ts":1776984366.041844,"logger":"service.rbac","caller":"migrate/migrate.go:83","msg":"running migration","migration":"v0.permission_assignment"}
+{"level":"info","ts":1776984366.04191,"logger":"service.rbac","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"v0.permission_assignment"}
+{"level":"info","ts":1776984366.0431192,"logger":"service.label","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.043134,"logger":"service.label","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.043148,"logger":"service.label","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.043155,"logger":"service.label","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.043162,"logger":"service.label","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0446799,"logger":"service.ranger","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","range_groups_1","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.044693,"logger":"service.ranger","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.044706,"logger":"service.ranger","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.044713,"logger":"service.ranger","caller":"migrate/migrate.go:83","msg":"running migration","migration":"range_groups_1"}
+{"level":"info","ts":1776984366.044888,"logger":"service.ranger","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"range_groups_1"}
+{"level":"info","ts":1776984366.044894,"logger":"service.ranger","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0449011,"logger":"service.ranger","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.045681,"logger":"service.kv","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys"]}
+{"level":"info","ts":1776984366.04569,"logger":"service.kv","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0456991,"logger":"service.kv","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.046912,"logger":"service.workspace","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0469189,"logger":"service.workspace","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.046925,"logger":"service.workspace","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0469298,"logger":"service.workspace","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.046936,"logger":"service.workspace","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.048125,"logger":"service.schematic","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0481348,"logger":"service.schematic","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0481422,"logger":"service.schematic","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.048147,"logger":"service.schematic","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.048186,"logger":"service.schematic","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.048285,"logger":"service.schematic.symbol","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys"]}
+{"level":"info","ts":1776984366.048293,"logger":"service.schematic.symbol","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.048301,"logger":"service.schematic.symbol","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.048843,"logger":"service.lineplot","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.048852,"logger":"service.lineplot","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.048859,"logger":"service.lineplot","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.048864,"logger":"service.lineplot","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0488708,"logger":"service.lineplot","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.049102,"logger":"service.log","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0491168,"logger":"service.log","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.049123,"logger":"service.log","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0491278,"logger":"service.log","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.049134,"logger":"service.log","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.049223,"logger":"service.table","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0492318,"logger":"service.table","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.049242,"logger":"service.table","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.049248,"logger":"service.table","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.049255,"logger":"service.table","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.051237,"logger":"service.rack","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","v0.embedded_rack_rename_status_backfill","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.051245,"logger":"service.rack","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.051253,"logger":"service.rack","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.05126,"logger":"service.rack","caller":"migrate/migrate.go:83","msg":"running migration","migration":"v0.embedded_rack_rename_status_backfill"}
+{"level":"info","ts":1776984366.051428,"logger":"service.rack","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"v0.embedded_rack_rename_status_backfill"}
+{"level":"info","ts":1776984366.051442,"logger":"service.rack","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.051456,"logger":"service.rack","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.053886,"logger":"service.device","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","v0.status_backfill","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0539021,"logger":"service.device","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.053909,"logger":"service.device","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0539148,"logger":"service.device","caller":"migrate/migrate.go:83","msg":"running migration","migration":"v0.status_backfill"}
+{"level":"info","ts":1776984366.053983,"logger":"service.device","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"v0.status_backfill"}
+{"level":"info","ts":1776984366.0539908,"logger":"service.device","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.054106,"logger":"service.device","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.055151,"logger":"service.task","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","v0.status_backfill","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.0551748,"logger":"service.task","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.055184,"logger":"service.task","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.05519,"logger":"service.task","caller":"migrate/migrate.go:83","msg":"running migration","migration":"v0.status_backfill"}
+{"level":"info","ts":1776984366.055229,"logger":"service.task","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"v0.status_backfill"}
+{"level":"info","ts":1776984366.055236,"logger":"service.task","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.05527,"logger":"service.task","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0562382,"logger":"service.arc","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys","msgpack_to_orc"]}
+{"level":"info","ts":1776984366.056248,"logger":"service.arc","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.056256,"logger":"service.arc","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.056261,"logger":"service.arc","caller":"migrate/migrate.go:83","msg":"running migration","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.0563,"logger":"service.arc","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"msgpack_to_orc"}
+{"level":"info","ts":1776984366.056996,"logger":"service.channel.calculation.graph","caller":"graph/graph.go:124","msg":"hydrating calculated channel graph","count":0}
+{"level":"info","ts":1776984366.057387,"logger":"service.channel.calculation.graph","caller":"graph/graph.go:201","msg":"hydration complete","channels":0,"invalid":0,"repairs":0,"passes":1}
+{"level":"info","ts":1776984366.058018,"logger":"service.alias","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys"]}
+{"level":"info","ts":1776984366.058039,"logger":"service.alias","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0580459,"logger":"service.alias","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0591328,"logger":"service.view","caller":"migrate/migrate.go:77","msg":"running migrations","already_applied":[],"pending":["normalize_keys"]}
+{"level":"info","ts":1776984366.0591419,"logger":"service.view","caller":"migrate/migrate.go:83","msg":"running migration","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.059149,"logger":"service.view","caller":"migrate/migrate.go:88","msg":"migration completed","migration":"normalize_keys"}
+{"level":"info","ts":1776984366.0604658,"logger":"service.framer.calculation","caller":"calculation/service.go:143","msg":"calculation service initialized"}
+{"level":"info","ts":1776984366.072484,"logger":"service.driver","caller":"driver/driver.go:95","msg":"created Core driver rack","key":"65538"}
+{"level":"info","ts":1776984366.072685,"logger":"service.driver","caller":"driver/driver.go:232","msg":"configuring existing tasks","count":0}
+{"level":"info","ts":1776984366.077617,"logger":"server","caller":"server/server.go:121","msg":"starting server","port":9090}
+{"level":"info","ts":1776984366.07982,"logger":"driver","caller":"driver/enabled.go:125","msg":"starting embedded driver"}
+{"level":"info","ts":1776984366.571092,"logger":"driver","caller":"log/log.go:126","msg":": Symbol not found: __ZNSt13exception_ptr31__from_native_exception_pointerEPv","caller":""}
+{"level":"info","ts":1776984366.571635,"logger":"driver","caller":"log/log.go:126","msg":"Referenced from: <56EE7D41-7EFF-3EE2-B330-4F94B8799AB6> /Users/brettpaden/Library/Caches/synnax/core/workdir/35759/driver/driver (built for macOS 15.5 which is newer than running OS)","caller":""}
+{"level":"info","ts":1776984366.571733,"logger":"driver","caller":"log/log.go:126","msg":"Expected in:     <08C4329E-407F-310B-B037-75A8020B2963> /usr/lib/libc++.1.dylib","caller":""}
+{"level":"error","ts":1776984366.571427,"logger":"driver","caller":"signal/routine.go:292","msg":"routine failed","key":"sy.driver.wait","state":"RoutineStateFailed","running":["stderr_pipe"],"error":"signal: abort trap"}
+{"level":"warn","ts":1776984366.572269,"logger":"driver","caller":"driver/enabled.go:208","msg":"embedded driver process exited unexpectedly","error":"signal: abort trap"}
