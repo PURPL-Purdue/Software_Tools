@@ -25,6 +25,22 @@ sequence Main {
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=249ms} => next
+	}
+
+	stage ts250 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
 		1 -> SN_N2_10_1_cmd,
 		1 -> SN_N2_10_2_cmd,
 		1 -> SN_N2_08_cmd,
@@ -32,7 +48,7 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=499ms} => next
+		wait{duration=250ms} => next
 	}
 
 	stage ts500 {
@@ -48,10 +64,10 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=500ms} => next
+		wait{duration=1189ms} => next
 	}
 
-	stage ts1000 {
+	stage ts1689 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -64,10 +80,10 @@ sequence Main {
 		1 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=24ms} => next
+		wait{duration=1ms} => next
 	}
 
-	stage ts1024 {
+	stage ts1690 {
 		1 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -80,10 +96,10 @@ sequence Main {
 		1 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=55ms} => next
+		wait{duration=35ms} => next
 	}
 
-	stage ts1079 {
+	stage ts1725 {
 		1 -> SN_H2_03_cmd,
 		1 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -96,14 +112,42 @@ sequence Main {
 		1 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=221ms} => next
+		wait{duration=175ms} => next
 	}
 
-	stage ts1300 {
+	stage ts1900 {
 		1 -> SN_H2_03_cmd,
 		1 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=25ms} => next
+	}
+
+	stage ts1925 {
+		PT_TI_01 < 100 => SEQONE,
+		1 -> blueline_count,
+		wait{duration=25ms} => next
+	}
+
+	stage ts1950 {
+		PT_TI_01 > 400 => SEQONE,
+		2 -> blueline_count,
+		wait{duration=85ms} => next
+	}
+
+	stage ts2035 {
+		1 -> SN_H2_03_cmd,
+		1 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
 		0 -> SN_N2_11_cmd,
 		0 -> SN_N2_10_1_cmd,
 		0 -> SN_N2_10_2_cmd,
@@ -115,33 +159,7 @@ sequence Main {
 		wait{duration=80ms} => next
 	}
 
-	stage ts1380 {
-		PT_TI_01_med < 100 => SEQONE,
-		wait{duration=50ms} => next
-	}
-
-	stage ts1430 {
-		PT_TI_01_med > 400 => SEQONE,
-		wait{duration=50ms} => next
-	}
-
-	stage ts1480 {
-		1 -> SN_H2_03_cmd,
-		1 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=176ms} => next
-	}
-
-	stage ts1656 {
+	stage ts2115 {
 		1 -> SN_H2_03_cmd,
 		1 -> SN_GO2_05_cmd,
 		1 -> PV_GO2_04_cmd,
@@ -154,95 +172,96 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=360ms} => next
+		wait{duration=235ms} => next
 	}
 
-	stage ts2016 {
-		PT_GG_01_med < 100 => SEQTWO,
-		wait{duration=51ms} => next
-	}
-
-	stage ts2067 {
-		1 -> SN_H2_03_cmd,
-		1 -> SN_GO2_05_cmd,
-		1 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=12ms} => next
-	}
-
-	stage ts2079 {
-		1 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		1 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=131ms} => next
-	}
-
-	stage ts2210 {
-		1 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		1 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		1 -> SN_N2_10_1_cmd,
-		1 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=143ms} => next
-	}
-
-	stage ts2353 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		1 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		1 -> SN_N2_10_1_cmd,
-		1 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=563ms} => next
-	}
-
-	stage ts2916 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		1 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
-		1 -> SN_N2_10_1_cmd,
-		1 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
+	stage ts2350 {
+		PT_GG_01 < 100 => SEQTWO,
+		3 -> blueline_count,
 		wait{duration=20ms} => next
 	}
 
-	stage ts2936 {
+	stage ts2370 {
+		1 -> SN_H2_03_cmd,
+		1 -> SN_GO2_05_cmd,
+		1 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=5ms} => next
+	}
+
+	stage ts2375 {
+		1 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		1 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=100ms} => next
+	}
+
+	stage ts2475 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		1 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=905ms} => next
+	}
+
+	stage ts3380 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		1 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=35ms} => next
+	}
+
+	stage ts3415 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		1 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=25ms} => next
+	}
+
+	stage ts3440 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -255,10 +274,10 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=2000ms} => next
+		wait{duration=2560ms} => next
 	}
 
-	stage ts4936 {
+	stage ts6000 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -274,7 +293,39 @@ sequence Main {
 		wait{duration=1500ms} => next
 	}
 
-	stage ts6436 {
+	stage ts7500 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=500ms} => next
+	}
+
+	stage ts8000 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=1000ms} => next
+	}
+
+	stage ts9000 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -290,7 +341,7 @@ sequence Main {
 		wait{duration=2000ms} => next
 	}
 
-	stage ts8436 {
+	stage ts11000 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -300,22 +351,6 @@ sequence Main {
 		0 -> SN_N2_10_2_cmd,
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=2000ms} => next
-	}
-
-	stage ts10436 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
@@ -341,10 +376,10 @@ sequence Redline {
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		estop_cmd => ESTOP,
-		wait{duration=100ms} => next
+		wait{duration=25ms} => next
 	}
 
-	stage ts100 {
+	stage ts25 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -356,10 +391,10 @@ sequence Redline {
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		estop_cmd => ESTOP,
-		wait{duration=50ms} => next
+		wait{duration=225ms} => next
 	}
 
-	stage ts150 {
+	stage ts250 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -371,10 +406,25 @@ sequence Redline {
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		estop_cmd => ESTOP,
-		wait{duration=1350ms} => next
+		wait{duration=500ms} => next
 	}
 
-	stage ts1500 {
+	stage ts750 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		estop_cmd => ESTOP,
+		wait{duration=1250ms} => next
+	}
+
+	stage ts2000 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -384,21 +434,6 @@ sequence Redline {
 		0 -> SN_N2_10_2_cmd,
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		estop_cmd => ESTOP,
-		wait{duration=1500ms} => next
-	}
-
-	stage ts3000 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		estop_cmd => ESTOP,
 		0 -> seq_running,
@@ -456,10 +491,26 @@ sequence SEQONE {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=1000ms} => next
+		wait{duration=500ms} => next
 	}
 
-	stage ts1600 {
+	stage ts1100 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=1400ms} => next
+	}
+
+	stage ts2500 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -469,22 +520,6 @@ sequence SEQONE {
 		0 -> SN_N2_10_2_cmd,
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=2000ms} => next
-	}
-
-	stage ts3600 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
@@ -527,39 +562,39 @@ sequence SEQTWO {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=1000ms} => next
-	}
-
-	stage ts1020 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
-		wait{duration=1000ms} => next
-	}
-
-	stage ts2020 {
-		0 -> SN_H2_03_cmd,
-		0 -> SN_GO2_05_cmd,
-		0 -> PV_GO2_04_cmd,
-		0 -> PV_FU_02_cmd,
-		0 -> SN_N2_11_cmd,
-		0 -> SN_N2_10_1_cmd,
-		0 -> SN_N2_10_2_cmd,
-		1 -> SN_N2_08_cmd,
-		1 -> SN_N2_09_cmd,
-		0 -> Spark_Plug_cmd,
-		interval{period=10ms} -> check_redline{} => Redline,
-		estop_cmd => ESTOP,
 		wait{duration=1980ms} => next
+	}
+
+	stage ts2000 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=1500ms} => next
+	}
+
+	stage ts3500 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=500ms} => next
 	}
 
 	stage ts4000 {
@@ -567,7 +602,7 @@ sequence SEQTWO {
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
 		0 -> PV_FU_02_cmd,
-		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_11_cmd,
 		1 -> SN_N2_10_1_cmd,
 		1 -> SN_N2_10_2_cmd,
 		1 -> SN_N2_08_cmd,
@@ -586,8 +621,8 @@ sequence SEQTWO {
 		0 -> SN_N2_11_cmd,
 		0 -> SN_N2_10_1_cmd,
 		0 -> SN_N2_10_2_cmd,
-		0 -> SN_N2_08_cmd,
-		0 -> SN_N2_09_cmd,
+		1 -> SN_N2_08_cmd,
+		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
@@ -643,18 +678,15 @@ sequence IDLE {
 
 func check_redline() u8 {
 	redline_count u8 := 0
-	redline_count += PT_TI_01_med > 480
-	redline_count += PT_GG_01_med > 480
-	redline_count += PT_GO2_04_2_med > 630
-	redline_count += PT_GO2_05_med > 610
-	redline_count += PT_FU_02_med > 1000
-	redline_count += PT_N2_08_med > 1200
-	redline_count += TC_GG_01_med > 1868
-	redline_count += TC_FU_02_med > 300
-	redline_count += TC_GO2_04_1_med > 300
-	redline_count += TC_GO2_04_2_med > 300
-	redline_count += TC_GO2_05_med > 300
-	redline_count += TC_H2_03_med > 300
+	redline_count += PT_TI_01 > 480
+	redline_count += PT_GG_01 > 480
+	redline_count += PT_GO2_04_2 > 630
+	redline_count += PT_GO2_05 > 610
+	redline_count += PT_FU_02 > 1000
+	redline_count += PT_N2_08 > 1200
+	redline_count += TC_GG_01 > 1000
+	redline_count += TC_GO2_04_1 > 300
+	redline_count += PT_GO2_04_1 > 2000
 	return redline_count
 }
 

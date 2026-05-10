@@ -10,7 +10,7 @@ HIGH_SR = 150000 # Hz
 TC_SR = 80 # Hz 
 
 STATE_SR = 150 # Hz
-STREAM_SR = 10 # Hz
+STREAM_SR = 50 # Hz
 TC_STREAM_SR = 20 # Hz, thermocouple data is slower changing so can stream at a lower rate to reduce CPU load and risk of dropped samples
 
 CHASSIS = "NI-cRIO-9056-01DCA43E"
@@ -188,6 +188,13 @@ def configure_synnax():
 
     channels["data_logging"] = client.channels.create(
         name="data_logging",
+        data_type=sy.DataType.UINT8,
+        virtual=True,
+        retrieve_if_name_exists=True,
+    )
+
+    channels["blueline_count"] = client.channels.create(
+        name="blueline_count",
         data_type=sy.DataType.UINT8,
         virtual=True,
         retrieve_if_name_exists=True,

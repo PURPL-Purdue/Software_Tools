@@ -3,7 +3,7 @@ import numpy as np
 import synnax as sy
 from collections import deque
 
-def run_median_chan(stop_event):
+def run_median_chan():
     client = sy.Synnax(host="169.254.71.1", port=9091, username="synnax", password="seldon", secure=False)
 
     with open("median_channels.json") as f:
@@ -22,8 +22,8 @@ def run_median_chan(stop_event):
     ) as writer:
         with client.open_streamer(all_ai_channels_names) as streamer:
             for frame in streamer:
-                if stop_event.is_set():
-                    break
+                # if stop_event.is_set():
+                #     break
 
                 write_data = {}
                 for channel_name in all_ai_channels_names:
@@ -40,3 +40,6 @@ def run_median_chan(stop_event):
 
                 if write_data:
                     writer.write(write_data)
+
+if __name__ == "__main__":
+    run_median_chan()

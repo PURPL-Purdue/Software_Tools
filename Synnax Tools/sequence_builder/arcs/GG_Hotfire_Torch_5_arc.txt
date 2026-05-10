@@ -80,7 +80,19 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=312ms} => next
+		wait{duration=21ms} => next
+	}
+
+	stage ts1371 {
+		PT_TI_01 < 110 => SEQONE,
+		1 -> blueline_count,
+		wait{duration=21ms} => next
+	}
+
+	stage ts1392 {
+		PT_TI_01 > 220 => SEQONE,
+		2 -> blueline_count,
+		wait{duration=270ms} => next
 	}
 
 	stage ts1662 {
@@ -112,10 +124,10 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=119ms} => next
+		wait{duration=245ms} => next
 	}
 
-	stage ts1924 {
+	stage ts2050 {
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -128,7 +140,7 @@ sequence Main {
 		0 -> Spark_Plug_cmd,
 		interval{period=10ms} -> check_redline{} => Redline,
 		estop_cmd => ESTOP,
-		wait{duration=858ms} => next
+		wait{duration=732ms} => next
 	}
 
 	stage ts2782 {
@@ -250,6 +262,77 @@ sequence Redline {
 
 }
 
+sequence SEQONE {
+	stage ts0 {
+		set_authority{value=250},
+		1 -> blueline_triggered,
+		1 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_08_cmd,
+		0 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=50ms} => next
+	}
+
+	stage ts50 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_08_cmd,
+		0 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=950ms} => next
+	}
+
+	stage ts1000 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		1 -> SN_N2_11_cmd,
+		1 -> SN_N2_10_1_cmd,
+		1 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_08_cmd,
+		0 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		wait{duration=500ms} => next
+	}
+
+	stage ts1500 {
+		0 -> SN_H2_03_cmd,
+		0 -> SN_GO2_05_cmd,
+		0 -> PV_GO2_04_cmd,
+		0 -> PV_FU_02_cmd,
+		0 -> SN_N2_11_cmd,
+		0 -> SN_N2_10_1_cmd,
+		0 -> SN_N2_10_2_cmd,
+		0 -> SN_N2_08_cmd,
+		0 -> SN_N2_09_cmd,
+		0 -> Spark_Plug_cmd,
+		interval{period=10ms} -> check_redline{} => Redline,
+		estop_cmd => ESTOP,
+		0 -> seq_running,
+		0 -> data_logging,
+		wait{duration=1ms} => IDLE
+	}
+
+}
+
 
 
 sequence ESTOP {
@@ -295,19 +378,14 @@ sequence IDLE {
 
 func check_redline() u8 {
 	redline_count u8 := 0
-	redline_count += PT_TI_01_med > 440
-	redline_count += PT_GG_01_med > 497
-	redline_count += PT_H2_03_med > 2100
-	redline_count += PT_GO2_04_2_med > 630
-	redline_count += PT_GO2_05_med > 610
-	redline_count += PT_FU_02_med > 550
-	redline_count += PT_N2_08_med > 1000
-	redline_count += TC_GG_01_med > 1868
-	redline_count += TC_FU_02_med > 300
-	redline_count += TC_GO2_04_1_med > 300
-	redline_count += TC_GO2_04_2_med > 300
-	redline_count += TC_GO2_05_med > 300
-	redline_count += TC_H2_03_med > 300
+	redline_count += PT_TI_01 > 440
+	redline_count += PT_GG_01 > 497
+	redline_count += PT_H2_03 > 2100
+	redline_count += PT_GO2_04_2 > 630
+	redline_count += PT_GO2_05 > 610
+	redline_count += PT_FU_02 > 550
+	redline_count += PT_N2_08 > 1000
+	redline_count += TC_GG_01 > 1868
 	return redline_count
 }
 
