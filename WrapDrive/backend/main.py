@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from bson import ObjectId
 from dotenv import load_dotenv
 import os
+import certifi
 
 load_dotenv()
 
@@ -17,13 +18,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-client = AsyncIOMotorClient(os.getenv("MONGODB_URL"))
+client = AsyncIOMotorClient(
+    os.getenv("MONGODB_URL"),
+    tlsCAFile=certifi.where()
+)
+
 db = client.inventory
 
 
 class Item(BaseModel):
     name: str
-    quantity: int
+    total_quantity: int
+    storage_quantity: int
+    biggie_k_quantity: int = 0
+    airbreathing_quantity: int = 0
+    tachyon_quantity: int = 0
+    damaged_quantity: int = 0
+    damaged_objects: dict = {}
     description: str = ""
 
 
@@ -59,7 +70,19 @@ async def add_item(item: Item):
     # TODO: Implement this function
     return
 
+@app.put("/items/{id}")
+async def update_item(id: str, item: Item):
+    result = await db.items.update_one({"_id": ObjectId(id)}, {"$set": item.model_dump()})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"ok": True}
 
+@app.get("/items/{id}")
+async def get_item(id: str):
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return serialize(item)
 
 @app.delete("/items/{id}")
 async def delete_item(id: str):
