@@ -597,10 +597,22 @@ input, select {
 .table .actions-center { justify-content: center; }
 .table .cell-name { font-weight: 500; }
 .table .cell-desc { color: var(--text-dim); font-size: 13px; }
+.table .cell-cats {
+  white-space: normal;
+  overflow: visible;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
 
-/* Horizontal scroll fallback for cards that hold tables */
+/* Horizontal scroll fallback for cards that hold tables.
+   Fixed cols (160+64+64+132 = 420) + ~80px min for description
+   + ~140px min for categories (one chip + add). */
 .category-card { overflow-x: auto; }
-.category-card .table { min-width: 720px; }
+.category-card .table { min-width: 660px; }
+
+/* Actions cell never lets buttons collapse */
+.table .actions { flex-wrap: nowrap; }
+.table .actions .btn-icon { flex: 0 0 30px; }
 
 .table-empty {
   padding: 36px 16px;

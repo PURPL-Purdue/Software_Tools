@@ -804,12 +804,12 @@ export default function App() {
                     </div>
                     <table className="table">
                       <colgroup>
-                        <col style={{ width: '18%' }} />
-                        <col style={{ width: '9%' }} />
-                        <col style={{ width: '9%' }} />
-                        <col style={{ width: '24%' }} />
-                        <col style={{ width: '26%' }} />
-                        <col style={{ width: '14%' }} />
+                        <col style={{ width: '160px' }} />
+                        <col style={{ width: '64px' }} />
+                        <col style={{ width: '64px' }} />
+                        <col />
+                        <col />
+                        <col style={{ width: '132px' }} />
                       </colgroup>
                       <thead>
                         <tr>
@@ -830,7 +830,7 @@ export default function App() {
                             <td className="center num">{item.total_quantity}</td>
                             <td className="center num">{item.storage_quantity ?? 0}</td>
                             <td className="cell-desc" title={item.description || ''}>{item.description}</td>
-                            <td>
+                            <td className="cell-cats">
                               <CategoryPicker
                                 compact
                                 selected={item.categories || []}
