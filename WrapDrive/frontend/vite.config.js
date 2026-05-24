@@ -10,6 +10,7 @@ export default defineConfig({
       '/create_item': 'http://localhost:8000',
       '/add_item': 'http://localhost:8000',
       '/search': 'http://localhost:8000',
+      '/categories': 'http://localhost:8000',
     },
   },
 })

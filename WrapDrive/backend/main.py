@@ -45,6 +45,15 @@ class Item(BaseModel):
     damaged_quantity: int = 0
     damaged_objects: dict = {}
     description: str = ""
+    categories: list[str] = []
+
+
+class Category(BaseModel):
+    name: str
+
+
+class CategoriesChangeRequest(BaseModel):
+    categories: list[str]
 
 
 class MoveRequest(BaseModel):
@@ -69,7 +78,13 @@ class DamageRequest(BaseModel):
 
 
 def serialize(item) -> dict:
-    return {**item, "id": str(item["_id"]), "_id": None}
+    cats = item.get("categories") or []
+    if isinstance(cats, str):
+        cats = [cats]
+    legacy = item.get("category")
+    if legacy and legacy not in cats:
+        cats = [*cats, legacy]
+    return {**item, "categories": cats, "id": str(item["_id"]), "_id": None}
 
 
 @app.get("/items")
@@ -120,6 +135,45 @@ async def delete_item(id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"ok": True}
+
+@app.get("/categories")
+async def list_categories():
+    cats = await db.categories.find().sort("name", 1).to_list(200)
+    return [{"id": str(c["_id"]), "name": c["name"]} for c in cats]
+
+
+@app.post("/categories")
+async def create_category(cat: Category):
+    name = cat.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Name is required")
+    if await db.categories.find_one({"name": name}):
+        raise HTTPException(status_code=400, detail="Category already exists")
+    result = await db.categories.insert_one({"name": name})
+    return {"id": str(result.inserted_id), "name": name}
+
+
+@app.delete("/categories/{name}")
+async def delete_category(name: str):
+    result = await db.categories.delete_one({"name": name})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    await db.items.update_many({"categories": name}, {"$pull": {"categories": name}})
+    await db.items.update_many({"category": name}, {"$unset": {"category": ""}})
+    return {"ok": True}
+
+
+@app.post("/items/{id}/categories")
+async def set_item_categories(id: str, req: CategoriesChangeRequest):
+    deduped = list(dict.fromkeys(req.categories))
+    result = await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"categories": deduped}, "$unset": {"category": ""}},
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"ok": True}
+
 
 @app.post("/items/{id}/add")
 async def add_to_item(id: str, req: AddRequest):

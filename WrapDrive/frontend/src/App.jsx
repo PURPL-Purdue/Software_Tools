@@ -11,6 +11,64 @@ const LOCATIONS = [
 const NON_DAMAGED_LOCATIONS = LOCATIONS.filter(l => l.field !== 'damaged_quantity')
 const LOCATION_LABEL = Object.fromEntries(LOCATIONS.map(l => [l.field, l.label]))
 
+const ICON_PATHS = {
+  plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
+  eye: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>,
+  trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>,
+}
+
+function Icon({ name, size = 15 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {ICON_PATHS[name]}
+    </svg>
+  )
+}
+
+function CategoryPicker({ selected, categories, onChange, compact = false }) {
+  const available = categories.filter(c => !selected.includes(c.name))
+  return (
+    <div className={`cat-picker${compact ? ' compact' : ''}`}>
+      {selected.length === 0 && <span className="cat-picker-empty">—</span>}
+      {selected.map(name => (
+        <span key={name} className="mini-chip">
+          {name}
+          <button
+            type="button"
+            className="mini-chip-x"
+            aria-label={`Remove ${name}`}
+            onClick={() => onChange(selected.filter(n => n !== name))}
+          >×</button>
+        </span>
+      ))}
+      {available.length > 0 && (
+        <select
+          className="cat-picker-add"
+          value=""
+          onChange={e => {
+            if (e.target.value) onChange([...selected, e.target.value])
+          }}
+        >
+          <option value="">+</option>
+          {available.map(c => (
+            <option key={c.id} value={c.name}>{c.name}</option>
+          ))}
+        </select>
+      )}
+    </div>
+  )
+}
+
 function Brand() {
   return (
     <div className="brand">
@@ -34,8 +92,21 @@ const DEFAULT_MOVE = {
 export default function App() {
   const [page, setPage] = useState('list')
   const [items, setItems] = useState([])
+  const [categories, setCategories] = useState([])
   const [selectedItem, setSelectedItem] = useState(null)
-  const [form, setForm] = useState({ name: '', quantity: 0, description: '' })
+  const [form, setForm] = useState({ name: '', quantity: 0, description: '', categories: [] })
+  const [newCategory, setNewCategory] = useState('')
+  const [categoryError, setCategoryError] = useState('')
+  const [hiddenCategories, setHiddenCategories] = useState(() => new Set())
+
+  const toggleFilter = (name) => {
+    setHiddenCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }
 
   const [moveModal, setMoveModal] = useState(false)
   const [moveForm, setMoveForm] = useState(DEFAULT_MOVE)
@@ -54,6 +125,7 @@ export default function App() {
   const [damagedMoveError, setDamagedMoveError] = useState('')
 
   const fetchItems = () => fetch('/items').then(r => r.json()).then(setItems)
+  const fetchCategories = () => fetch('/categories').then(r => r.json()).then(setCategories)
 
   const refreshSelected = async (id) => {
     const fresh = await fetch(`/items/${id}`).then(r => r.json())
@@ -61,7 +133,7 @@ export default function App() {
     return fresh
   }
 
-  useEffect(() => { fetchItems() }, [])
+  useEffect(() => { fetchItems(); fetchCategories() }, [])
 
   const createItem = async (e) => {
     e.preventDefault()
@@ -74,8 +146,56 @@ export default function App() {
         total_quantity: Number(form.quantity),
       }),
     })
-    setForm({ name: '', quantity: 0, description: '' })
+    setForm({ name: '', quantity: 0, description: '', categories: [] })
     fetchItems()
+  }
+
+  const createCategory = async (e) => {
+    e.preventDefault()
+    setCategoryError('')
+    const name = newCategory.trim()
+    if (!name) return
+    const res = await fetch('/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setCategoryError(data.detail ?? 'Failed to create category.')
+      return
+    }
+    setNewCategory('')
+    fetchCategories()
+  }
+
+  const deleteCategory = async (name) => {
+    if (!window.confirm(`Delete category "${name}"? Items in it will be moved to Uncategorized.`)) return
+    const res = await fetch(`/categories/${encodeURIComponent(name)}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.detail ?? 'Failed to delete category.')
+      return
+    }
+    fetchCategories()
+    fetchItems()
+  }
+
+  const setItemCategories = async (id, categoriesList) => {
+    const res = await fetch(`/items/${id}/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categories: categoriesList }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.detail ?? 'Failed to change categories.')
+      return
+    }
+    fetchItems()
+    if (selectedItem && selectedItem.id === id) {
+      await refreshSelected(id)
+    }
   }
 
   const deleteItem = async (id, name) => {
@@ -578,48 +698,164 @@ export default function App() {
           value={form.description}
           onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
         />
+        <div className="input-cat">
+          <CategoryPicker
+            selected={form.categories}
+            categories={categories}
+            onChange={cats => setForm(f => ({ ...f, categories: cats }))}
+          />
+        </div>
         <button type="submit" className="btn btn-primary">+ Add New Item</button>
       </form>
 
-      <div className="card">
-        <table className="table">
-          <colgroup>
-            <col style={{ width: '24%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '28%' }} />
-            <col style={{ width: '24%' }} />
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th className="center">Quantity</th>
-              <th className="center">Available</th>
-              <th>Description</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr><td colSpan={5} className="table-empty">No items yet — add one above.</td></tr>
-            ) : items.map(item => (
-              <tr key={item.id}>
-                <td style={{ fontWeight: 500 }}>{item.name}</td>
-                <td className="center num">{item.total_quantity}</td>
-                <td className="center num">{item.storage_quantity ?? 0}</td>
-                <td style={{ color: 'var(--text-dim)' }}>{item.description}</td>
-                <td>
-                  <div className="actions">
-                    <button className="btn btn-sm btn-outline-soft" onClick={() => openAddModal(item.id)}>Add</button>
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => openInfo(item)}>Info</button>
-                    <button className="btn btn-sm btn-outline-rose" onClick={() => deleteItem(item.id, item.name)}>Delete</button>
+      {(() => {
+        const knownCategoryNames = categories.map(c => c.name)
+        const groups = new Map()
+        knownCategoryNames.forEach(name => groups.set(name, []))
+        groups.set('Uncategorized', [])
+        items.forEach(item => {
+          const itemCats = (item.categories || []).filter(c => knownCategoryNames.includes(c))
+          if (itemCats.length === 0) {
+            groups.get('Uncategorized').push(item)
+          } else {
+            itemCats.forEach(cat => groups.get(cat).push(item))
+          }
+        })
+
+        const allGroupNames = Array.from(groups.keys())
+        const entries = Array.from(groups.entries()).filter(
+          ([name, group]) => name !== 'Uncategorized' || group.length > 0
+        )
+        const visibleEntries = entries.filter(([name]) => !hiddenCategories.has(name))
+
+        return (
+          <div className="main-layout">
+            <aside className="sidebar">
+              <div className="card">
+                <div className="card-header">
+                  <h3>Categories</h3>
+                </div>
+                <div className="card-body cat-list vertical">
+                  {categories.length === 0 ? (
+                    <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>No categories yet.</span>
+                  ) : categories.map(c => (
+                    <span key={c.id} className="cat-chip">
+                      <span className="cat-chip-name">{c.name}</span>
+                      <button
+                        className="cat-chip-x"
+                        onClick={() => deleteCategory(c.name)}
+                        aria-label={`Delete ${c.name}`}
+                      >×</button>
+                    </span>
+                  ))}
+                </div>
+                <form onSubmit={createCategory} className="cat-create-footer">
+                  <input
+                    className="input"
+                    placeholder="New category"
+                    value={newCategory}
+                    onChange={e => setNewCategory(e.target.value)}
+                  />
+                  <button type="submit" className="btn btn-outline-primary btn-sm">+ Add</button>
+                </form>
+                {categoryError && <div className="error" style={{ margin: '0 16px 16px' }}>{categoryError}</div>}
+              </div>
+
+              <div className="card">
+                <div className="card-header">
+                  <h3>Filter</h3>
+                  {hiddenCategories.size > 0 && (
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setHiddenCategories(new Set())}
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <div className="card-body filter-list">
+                  {allGroupNames.map(name => (
+                    <label key={name} className="filter-row">
+                      <input
+                        type="checkbox"
+                        checked={!hiddenCategories.has(name)}
+                        onChange={() => toggleFilter(name)}
+                      />
+                      <span>{name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </aside>
+
+            <div className="main-content">
+              {items.length === 0 && categories.length === 0 ? (
+                <div className="card"><div className="table-empty">No items yet — add one above.</div></div>
+              ) : visibleEntries.length === 0 ? (
+                <div className="card"><div className="table-empty">All categories are filtered out.</div></div>
+              ) : (
+                visibleEntries.map(([catName, group]) => (
+                  <div className="card category-card" key={catName}>
+                    <div className="card-header">
+                      <h3>{catName}</h3>
+                      <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+                        {group.length} {group.length === 1 ? 'item' : 'items'}
+                      </span>
+                    </div>
+                    <table className="table">
+                      <colgroup>
+                        <col style={{ width: '18%' }} />
+                        <col style={{ width: '9%' }} />
+                        <col style={{ width: '9%' }} />
+                        <col style={{ width: '24%' }} />
+                        <col style={{ width: '26%' }} />
+                        <col style={{ width: '14%' }} />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th className="center">Total</th>
+                          <th className="center">Avail.</th>
+                          <th>Description</th>
+                          <th>Categories</th>
+                          <th className="center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {group.length === 0 ? (
+                          <tr><td colSpan={6} className="table-empty">No items in this category.</td></tr>
+                        ) : group.map(item => (
+                          <tr key={`${catName}-${item.id}`}>
+                            <td className="cell-name">{item.name}</td>
+                            <td className="center num">{item.total_quantity}</td>
+                            <td className="center num">{item.storage_quantity ?? 0}</td>
+                            <td className="cell-desc" title={item.description || ''}>{item.description}</td>
+                            <td>
+                              <CategoryPicker
+                                compact
+                                selected={item.categories || []}
+                                categories={categories}
+                                onChange={cats => setItemCategories(item.id, cats)}
+                              />
+                            </td>
+                            <td>
+                              <div className="actions actions-center">
+                                <button className="btn btn-icon btn-outline-soft" title="Add items" onClick={() => openAddModal(item.id)}><Icon name="plus" /></button>
+                                <button className="btn btn-icon btn-outline-primary" title="View details" onClick={() => openInfo(item)}><Icon name="eye" /></button>
+                                <button className="btn btn-icon btn-outline-rose" title="Delete item" onClick={() => deleteItem(item.id, item.name)}><Icon name="trash" /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                ))
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {addModal}
     </div>
