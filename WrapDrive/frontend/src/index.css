@@ -102,11 +102,26 @@ input, select {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.brand-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
 }
 
 .split {

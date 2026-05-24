@@ -11,6 +11,18 @@ const LOCATIONS = [
 const NON_DAMAGED_LOCATIONS = LOCATIONS.filter(l => l.field !== 'damaged_quantity')
 const LOCATION_LABEL = Object.fromEntries(LOCATIONS.map(l => [l.field, l.label]))
 
+function Brand() {
+  return (
+    <div className="brand">
+      <span className="brand-purpl">PURPL</span>
+      <span className="brand-logo">
+        <img src="/favicon.svg" alt="" className="brand-icon" />
+        WrapDrive
+      </span>
+    </div>
+  )
+}
+
 const DEFAULT_MOVE = {
   from_location: 'storage_quantity',
   to_location: 'biggie_k_quantity',
@@ -273,7 +285,7 @@ export default function App() {
           <button className="btn btn-ghost" onClick={() => { setPage('list'); setSelectedItem(null) }}>
             ← Back to inventory
           </button>
-          <div className="brand">WrapDrive</div>
+          <Brand />
         </div>
 
         <div className="summary">
@@ -541,7 +553,7 @@ export default function App() {
     <div className="page">
       <div className="page-header">
         <h1>Inventory</h1>
-        <div className="brand">WrapDrive</div>
+        <Brand />
       </div>
 
       <form onSubmit={createItem} className="create-form">
