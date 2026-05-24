@@ -1,9 +1,14 @@
 #!/bin/bash
 
+echo "Stopping old instances..."
+
+pm2 delete backend 2>/dev/null
+pm2 delete frontend 2>/dev/null
+
 echo "Starting backend..."
 
 cd backend || exit
-pm2 start "venv/bin/uvicorn main:app --reload" --name backend
+pm2 start "venv/bin/uvicorn main:app" --name backend
 
 echo "Starting frontend..."
 
