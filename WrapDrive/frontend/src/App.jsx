@@ -1,290 +1,615 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect } from 'react'
+
+const LOCATIONS = [
+  { field: 'storage_quantity', label: 'Storage' },
+  { field: 'biggie_k_quantity', label: 'Biggie K' },
+  { field: 'airbreathing_quantity', label: 'Airbreathing' },
+  { field: 'tachyon_quantity', label: 'Tachyon' },
+  { field: 'damaged_quantity', label: 'Damaged' },
+]
+
+const NON_DAMAGED_LOCATIONS = LOCATIONS.filter(l => l.field !== 'damaged_quantity')
+const LOCATION_LABEL = Object.fromEntries(LOCATIONS.map(l => [l.field, l.label]))
+
+const DEFAULT_MOVE = {
+  from_location: 'storage_quantity',
+  to_location: 'biggie_k_quantity',
+  quantity: 1,
+  serial: '',
+  description: '',
+}
 
 export default function App() {
+  const [page, setPage] = useState('list')
   const [items, setItems] = useState([])
+  const [selectedItem, setSelectedItem] = useState(null)
   const [form, setForm] = useState({ name: '', quantity: 0, description: '' })
-  const [expandedId, setExpandedId] = useState(null)
-  const [details, setDetails] = useState({})
-  const [updateStatus, setUpdateStatus] = useState({})
 
-  const fetchItems = () =>
-    fetch('/items').then(r => r.json()).then(setItems)
+  const [moveModal, setMoveModal] = useState(false)
+  const [moveForm, setMoveForm] = useState(DEFAULT_MOVE)
+  const [moveError, setMoveError] = useState('')
+
+  const [addItemId, setAddItemId] = useState(null)
+  const [addQty, setAddQty] = useState(1)
+  const [addError, setAddError] = useState('')
+
+  const [removeModal, setRemoveModal] = useState(false)
+  const [removeForm, setRemoveForm] = useState({ location: 'storage_quantity', quantity: 1 })
+  const [removeError, setRemoveError] = useState('')
+
+  const [damagedMoveSerial, setDamagedMoveSerial] = useState(null)
+  const [damagedMoveLocation, setDamagedMoveLocation] = useState('storage_quantity')
+  const [damagedMoveError, setDamagedMoveError] = useState('')
+
+  const fetchItems = () => fetch('/items').then(r => r.json()).then(setItems)
+
+  const refreshSelected = async (id) => {
+    const fresh = await fetch(`/items/${id}`).then(r => r.json())
+    setSelectedItem(fresh)
+    return fresh
+  }
 
   useEffect(() => { fetchItems() }, [])
 
   const createItem = async (e) => {
     e.preventDefault()
-    await fetch('http://localhost:8000/create_item', {
+    await fetch('/create_item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, storage_quantity: Number(form.quantity), total_quantity: Number(form.quantity) }),
+      body: JSON.stringify({
+        ...form,
+        storage_quantity: Number(form.quantity),
+        total_quantity: Number(form.quantity),
+      }),
     })
     setForm({ name: '', quantity: 0, description: '' })
     fetchItems()
   }
 
-  const deleteItem = async (id) => {
-    await fetch(`http://localhost:8000/items/${id}`, { method: 'DELETE' })
+  const deleteItem = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
+    await fetch(`/items/${id}`, { method: 'DELETE' })
     fetchItems()
   }
 
-  const openInfo = async (id) => {
-
-    // collapse if already open
-    if (expandedId === id) {
-      setExpandedId(null)
-      return
-    }
-
-    // only fetch once
-    if (!details[id]) {
-      const item = await fetch(
-        `http://localhost:8000/items/${id}`
-      ).then(r => r.json())
-
-      setDetails(prev => ({
-        ...prev,
-        [id]: item
-      }))
-    }
-
-    setExpandedId(id)
+  const openInfo = async (item) => {
+    const fresh = await fetch(`/items/${item.id}`).then(r => r.json())
+    setSelectedItem(fresh)
+    setPage('info')
   }
 
-  const updateQuantity = async (id) => {
-    setUpdateStatus(prev => ({
-      ...prev,
-      [id]: "loading"
-    }));
+  const openAddModal = (id) => {
+    setAddItemId(id)
+    setAddQty(1)
+    setAddError('')
+  }
 
-    try {
-      const itemDetails = details[id];
+  const closeAddModal = () => {
+    setAddItemId(null)
+    setAddQty(1)
+    setAddError('')
+  }
 
-      await fetch(`http://localhost:8000/items/${id}`, {
-        method: 'PUT',
+  const submitAdd = async (e) => {
+    e.preventDefault()
+    setAddError('')
+    const res = await fetch(`/items/${addItemId}/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ quantity: Number(addQty) }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setAddError(data.detail ?? 'Failed to add items.')
+      return
+    }
+    fetchItems()
+    if (selectedItem && selectedItem.id === addItemId) {
+      await refreshSelected(addItemId)
+    }
+    closeAddModal()
+  }
+
+  const submitRemove = async (e) => {
+    e.preventDefault()
+    setRemoveError('')
+    const res = await fetch(`/items/${selectedItem.id}/remove`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...removeForm, quantity: Number(removeForm.quantity) }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setRemoveError(data.detail ?? 'Remove failed.')
+      return
+    }
+    await refreshSelected(selectedItem.id)
+    fetchItems()
+    setRemoveModal(false)
+    setRemoveForm({ location: 'storage_quantity', quantity: 1 })
+  }
+
+  const submitMove = async (e) => {
+    e.preventDefault()
+    setMoveError('')
+
+    const isDamage = moveForm.to_location === 'damaged_quantity'
+
+    let res
+    if (isDamage) {
+      if (!moveForm.serial.trim()) {
+        setMoveError('Serial number is required.')
+        return
+      }
+      res = await fetch(`/items/${selectedItem.id}/damage`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...itemDetails,
-          total_quantity:
-            (itemDetails.storage_quantity ?? 0) +
-            (itemDetails.biggie_k_quantity ?? 0) +
-            (itemDetails.airbreathing_quantity ?? 0) +
-            (itemDetails.tachyon_quantity ?? 0) +
-            (itemDetails.damaged_quantity ?? 0)
+          serial: moveForm.serial.trim(),
+          location: moveForm.from_location,
+          description: moveForm.description,
         }),
-      });
-
-      setUpdateStatus(prev => ({
-        ...prev,
-        [id]: "success"
-      }));
-
-      fetchItems();
-
-      // optional: clear success after delay
-      setTimeout(() => {
-        setUpdateStatus(prev => ({
-          ...prev,
-          [id]: "idle"
-        }));
-      }, 1500);
-
-    } catch (err) {
-      setUpdateStatus(prev => ({
-        ...prev,
-        [id]: "error"
-      }));
+      })
+    } else {
+      if (moveForm.from_location === moveForm.to_location) {
+        setMoveError('Source and destination must be different.')
+        return
+      }
+      res = await fetch(`/items/${selectedItem.id}/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from_location: moveForm.from_location,
+          to_location: moveForm.to_location,
+          quantity: Number(moveForm.quantity),
+        }),
+      })
     }
-  };
 
-  const moveItem = (id, field, delta) => {
-    setDetails(prev => {
-      const item = prev[id];
-      if (!item) return prev;
+    if (!res.ok) {
+      const data = await res.json()
+      setMoveError(data.detail ?? 'Move failed.')
+      return
+    }
+    await refreshSelected(selectedItem.id)
+    fetchItems()
+    setMoveModal(false)
+    setMoveForm(DEFAULT_MOVE)
+  }
 
-      const storage = item.storage_quantity ?? 0;
-      const current = item[field] ?? 0;
+  const openDamagedMove = (serial, currentLocation) => {
+    setDamagedMoveSerial(serial)
+    setDamagedMoveLocation(currentLocation)
+    setDamagedMoveError('')
+  }
 
-      // If moving INTO a category (delta > 0), require storage
-      if (delta > 0 && storage <= 0) return prev;
+  const submitDamagedMove = async (e) => {
+    e.preventDefault()
+    setDamagedMoveError('')
+    const res = await fetch(
+      `/items/${selectedItem.id}/damaged/${encodeURIComponent(damagedMoveSerial)}/move`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location: damagedMoveLocation }),
+      }
+    )
+    if (!res.ok) {
+      const data = await res.json()
+      setDamagedMoveError(data.detail ?? 'Move failed.')
+      return
+    }
+    await refreshSelected(selectedItem.id)
+    setDamagedMoveSerial(null)
+  }
 
-      const newStorage = storage - delta;
-      const newField = current + delta;
+  const restoreDamaged = async (serial) => {
+    if (!window.confirm(`Unmark damaged item "${serial}"? It will be returned to its location.`)) return
+    const res = await fetch(
+      `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}/restore`,
+      { method: 'POST' }
+    )
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.detail ?? 'Restore failed.')
+      return
+    }
+    await refreshSelected(selectedItem.id)
+    fetchItems()
+  }
 
-      // prevent invalid states
-      if (newStorage < 0 || newField < 0) return prev;
+  const deleteDamaged = async (serial) => {
+    if (!window.confirm(`Delete damaged item "${serial}"? This cannot be undone.`)) return
+    const res = await fetch(
+      `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}`,
+      { method: 'DELETE' }
+    )
+    if (!res.ok) {
+      const data = await res.json()
+      alert(data.detail ?? 'Delete failed.')
+      return
+    }
+    await refreshSelected(selectedItem.id)
+    fetchItems()
+  }
 
-      return {
-        ...prev,
-        [id]: {
-          ...item,
-          storage_quantity: newStorage,
-          [field]: newField
-        }
-      };
-    });
-  };
+  const addModal = addItemId !== null && (
+    <div className="overlay" onClick={closeAddModal}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <div className="modal-title">Add Items to Storage</div>
+        </div>
+        <form onSubmit={submitAdd}>
+          <div className="modal-body">
+            <div className="field">
+              <label className="field-label">Quantity to Add</label>
+              <input
+                type="number"
+                min={1}
+                required
+                className="input"
+                value={addQty}
+                onChange={e => setAddQty(e.target.value)}
+              />
+            </div>
+            {addError && <div className="error">{addError}</div>}
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-ghost" onClick={closeAddModal}>Cancel</button>
+            <button type="submit" className="btn btn-soft">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
 
-  const changeQuantity = (id, field, delta) => {
-    setDetails(prev => {
-      const item = prev[id];
-      if (!item) return prev;
+  if (page === 'info' && selectedItem) {
+    const damagedList = Object.values(selectedItem.damaged_objects || {})
+    const isDamageMove = moveForm.to_location === 'damaged_quantity'
 
-      const current = item[field] ?? 0;
-      const next = Math.max(0, current + delta);
+    return (
+      <div className="page">
+        <div className="page-header">
+          <button className="btn btn-ghost" onClick={() => { setPage('list'); setSelectedItem(null) }}>
+            ← Back to inventory
+          </button>
+          <div className="brand">WrapDrive</div>
+        </div>
 
-      return {
-        ...prev,
-        [id]: {
-          ...item,
-          [field]: next
-        }
-      };
-    });
-  };
+        <div className="summary">
+          <h1 className="summary-name">{selectedItem.name}</h1>
+        </div>
+        {selectedItem.description && <p className="summary-desc">{selectedItem.description}</p>}
+
+        <div className="total-card">
+          <span className="label">Total Quantity</span>
+          <span className="value">{selectedItem.total_quantity}</span>
+        </div>
+
+        <div className="card" style={{ marginBottom: 20 }}>
+          <div className="card-header"><h3>Inventory by Location</h3></div>
+          <table className="table">
+            <colgroup>
+              {LOCATIONS.map(({ field }) => <col key={field} style={{ width: '20%' }} />)}
+            </colgroup>
+            <thead>
+              <tr>
+                {LOCATIONS.map(({ field, label }) => (
+                  <th key={field} className="center">{label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {LOCATIONS.map(({ field }) => (
+                  <td key={field} className="center num" style={{ fontSize: 16, fontWeight: 600 }}>
+                    {selectedItem[field] ?? 0}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div className="card" style={{ marginBottom: 20 }}>
+          <div className="card-header">
+            <h3>Damaged Objects</h3>
+            <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
+              {damagedList.length} {damagedList.length === 1 ? 'item' : 'items'}
+            </span>
+          </div>
+          {damagedList.length === 0 ? (
+            <div className="table-empty">No damaged items recorded.</div>
+          ) : (
+            <table className="table">
+              <colgroup>
+                <col style={{ width: '22%' }} />
+                <col style={{ width: '18%' }} />
+                <col style={{ width: '35%' }} />
+                <col style={{ width: '25%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Serial</th>
+                  <th>Location</th>
+                  <th>Description</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {damagedList.map(obj => (
+                  <tr key={obj.serial}>
+                    <td>{obj.serial}</td>
+                    <td>{LOCATION_LABEL[obj.location] ?? obj.location}</td>
+                    <td style={{ color: 'var(--text-dim)' }}>{obj.description}</td>
+                    <td>
+                      <div className="actions">
+                        <button className="btn btn-sm btn-outline-soft" onClick={() => restoreDamaged(obj.serial)}>Unmark</button>
+                        <button className="btn btn-sm btn-outline-primary" onClick={() => openDamagedMove(obj.serial, obj.location)}>Move</button>
+                        <button className="btn btn-sm btn-outline-rose" onClick={() => deleteDamaged(obj.serial)}>Remove</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <div className="btn-row">
+          <button className="btn btn-outline-soft" onClick={() => openAddModal(selectedItem.id)}>+ Add Items</button>
+          <button className="btn btn-outline-primary" onClick={() => { setMoveModal(true); setMoveError('') }}>Move Items</button>
+          <button className="btn btn-outline-rose" onClick={() => { setRemoveModal(true); setRemoveError('') }}>Remove Items</button>
+        </div>
+
+        {removeModal && (
+          <div className="overlay" onClick={() => { setRemoveModal(false); setRemoveError('') }}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header"><div className="modal-title">Remove Items</div></div>
+              <form onSubmit={submitRemove}>
+                <div className="modal-body">
+                  <div className="field">
+                    <label className="field-label">Location</label>
+                    <select
+                      className="select"
+                      value={removeForm.location}
+                      onChange={e => setRemoveForm(f => ({ ...f, location: e.target.value }))}
+                    >
+                      {LOCATIONS.map(({ field, label }) => (
+                        <option key={field} value={field}>{label} ({selectedItem[field] ?? 0})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label className="field-label">Quantity to Remove</label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      className="input"
+                      value={removeForm.quantity}
+                      onChange={e => setRemoveForm(f => ({ ...f, quantity: e.target.value }))}
+                    />
+                  </div>
+                  {removeError && <div className="error">{removeError}</div>}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => { setRemoveModal(false); setRemoveForm({ location: 'storage_quantity', quantity: 1 }); setRemoveError('') }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-rose">Remove</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {moveModal && (
+          <div className="overlay" onClick={() => { setMoveModal(false); setMoveForm(DEFAULT_MOVE); setMoveError('') }}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">{isDamageMove ? 'Mark as Damaged' : 'Move Item'}</div>
+              </div>
+              <form onSubmit={submitMove}>
+                <div className="modal-body">
+                  <div className="field">
+                    <label className="field-label">{isDamageMove ? 'Location' : 'From'}</label>
+                    <select
+                      className="select"
+                      value={moveForm.from_location}
+                      onChange={e => setMoveForm(f => ({ ...f, from_location: e.target.value }))}
+                    >
+                      {NON_DAMAGED_LOCATIONS.map(({ field, label }) => (
+                        <option key={field} value={field}>{label} ({selectedItem[field] ?? 0})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="field">
+                    <label className="field-label">To</label>
+                    <select
+                      className="select"
+                      value={moveForm.to_location}
+                      onChange={e => setMoveForm(f => ({ ...f, to_location: e.target.value }))}
+                    >
+                      {LOCATIONS.map(({ field, label }) => (
+                        <option key={field} value={field}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {isDamageMove ? (
+                    <>
+                      <div className="field">
+                        <label className="field-label">Serial Number</label>
+                        <input
+                          type="text"
+                          required
+                          className="input"
+                          value={moveForm.serial}
+                          onChange={e => setMoveForm(f => ({ ...f, serial: e.target.value }))}
+                        />
+                      </div>
+                      <div className="field">
+                        <label className="field-label">Description</label>
+                        <input
+                          type="text"
+                          className="input"
+                          value={moveForm.description}
+                          onChange={e => setMoveForm(f => ({ ...f, description: e.target.value }))}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="field">
+                      <label className="field-label">Quantity</label>
+                      <input
+                        type="number"
+                        min={1}
+                        required
+                        className="input"
+                        value={moveForm.quantity}
+                        onChange={e => setMoveForm(f => ({ ...f, quantity: e.target.value }))}
+                      />
+                    </div>
+                  )}
+
+                  {moveError && <div className="error">{moveError}</div>}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => { setMoveModal(false); setMoveForm(DEFAULT_MOVE); setMoveError('') }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">Submit</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {damagedMoveSerial !== null && (
+          <div className="overlay" onClick={() => { setDamagedMoveSerial(null); setDamagedMoveError('') }}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <div className="modal-title">Move Damaged Item</div>
+                <div className="modal-sub">Serial: {damagedMoveSerial}</div>
+              </div>
+              <form onSubmit={submitDamagedMove}>
+                <div className="modal-body">
+                  <div className="field">
+                    <label className="field-label">New Location</label>
+                    <select
+                      className="select"
+                      value={damagedMoveLocation}
+                      onChange={e => setDamagedMoveLocation(e.target.value)}
+                    >
+                      {NON_DAMAGED_LOCATIONS.map(({ field, label }) => (
+                        <option key={field} value={field}>{label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  {damagedMoveError && <div className="error">{damagedMoveError}</div>}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => { setDamagedMoveSerial(null); setDamagedMoveError('') }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">Move</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {addModal}
+      </div>
+    )
+  }
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', fontFamily: 'sans-serif' }}>
-      <h1>Inventory</h1>
+    <div className="page">
+      <div className="page-header">
+        <h1>Inventory</h1>
+        <div className="brand">WrapDrive</div>
+      </div>
 
-      <form onSubmit={createItem} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 24 }}>
-        <input placeholder="Name" required value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-        <input placeholder="Qty" type="number" required value={form.quantity}
-          onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} style={{ width: 60 }} />
-        <input placeholder="Description" value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-        <button type="submit">Add</button>
+      <form onSubmit={createItem} className="create-form">
+        <input
+          className="input"
+          placeholder="Item name"
+          required
+          value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+        />
+        <input
+          className="input input-qty"
+          placeholder="Qty"
+          type="number"
+          required
+          value={form.quantity}
+          onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+        />
+        <input
+          className="input"
+          placeholder="Description (optional)"
+          value={form.description}
+          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+        />
+        <button type="submit" className="btn btn-primary">+ Add New Item</button>
       </form>
 
-      <table width="100%" cellPadding={8} style={{ borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>
-            <th>Name</th><th>Qty</th><th>Description</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map(item => (
-            <Fragment key={item.id}>
-              <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td>{item.name}</td>
-                <td>{item.total_quantity}</td>
-                <td>{item.description}</td>
-                <td><button onClick={() => openInfo(item.id)}>Info</button></td>
-                <td><button onClick={() => deleteItem(item.id)}>Delete</button></td>
+      <div className="card">
+        <table className="table">
+          <colgroup>
+            <col style={{ width: '24%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '28%' }} />
+            <col style={{ width: '24%' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th className="center">Quantity</th>
+              <th className="center">Available</th>
+              <th>Description</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr><td colSpan={5} className="table-empty">No items yet — add one above.</td></tr>
+            ) : items.map(item => (
+              <tr key={item.id}>
+                <td style={{ fontWeight: 500 }}>{item.name}</td>
+                <td className="center num">{item.total_quantity}</td>
+                <td className="center num">{item.storage_quantity ?? 0}</td>
+                <td style={{ color: 'var(--text-dim)' }}>{item.description}</td>
+                <td>
+                  <div className="actions">
+                    <button className="btn btn-sm btn-outline-soft" onClick={() => openAddModal(item.id)}>Add</button>
+                    <button className="btn btn-sm btn-outline-primary" onClick={() => openInfo(item)}>Info</button>
+                    <button className="btn btn-sm btn-outline-rose" onClick={() => deleteItem(item.id, item.name)}>Delete</button>
+                  </div>
+                </td>
               </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-              {expandedId === item.id && (
-                <tr style={{ background: '#161319', border: '1px solid #52067b', borderRadius: 4 }}>
-                  <td colSpan={5}>
-                    <div style={{
-                      padding: 12
-                    }}>
-                      <table width="100%" cellPadding={8} style={{ borderCollapse: 'collapse', marginTop: 12 }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>
-                            <th>Storage</th><th style={{ color: 'purple' }}>Biggie K</th><th style={{ color: 'blue' }}>Airbreathing</th><th style={{ color: 'green' }}>Tachyon</th><th style={{ color: 'red' }}>Damaged</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr style={{ borderBottom: '1px solid #eee' }}>
-                            <td>
-                              <button onClick={() => changeQuantity(item.id, "storage_quantity", 1)}>
-                                ▲
-                              </button>
-
-                              <div style={{ textAlign: "center" }}>
-                                {details[item.id]?.storage_quantity ?? 0}
-                              </div>
-
-                              <button onClick={() => changeQuantity(item.id, "storage_quantity", -1)}>
-                                ▼
-                              </button>
-                            </td>
-                            <td>
-                              <button onClick={() => moveItem(item.id, "biggie_k_quantity", 1)}>
-                                ▲
-                              </button>
-
-                              <div style={{ textAlign: "center" }}>
-                                {details[item.id]?.biggie_k_quantity ?? 0}
-                              </div>
-
-                              <button onClick={() => moveItem(item.id, "biggie_k_quantity", -1)}>
-                                ▼
-                              </button>
-                            </td>
-                            <td>
-                              <button onClick={() => moveItem(item.id, "airbreathing_quantity", 1)}>
-                                ▲
-                              </button>
-                              <div style={{ textAlign: "center" }}>
-                                {details[item.id]?.airbreathing_quantity ?? 0}
-                              </div>
-                              <button onClick={() => moveItem(item.id, "airbreathing_quantity", -1)}>
-                                ▼
-                              </button>
-                            </td>
-                            <td>
-                              <button onClick={() => moveItem(item.id, "tachyon_quantity", 1)}>
-                                ▲
-                              </button>
-                              <div style={{ textAlign: "center" }}>
-                                {details[item.id]?.tachyon_quantity ?? 0}
-                              </div>
-                              <button onClick={() => moveItem(item.id, "tachyon_quantity", -1)}>
-                                ▼
-                              </button>
-                            </td>
-                            <td>
-                              <button onClick={() => moveItem(item.id, "damaged_quantity", 1)}>
-                                ▲
-                              </button>
-                              <div style={{ textAlign: "center" }}>
-                                {details[item.id]?.damaged_quantity ?? 0}
-                              </div>
-                              <button onClick={() => moveItem(item.id, "damaged_quantity", -1)}>
-                                ▼
-                              </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-
-                      <button
-                        onClick={() => updateQuantity(item.id)}
-                        style={{
-                          marginTop: 12,
-                          background:
-                            updateStatus[item.id] === "success"
-                              ? "#22c55e"
-                              : updateStatus[item.id] === "error"
-                              ? "#ef4444"
-                              : "#9100ff",
-                          color: "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          transition: "0.2s"
-                        }}
-                      >
-                        {updateStatus[item.id] === "loading"
-                          ? "Updating..."
-                          : updateStatus[item.id] === "success"
-                          ? "Saved ✓"
-                          : updateStatus[item.id] === "error"
-                          ? "Failed ✕"
-                          : "Update"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
+      {addModal}
     </div>
   )
 }

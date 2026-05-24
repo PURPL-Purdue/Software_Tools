@@ -26,6 +26,15 @@ client = AsyncIOMotorClient(
 db = client.inventory
 
 
+LOCATION_FIELDS = [
+    "storage_quantity",
+    "biggie_k_quantity",
+    "airbreathing_quantity",
+    "tachyon_quantity",
+    "damaged_quantity",
+]
+
+
 class Item(BaseModel):
     name: str
     total_quantity: int
@@ -35,6 +44,27 @@ class Item(BaseModel):
     tachyon_quantity: int = 0
     damaged_quantity: int = 0
     damaged_objects: dict = {}
+    description: str = ""
+
+
+class MoveRequest(BaseModel):
+    from_location: str
+    to_location: str
+    quantity: int
+
+
+class AddRequest(BaseModel):
+    quantity: int
+
+
+class RemoveRequest(BaseModel):
+    location: str
+    quantity: int
+
+
+class DamageRequest(BaseModel):
+    serial: str
+    location: str
     description: str = ""
 
 
@@ -89,6 +119,146 @@ async def delete_item(id: str):
     result = await db.items.delete_one({"_id": ObjectId(id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Item not found")
+    return {"ok": True}
+
+@app.post("/items/{id}/add")
+async def add_to_item(id: str, req: AddRequest):
+    if req.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be positive")
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {"$inc": {"storage_quantity": req.quantity, "total_quantity": req.quantity}},
+    )
+    return {"ok": True}
+
+@app.post("/items/{id}/remove")
+async def remove_from_item(id: str, req: RemoveRequest):
+    if req.location not in LOCATION_FIELDS:
+        raise HTTPException(status_code=400, detail="Invalid location")
+    if req.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be positive")
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    if item.get(req.location, 0) < req.quantity:
+        raise HTTPException(status_code=400, detail="Not enough items in that location")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {"$inc": {req.location: -req.quantity, "total_quantity": -req.quantity}},
+    )
+    return {"ok": True}
+
+@app.post("/items/{id}/damage")
+async def mark_damaged(id: str, req: DamageRequest):
+    if req.location not in LOCATION_FIELDS or req.location == "damaged_quantity":
+        raise HTTPException(status_code=400, detail="Invalid location")
+    if not req.serial.strip():
+        raise HTTPException(status_code=400, detail="Serial number is required")
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    if req.serial in (item.get("damaged_objects") or {}):
+        raise HTTPException(status_code=400, detail="Serial number already exists")
+    if item.get(req.location, 0) < 1:
+        raise HTTPException(status_code=400, detail="No items available in that location")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$inc": {"damaged_quantity": 1, req.location: -1},
+            "$set": {
+                f"damaged_objects.{req.serial}": {
+                    "serial": req.serial,
+                    "location": req.location,
+                    "description": req.description,
+                }
+            },
+        },
+    )
+    return {"ok": True}
+
+
+class DamagedMoveRequest(BaseModel):
+    location: str
+
+
+@app.post("/items/{id}/damaged/{serial}/move")
+async def move_damaged(id: str, serial: str, req: DamagedMoveRequest):
+    if req.location not in LOCATION_FIELDS or req.location == "damaged_quantity":
+        raise HTTPException(status_code=400, detail="Invalid location")
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    damaged = item.get("damaged_objects") or {}
+    if serial not in damaged:
+        raise HTTPException(status_code=404, detail="Damaged object not found")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {f"damaged_objects.{serial}.location": req.location}},
+    )
+    return {"ok": True}
+
+
+@app.post("/items/{id}/damaged/{serial}/restore")
+async def restore_damaged(id: str, serial: str):
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    damaged = item.get("damaged_objects") or {}
+    if serial not in damaged:
+        raise HTTPException(status_code=404, detail="Damaged object not found")
+    location = damaged[serial].get("location")
+    if location not in LOCATION_FIELDS or location == "damaged_quantity":
+        raise HTTPException(status_code=400, detail="Damaged object has invalid location")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$inc": {"damaged_quantity": -1, location: 1},
+            "$unset": {f"damaged_objects.{serial}": ""},
+        },
+    )
+    return {"ok": True}
+
+
+@app.delete("/items/{id}/damaged/{serial}")
+async def delete_damaged(id: str, serial: str):
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    damaged = item.get("damaged_objects") or {}
+    if serial not in damaged:
+        raise HTTPException(status_code=404, detail="Damaged object not found")
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {
+            "$inc": {"damaged_quantity": -1, "total_quantity": -1},
+            "$unset": {f"damaged_objects.{serial}": ""},
+        },
+    )
+    return {"ok": True}
+
+@app.post("/items/{id}/move")
+async def move_item(id: str, move: MoveRequest):
+    if move.from_location not in LOCATION_FIELDS or move.to_location not in LOCATION_FIELDS:
+        raise HTTPException(status_code=400, detail="Invalid location")
+    if move.from_location == move.to_location:
+        raise HTTPException(status_code=400, detail="Source and destination must differ")
+    if move.quantity <= 0:
+        raise HTTPException(status_code=400, detail="Quantity must be positive")
+
+    item = await db.items.find_one({"_id": ObjectId(id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if item.get(move.from_location, 0) < move.quantity:
+        raise HTTPException(status_code=400, detail="Not enough items in source location")
+
+    await db.items.update_one(
+        {"_id": ObjectId(id)},
+        {"$inc": {move.from_location: -move.quantity, move.to_location: move.quantity}},
+    )
     return {"ok": True}
 
 # Loading page is main table, each row has item type, with option to add items 

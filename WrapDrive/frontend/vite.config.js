@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/items': 'http://localhost:8000',
+      '/create_item': 'http://localhost:8000',
       '/add_item': 'http://localhost:8000',
       '/search': 'http://localhost:8000',
     },
