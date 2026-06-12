@@ -1,7 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from bson import ObjectId
 from dotenv import load_dotenv
 import os
@@ -24,6 +26,25 @@ client = AsyncIOMotorClient(
 )
 
 db = client.inventory
+
+
+@app.exception_handler(ServerSelectionTimeoutError)
+async def _db_timeout(request: Request, exc: ServerSelectionTimeoutError):
+    return JSONResponse(status_code=503, content={"detail": "Database is unreachable"})
+
+
+@app.exception_handler(ConnectionFailure)
+async def _db_failure(request: Request, exc: ConnectionFailure):
+    return JSONResponse(status_code=503, content={"detail": "Database connection failed"})
+
+
+@app.get("/health")
+async def health():
+    try:
+        await client.admin.command("ping")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Database unavailable: {e}")
+    return {"ok": True}
 
 
 LOCATION_FIELDS = [

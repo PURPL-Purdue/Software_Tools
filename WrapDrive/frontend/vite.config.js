@@ -11,6 +11,7 @@ export default defineConfig({
       '/add_item': 'http://localhost:8000',
       '/search': 'http://localhost:8000',
       '/categories': 'http://localhost:8000',
+      '/health': 'http://localhost:8000',
     },
   },
 })

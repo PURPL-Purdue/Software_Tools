@@ -69,6 +69,28 @@ function CategoryPicker({ selected, categories, onChange, compact = false }) {
   )
 }
 
+function ConnectionBanner({ error }) {
+  if (!error) return null
+  const message = error === 'backend'
+    ? 'Servers are currently down. Trying to reconnect…'
+    : 'Database is unreachable. Some features may not work.'
+  return (
+    <div className="banner banner-error" role="status">
+      <span className="banner-dot" />
+      <span>{message}</span>
+    </div>
+  )
+}
+
+function Toast({ toast }) {
+  if (!toast) return null
+  return (
+    <div className={`toast toast-${toast.type}`} role="status">
+      {toast.message}
+    </div>
+  )
+}
+
 function Brand() {
   return (
     <div className="brand">
@@ -99,6 +121,33 @@ export default function App() {
   const [categoryError, setCategoryError] = useState('')
   const [hiddenCategories, setHiddenCategories] = useState(() => new Set())
 
+  const [connectionError, setConnectionError] = useState(null) // 'backend' | 'database' | null
+  const [toast, setToast] = useState(null) // { type: 'success'|'error', message: string }
+
+  const showToast = (type, message, ms = 2500) => {
+    setToast({ type, message })
+    if (ms) setTimeout(() => setToast(t => (t && t.message === message ? null : t)), ms)
+  }
+
+  const api = async (url, options) => {
+    try {
+      const res = await fetch(url, options)
+      if (res.status === 503) {
+        setConnectionError('database')
+      } else {
+        setConnectionError(prev => prev ? null : prev)
+      }
+      return res
+    } catch {
+      setConnectionError('backend')
+      return {
+        ok: false,
+        status: 0,
+        json: async () => ({ detail: 'Servers are currently down.' }),
+      }
+    }
+  }
+
   const toggleFilter = (name) => {
     setHiddenCategories(prev => {
       const next = new Set(prev)
@@ -124,20 +173,41 @@ export default function App() {
   const [damagedMoveLocation, setDamagedMoveLocation] = useState('storage_quantity')
   const [damagedMoveError, setDamagedMoveError] = useState('')
 
-  const fetchItems = () => fetch('/items').then(r => r.json()).then(setItems)
-  const fetchCategories = () => fetch('/categories').then(r => r.json()).then(setCategories)
+  const fetchItems = () => api('/items').then(r => r.json()).then(setItems)
+  const fetchCategories = () => api('/categories').then(r => r.json()).then(setCategories)
 
   const refreshSelected = async (id) => {
-    const fresh = await fetch(`/items/${id}`).then(r => r.json())
+    const fresh = await api(`/items/${id}`).then(r => r.json())
     setSelectedItem(fresh)
     return fresh
   }
 
   useEffect(() => { fetchItems(); fetchCategories() }, [])
 
+  useEffect(() => {
+    if (!connectionError) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/health')
+        if (res.ok) {
+          setConnectionError(null)
+          fetchItems()
+          fetchCategories()
+        } else if (res.status === 503) {
+          setConnectionError('database')
+        }
+      } catch {
+        // still disconnected
+      }
+    }, 4000)
+    return () => clearInterval(interval)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectionError])
+
   const createItem = async (e) => {
     e.preventDefault()
-    await fetch('/create_item', {
+    const name = form.name
+    const res = await api('/create_item', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -146,8 +216,14 @@ export default function App() {
         total_quantity: Number(form.quantity),
       }),
     })
+    if (!res.ok) {
+      const data = await res.json()
+      showToast('error', data.detail ?? 'Failed to add item.')
+      return
+    }
     setForm({ name: '', quantity: 0, description: '', categories: [] })
     fetchItems()
+    showToast('success', `"${name}" added successfully`)
   }
 
   const createCategory = async (e) => {
@@ -155,7 +231,7 @@ export default function App() {
     setCategoryError('')
     const name = newCategory.trim()
     if (!name) return
-    const res = await fetch('/categories', {
+    const res = await api('/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
@@ -171,7 +247,7 @@ export default function App() {
 
   const deleteCategory = async (name) => {
     if (!window.confirm(`Delete category "${name}"? Items in it will be moved to Uncategorized.`)) return
-    const res = await fetch(`/categories/${encodeURIComponent(name)}`, { method: 'DELETE' })
+    const res = await api(`/categories/${encodeURIComponent(name)}`, { method: 'DELETE' })
     if (!res.ok) {
       const data = await res.json()
       alert(data.detail ?? 'Failed to delete category.')
@@ -182,7 +258,7 @@ export default function App() {
   }
 
   const setItemCategories = async (id, categoriesList) => {
-    const res = await fetch(`/items/${id}/categories`, {
+    const res = await api(`/items/${id}/categories`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ categories: categoriesList }),
@@ -200,12 +276,12 @@ export default function App() {
 
   const deleteItem = async (id, name) => {
     if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
-    await fetch(`/items/${id}`, { method: 'DELETE' })
+    await api(`/items/${id}`, { method: 'DELETE' })
     fetchItems()
   }
 
   const openInfo = async (item) => {
-    const fresh = await fetch(`/items/${item.id}`).then(r => r.json())
+    const fresh = await api(`/items/${item.id}`).then(r => r.json())
     setSelectedItem(fresh)
     setPage('info')
   }
@@ -225,7 +301,7 @@ export default function App() {
   const submitAdd = async (e) => {
     e.preventDefault()
     setAddError('')
-    const res = await fetch(`/items/${addItemId}/add`, {
+    const res = await api(`/items/${addItemId}/add`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quantity: Number(addQty) }),
@@ -245,7 +321,7 @@ export default function App() {
   const submitRemove = async (e) => {
     e.preventDefault()
     setRemoveError('')
-    const res = await fetch(`/items/${selectedItem.id}/remove`, {
+    const res = await api(`/items/${selectedItem.id}/remove`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...removeForm, quantity: Number(removeForm.quantity) }),
@@ -273,7 +349,7 @@ export default function App() {
         setMoveError('Serial number is required.')
         return
       }
-      res = await fetch(`/items/${selectedItem.id}/damage`, {
+      res = await api(`/items/${selectedItem.id}/damage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -287,7 +363,7 @@ export default function App() {
         setMoveError('Source and destination must be different.')
         return
       }
-      res = await fetch(`/items/${selectedItem.id}/move`, {
+      res = await api(`/items/${selectedItem.id}/move`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -318,7 +394,7 @@ export default function App() {
   const submitDamagedMove = async (e) => {
     e.preventDefault()
     setDamagedMoveError('')
-    const res = await fetch(
+    const res = await api(
       `/items/${selectedItem.id}/damaged/${encodeURIComponent(damagedMoveSerial)}/move`,
       {
         method: 'POST',
@@ -337,7 +413,7 @@ export default function App() {
 
   const restoreDamaged = async (serial) => {
     if (!window.confirm(`Unmark damaged item "${serial}"? It will be returned to its location.`)) return
-    const res = await fetch(
+    const res = await api(
       `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}/restore`,
       { method: 'POST' }
     )
@@ -352,7 +428,7 @@ export default function App() {
 
   const deleteDamaged = async (serial) => {
     if (!window.confirm(`Delete damaged item "${serial}"? This cannot be undone.`)) return
-    const res = await fetch(
+    const res = await api(
       `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}`,
       { method: 'DELETE' }
     )
@@ -401,6 +477,8 @@ export default function App() {
 
     return (
       <div className="page">
+        <ConnectionBanner error={connectionError} />
+        <Toast toast={toast} />
         <div className="page-header">
           <button className="btn btn-ghost" onClick={() => { setPage('list'); setSelectedItem(null) }}>
             ← Back to inventory
@@ -671,6 +749,8 @@ export default function App() {
 
   return (
     <div className="page">
+      <ConnectionBanner error={connectionError} />
+      <Toast toast={toast} />
       <div className="page-header">
         <h1>Inventory</h1>
         <Brand />
@@ -805,8 +885,8 @@ export default function App() {
                     <table className="table">
                       <colgroup>
                         <col style={{ width: '160px' }} />
-                        <col style={{ width: '64px' }} />
-                        <col style={{ width: '64px' }} />
+                        <col style={{ width: '80px' }} />
+                        <col style={{ width: '80px' }} />
                         <col />
                         <col />
                         <col style={{ width: '132px' }} />
@@ -815,7 +895,7 @@ export default function App() {
                         <tr>
                           <th>Name</th>
                           <th className="center">Total</th>
-                          <th className="center">Avail.</th>
+                          <th className="center">Avail</th>
                           <th>Description</th>
                           <th>Categories</th>
                           <th className="center">Actions</th>
