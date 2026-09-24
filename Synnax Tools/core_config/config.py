@@ -6,7 +6,7 @@ from synnax import ni
 from collections import deque
 
 BASE_SR = 1000 # Hz
-HIGH_SR = 150000 # Hz
+HIGH_SR = 250000 # Hz
 TC_SR = 80 # Hz 
 
 STATE_SR = 150 # Hz
