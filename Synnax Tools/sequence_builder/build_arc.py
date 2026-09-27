@@ -199,6 +199,7 @@ def parse_main_sequence(path="test.csv"):
     for device in input_devices:
         idle_seq += "\t\t0 -> " + device + ",\n"
 
+    idle_seq += "\t\tstart_cmd != 0 => Main,\n"
     idle_seq += "\t}\n\n"
 
     main_sequence = "import (\n\ttime\n\tcontrol\n)\n\nauthority 250\n"
