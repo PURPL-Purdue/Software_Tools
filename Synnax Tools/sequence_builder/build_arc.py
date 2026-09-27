@@ -2,14 +2,38 @@ import csv
 import os
 import sys
 
+blueline_funcs = []
+
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
+
+def parse_blueline(name, snrs, upprs, lwrs, seq):
+    func = ""
+    func += "func "+name+"() u8 {\n"
+    func += "\t" + name + "_count u8 := 0\n"
+    lines = []
+    for i, num in enumerate(upprs):
+        lines.append("\t" + name + "_count += " + snrs[i] + " > " + str(parse_int(num, True)) + " => " + seq)
+    for i, num in enumerate(lwrs):
+        lines.append("\t" + snrs[i] + " < " + str(parse_int(num, False)) + " => " + seq)
+    func += ",\n".join(lines)
+    func += "\n}\n\n"
+    blueline_funcs.append(func)
+
+def parse_int(s, upr):
+    if (s=="NA" and upr):
+        return sys.maxsize
+    elif (s=="NA" and not upr):
+        return -sys.maxsize
+    else:
+        return int(s)
 
 def preprocess_file(path):
     print("Parsing file: " + path)
     with open(path, newline="") as f:
         cleaned = (strip_comment(line) for line in f)
         reader = csv.reader(cleaned)
+        rows = list(reader)
 
         redline_devices = []
         redline_values = []
@@ -55,6 +79,16 @@ def preprocess_file(path):
                 for j, value in enumerate(redline_values):
                     if int(value) != -1 and int(value) < 0:
                         return (False, "Error: invalid redline value for device " + redline_devices[j])
+
+            indx = i
+            if (row[0] == "BlueLimits"):
+                while (rows[indx+1][0] != "Timestamp (ms)"):
+                    indx += 1
+                    func_name = row[0]
+                    snrs = row[1].split("|")
+                    upprs = row[2].split("|")
+                    lwrs = row[3].split("|")
+                    seq = row[4]
             
             
             if i == 3:
@@ -204,7 +238,6 @@ def parse_main_sequence(path="test.csv"):
 
     main_sequence = "import (\n\ttime\n\tcontrol\n)\n\nauthority 250\n"
     main_sequence += "sequence Main {\n"
-
     blueline_num = 1
 
     with open(path, newline="") as f:
