@@ -249,6 +249,9 @@ def parse_main_sequence(path="test.csv"):
                     stage_block += "\t\tcontrol.set_authority{value=250},\n"
                     stage_block += "\t\t1 -> seq_running,\n"
                     stage_block += "\t\t1 -> data_logging,\n"
+                    stage_block += "\t\t0 -> blueline_triggered\n"
+                    stage_block += "\t\t0 -> redline_triggered\n"
+                    stage_block += "\t\t0 -> blueline_count\n"
                 elif seq_name == "Redline":
                     stage_block += "\t\tcontrol.set_authority{value=253},\n"
                     stage_block += "\t\t1 -> redline_triggered,\n"
