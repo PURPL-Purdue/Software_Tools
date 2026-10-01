@@ -6,7 +6,7 @@ from synnax import ni
 from collections import deque
 
 BASE_SR = 1000 # Hz
-HIGH_SR = 150000 # Hz
+HIGH_SR = 250000 # Hz
 TC_SR = 80 # Hz 
 
 STATE_SR = 150 # Hz
@@ -425,7 +425,7 @@ def configure_synnax():
                 sample_rate=sy.Rate.HZ * HIGH_SR,
                 stream_rate=sy.Rate.HZ * STREAM_SR,
                 device=module_map[module_name].key,
-                data_saving=True,
+                data_saving_disabled=False,
                 channels=channel_arr,
             )
         elif module_name.split("_")[0] == "NI9213":
@@ -435,7 +435,7 @@ def configure_synnax():
                 sample_rate=sy.Rate.HZ * TC_SR,
                 stream_rate=sy.Rate.HZ * TC_STREAM_SR,
                 device=module_map[module_name].key,
-                data_saving=True,
+                data_saving_disabled=False,
                 channels=channel_arr,
             )
         else:
@@ -444,7 +444,7 @@ def configure_synnax():
                 sample_rate=sy.Rate.HZ * BASE_SR,
                 stream_rate=sy.Rate.HZ * STREAM_SR,
                 device=module_map[module_name].key,
-                data_saving=True,
+                data_saving_disabled=False,
                 channels=channel_arr,
             )
         if not ai_task:
@@ -457,7 +457,7 @@ def configure_synnax():
             name=f"Analog Write for Card AO {module_name} Task",
             state_rate=sy.Rate.HZ * STATE_SR,
             device=module_map[module_name].key, # Get device from module tracking array
-            data_saving=True,
+            data_saving_disabled=False,
             channels=channel_arr,
         )
         if not ao_task:
@@ -478,7 +478,7 @@ def configure_synnax():
             name=f"Digital Write for Card DO {module_name} Task",
             state_rate=sy.Rate.HZ * STATE_SR,
             device=module_map[module_name].key, # Get device from module tracking array
-            data_saving=True,
+            data_saving_disabled=False,
             channels=channel_arr,
         )
         if not do_task:

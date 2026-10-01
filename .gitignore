@@ -4,3 +4,5 @@ __pycache__/
 Server/tests.json
 *.mp4
 Synnax\ Tools/core_config/output_data/*
+synnax-data/
+synnax-logs/

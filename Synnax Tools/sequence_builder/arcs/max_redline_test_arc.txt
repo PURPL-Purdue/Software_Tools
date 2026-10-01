@@ -1,0 +1,119 @@
+import (
+	control
+	time
+)
+
+authority 250
+start_cmd != 0 => TestSequence
+
+func check_redline() bool {
+	redline_hit := false
+	redline_hit = redline_hit or (n9476_do_0_0_state > 1)
+	return redline_hit
+}
+
+sequence TestSequence {
+	stage Main_ts0 {
+		control.set_authority{value=250}
+		1 -> seq_running
+		1 -> data_logging
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		time.interval{period=10ms} -> check_redline{} => Redline_ts0
+		estop_cmd != 0 => ESTOP
+		time.wait{duration=1000ms} => next
+	}
+
+	stage Main_ts1000 {
+		1 -> n9476_do_0_1_cmd
+		1 -> n9476_do_0_2_cmd
+		1 -> n9476_do_0_3_cmd
+		time.interval{period=10ms} -> check_redline{} => Redline_ts0
+		estop_cmd != 0 => ESTOP
+		time.wait{duration=500ms} => next
+	}
+
+	stage Main_ts1500 {
+		n9476_do_0_0_state < 1 => BranchSeq_ts0
+		1 -> blueline_count
+		time.wait{duration=13500ms} => next
+	}
+
+	stage Main_ts15000 {
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		time.interval{period=10ms} -> check_redline{} => Redline_ts0
+		estop_cmd != 0 => ESTOP
+		0 -> seq_running
+		0 -> data_logging
+		time.wait{duration=1ms} => IDLE
+	}
+
+	stage BranchSeq_ts0 {
+		control.set_authority{value=250}
+		1 -> blueline_triggered
+		1 -> n9476_do_0_1_cmd
+		1 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		time.interval{period=10ms} -> check_redline{} => Redline_ts0
+		estop_cmd != 0 => ESTOP
+		time.wait{duration=5000ms} => next
+	}
+
+	stage BranchSeq_ts5000 {
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		time.interval{period=10ms} -> check_redline{} => Redline_ts0
+		estop_cmd != 0 => ESTOP
+		0 -> seq_running
+		0 -> data_logging
+		time.wait{duration=1ms} => IDLE
+	}
+
+	stage Redline_ts0 {
+		control.set_authority{value=253}
+		1 -> redline_triggered
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		estop_cmd != 0 => ESTOP
+		time.wait{duration=50000ms} => next
+	}
+
+	stage Redline_ts50000 {
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		estop_cmd != 0 => ESTOP
+		0 -> seq_running
+		0 -> data_logging
+		time.wait{duration=1ms} => IDLE
+	}
+
+
+
+	stage ESTOP {
+		control.set_authority{value=254}
+		0 -> seq_running
+		0 -> data_logging
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		time.wait{duration=500ms} => IDLE
+	}
+
+	stage IDLE {
+		0 -> seq_running
+		0 -> data_logging
+		control.set_authority{value=0}
+		0 -> n9476_do_0_1_cmd
+		0 -> n9476_do_0_2_cmd
+		0 -> n9476_do_0_3_cmd
+		estop_cmd != 0 => ESTOP
+		start_cmd != 0 => Main_ts0
+	}
+
+}
