@@ -156,7 +156,8 @@ def preprocess_file(path):
                 last_time = int(row[0])
 
                 if "BLUELINE" not in row[1]:
-                    if len(row[1:]) != len(devices):
+                    n = len(devices)
+                    if len(row[1:]) != n and not (len(row[1:]) == n + 1 and is_in_blueline_funcs(row[n+1])):
                         return (False, "Error: Invalid input field length in row " + str(i + 1))
 
                     for num in row[1:]:
@@ -328,7 +329,7 @@ def parse_main_sequence(path="test.csv"):
                     stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
                 else:
                     k = blueline_func_names.index(value)
-                    stage_block += "\t\tinterval{period=10ms} -> " + str(value) + "{} => " + blueline_seqs[k] + ",\n"
+                    stage_block += "\t\ttime.interval{period=10ms} -> " + str(value) + "{} => " + blueline_seqs[k] + "0,\n"
 
             if seq_name != "Redline":
                 stage_block += "\t\ttime.interval{period=10ms} -> check_redline{} => Redline0,\n"
