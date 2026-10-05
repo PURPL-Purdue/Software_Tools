@@ -155,6 +155,44 @@ const formatElapsedTick = (ms: number, tickIntervalMs: number) => {
 // Hover tooltip header: always to the millisecond, trailing zeros dropped.
 const formatElapsedTooltip = (ms: number) => `${Number((ms / 1000).toFixed(3)) + 0} s`;
 
+// Style for the stretch of line drawn across a gap in a trace's data.
+const GAP_BRIDGE_DASH: Highcharts.DashStyleValue = 'ShortDot';
+const GAP_BRIDGE_OPACITY = 0.4;
+
+// Faded version of a series color for gap bridges (falls back to the
+// original color if Highcharts can't parse it).
+function fadeColor(color: string): string {
+    const parsed = Highcharts.color(color);
+    return parsed.rgba.every((c) => Number.isFinite(c))
+        ? (parsed.setOpacity(GAP_BRIDGE_OPACITY).get('rgba') as string)
+        : color;
+}
+
+// Highcharts x-axis zones that render each gap BETWEEN two valid points
+// (a run of non-finite values) as a faint dotted bridge.
+function gapBridgeZones(xValues: number[], values: number[], color: string): Highcharts.SeriesZonesOptionsObject[] {
+    const zones: Highcharts.SeriesZonesOptionsObject[] = [];
+    const bridgeColor = fadeColor(color);
+    let lastValidX: number | null = null;
+    let inGap = false;
+
+    values.forEach((v, i) => {
+        if (!Number.isFinite(v)) {
+            inGap = lastValidX !== null;
+            return;
+        }
+        if (inGap && lastValidX !== null) {
+            zones.push({ value: lastValidX }); // normal line up to the gap
+            zones.push({ value: xValues[i], dashStyle: GAP_BRIDGE_DASH, color: bridgeColor }); // the bridge
+        }
+        inGap = false;
+        lastValidX = xValues[i];
+    });
+
+    if (zones.length > 0) zones.push({}); // normal line after the last gap
+    return zones;
+}
+
 // Label formatter shared by the main x-axis and the navigator's axis.
 function elapsedAxisLabel(this: unknown) {
     const ctx = this as { value: number | string; axis: { tickInterval?: number } };
@@ -354,12 +392,19 @@ const Chart = () => {
             })
             : [{ title: { text: '' } }];
 
+        const xValues = timestamps.map((t) => t - startTime);
         const series = visibleNumeric.map((channel) => ({
             name: channel.label,
             type: 'line',
             color: channel.color,
             yAxis: channel.axisId !== undefined ? (axisIndexById.get(channel.axisId) ?? 0) : 0,
-            data: timestamps.map((t, i) => [t - startTime, channel.values[i]]),
+            // non-finite values (e.g. undefined calculated points) become nulls...
+            data: xValues.map((x, i) => [x, Number.isFinite(channel.values[i]) ? channel.values[i] : null]),
+            // ...which are bridged with a faint dotted line so it's clear the
+            // break is intentional (no tooltip points exist inside a bridge)
+            connectNulls: true,
+            zoneAxis: 'x',
+            zones: gapBridgeZones(xValues, channel.values, channel.color),
         }));
 
         // make the solenoid lines since they aren't a normal data series

@@ -14,6 +14,7 @@ import {
   type ViewExport,
   type ViewTimeRange,
 } from './dataStore';
+import { addDerivedTraces, parseConstantsYaml } from './constantsCalc';
 
 // Owns the loaded dataset (timestamps, channels, axes) and every mutation
 // on it, and makes it available to the chart + both sidebars via context.
@@ -129,6 +130,17 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     [state]
   );
 
+  // calculate new traces from an imported constants YAML + current data
+  const importConstants = useCallback(
+    (yamlText: string) => {
+      const constants = parseConstantsYaml(yamlText);
+      const { state: nextState, added, skipped } = addDerivedTraces(state, constants);
+      if (added.length > 0) setState(nextState);
+      return { added, skipped };
+    },
+    [state]
+  );
+
   const value = useMemo<DataContextValue>(
     () => ({
       ...state,
@@ -149,11 +161,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       deleteAxis,
       addAxis,
       importView,
+      importConstants,
       reportViewTimeRange,
       getViewTimeRange,
       requestedTimeRange,
     }),
-    [state, testFire, loadError, importView, reportViewTimeRange, getViewTimeRange, requestedTimeRange]
+    [state, testFire, loadError, importView, importConstants, reportViewTimeRange, getViewTimeRange, requestedTimeRange]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

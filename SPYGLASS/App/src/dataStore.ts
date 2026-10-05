@@ -51,6 +51,12 @@ export interface DataContextValue extends DataState {
   deleteAxis: (id: string) => void;
   addAxis: () => void;
   importView: (view: ViewExport) => { matchedAxes: number; matchedChannels: number; appliedTimeRange: boolean };
+  // parses a constants .yaml and adds the calculated traces it enables;
+  // throws if the YAML can't be read
+  importConstants: (yamlText: string) => {
+    added: { key: string; unit?: string }[];
+    skipped: { key: string; reason: string }[];
+  };
   // charts current view time range
   reportViewTimeRange: (range: ViewTimeRange) => void;
   getViewTimeRange: () => ViewTimeRange;

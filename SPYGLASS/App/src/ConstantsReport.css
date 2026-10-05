@@ -1,0 +1,115 @@
+/* Import Constants result modal (see ConstantsReport.tsx). Lives inside
+   SettingsDialog, so it inherits the app's light/dark color tokens. */
+.cr {
+    --cr-good: #059649;
+    --cr-good-bg: rgba(5, 150, 73, 0.1);
+    --cr-bad: #e32412;
+    --cr-bad-bg: rgba(227, 36, 18, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .cr {
+        --cr-good: #34d399;
+        --cr-good-bg: rgba(52, 211, 153, 0.12);
+        --cr-bad: #f87171;
+        --cr-bad-bg: rgba(248, 113, 113, 0.12);
+    }
+}
+
+.cr-file {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text);
+    word-break: break-all;
+}
+
+.cr-summary,
+.cr-error {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-h);
+}
+
+.cr-error {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--cr-bad);
+    background: var(--cr-bad-bg);
+}
+
+.cr-section {
+    border-radius: 8px;
+    border-left: 3px solid var(--cr-accent);
+    background: var(--cr-accent-bg);
+    padding: 8px 12px 10px;
+}
+
+.cr-section--added {
+    --cr-accent: var(--cr-good);
+    --cr-accent-bg: var(--cr-good-bg);
+}
+
+.cr-section--skipped {
+    --cr-accent: var(--cr-bad);
+    --cr-accent-bg: var(--cr-bad-bg);
+}
+
+.cr-section-title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cr-accent);
+}
+
+.cr-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cr-item {
+    display: grid;
+    grid-template-columns: 16px auto 1fr;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13.5px;
+}
+
+.cr-icon {
+    color: var(--cr-accent);
+    font-weight: 700;
+}
+
+.cr-key {
+    font-family: var(--mono);
+    color: var(--text-h);
+}
+
+.cr-detail {
+    font-size: 12.5px;
+    color: var(--text);
+    text-align: right;
+}
+
+.cr-section--skipped .cr-detail {
+    text-align: left;
+}
+
+.cr-actions {
+    display: flex;
+    justify-content: space-around;
+}
+
+.cr-actions button {
+    width: 100%;
+}

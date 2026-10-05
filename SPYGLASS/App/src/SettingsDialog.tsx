@@ -4,11 +4,12 @@ import './SettingsDialog.css';
 // the settings that opens in a modal-style setup
 type SettingsDialogProps = {
   open: boolean;
+  title?: string; // defaults to "Settings"; lets other modals reuse this shell
   onClose: () => void;
   children: ReactNode;
 };
 
-export const SettingsDialog = ({ open, onClose, children }: SettingsDialogProps) => {
+export const SettingsDialog = ({ open, title = 'Settings', onClose, children }: SettingsDialogProps) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   // Keep the native dialog's open state in step with the `open` prop.
@@ -34,9 +35,9 @@ export const SettingsDialog = ({ open, onClose, children }: SettingsDialogProps)
       <div className="settings-panel">
         <header className="settings-header">
           <h2 id="settings-dialog-title" className="settings-title">
-            Settings
+            {title}
           </h2>
-          <button type="button" className="settings-close" onClick={onClose} aria-label="Close settings">
+          <button type="button" className="settings-close" onClick={onClose} aria-label={`Close ${title.toLowerCase()}`}>
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
               <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>

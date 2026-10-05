@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import './ExportImport.css';
 import { useData } from './useData';
 import { buildPlottedCsv, buildViewExport, parseViewJson } from './dataStore';
+import ConstantsReport, { type ConstantsReportData } from './ConstantsReport';
 
 type Kind = 'success' | 'error';
-type ButtonKey = 'exportView' | 'importView' | 'exportCsv';
+type ButtonKey = 'exportView' | 'importView' | 'exportCsv' | 'importConstants';
 
 // How long a button's success/failure outline lasts before fading back
 const FLASH_DURATION_MS = 2200;
@@ -37,10 +38,15 @@ function timestampSlug() {
 //    round-trips cleanly when re-loading the same CSV).
 //  - Export Plotted CSV: the currently-visible channels' data, in the same
 //    shape the CSV loader expects.
+//  - Import Constants: reads a constants .yaml (e.g. Maelstrom.yaml) and
+//    adds calculated traces (mdot, density, c*, O/F...) built from it and
+//    the loaded pressure traces - see constantsCalc.ts.
 const ExportImport = () => {
   const importInputRef = useRef<HTMLInputElement>(null);
-  const { channels, axes, timestamps, importView, getViewTimeRange } = useData();
+  const constantsInputRef = useRef<HTMLInputElement>(null);
+  const { channels, axes, timestamps, importView, importConstants, getViewTimeRange } = useData();
   const [message, setMessage] = useState<{ kind: Kind; text: string } | null>(null);
+  const [constantsReport, setConstantsReport] = useState<ConstantsReportData | null>(null);
   const [buttonFlash, setButtonFlash] = useState<Partial<Record<ButtonKey, Kind>>>({});
   const flashTimeouts = useRef<Partial<Record<ButtonKey, ReturnType<typeof setTimeout>>>>({});
 
@@ -51,8 +57,8 @@ const ExportImport = () => {
     };
   }, []);
 
-  const flash = (key: ButtonKey, kind: Kind, text: string) => {
-    setMessage({ kind, text });
+  // outline a button green/red for a moment
+  const flashButton = (key: ButtonKey, kind: Kind) => {
     setButtonFlash((prev) => ({ ...prev, [key]: kind }));
 
     const existing = flashTimeouts.current[key];
@@ -60,6 +66,12 @@ const ExportImport = () => {
     flashTimeouts.current[key] = setTimeout(() => {
       setButtonFlash((prev) => ({ ...prev, [key]: undefined }));
     }, FLASH_DURATION_MS);
+  };
+
+  // flash a button and show a status line under the buttons
+  const flash = (key: ButtonKey, kind: Kind, text: string) => {
+    setMessage({ kind, text });
+    flashButton(key, kind);
   };
 
   const handleImportClick = () => {
@@ -114,6 +126,28 @@ const ExportImport = () => {
     e.target.value = ''; // allow re-selecting the same file later
   };
 
+  const handleConstantsFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== 'string') return;
+      try {
+        const { added, skipped } = importConstants(reader.result);
+        setConstantsReport({ fileName: file.name, added, skipped });
+        flashButton('importConstants', added.length > 0 ? 'success' : 'error');
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Could not read that constants file.';
+        setConstantsReport({ fileName: file.name, error });
+        flashButton('importConstants', 'error');
+      }
+    };
+    reader.readAsText(file);
+
+    e.target.value = ''; // allow re-selecting the same file later
+  };
+
   const buttonClass = (key: ButtonKey) => {
     const kind = buttonFlash[key];
     return kind ? `ei-button ei-button--${kind}` : 'ei-button';
@@ -139,8 +173,23 @@ const ExportImport = () => {
         <button type="button" className={buttonClass('exportCsv')} onClick={handleExportCsv}>
           Export Plotted CSV
         </button>
+        <button
+          type="button"
+          className={buttonClass('importConstants')}
+          onClick={() => constantsInputRef.current?.click()}
+        >
+          Import Constants
+        </button>
+        <input
+          ref={constantsInputRef}
+          type="file"
+          accept=".yaml,.yml"
+          className="ei-file-input"
+          onChange={handleConstantsFileChange}
+        />
       </div>
       {message && <p className={`ei-status ei-status--${message.kind}`}>{message.text}</p>}
+      <ConstantsReport report={constantsReport} onClose={() => setConstantsReport(null)} />
     </div>
   );
 };
