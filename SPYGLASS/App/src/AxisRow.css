@@ -1,0 +1,105 @@
+.axis-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 6px;
+    flex-wrap: wrap;
+    transition: background 0.15s ease;
+}
+
+.axis-row:hover {
+    background: var(--accent-bg);
+}
+
+.axis-color-picker {
+    width: 19px;
+    height: 19px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.axis-name-input {
+    flex: 1;
+    min-width: 50px;
+    font-size: 13.5px;
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--text-h);
+    transition: border-color 0.15s ease;
+}
+
+.axis-name-input:focus {
+    outline: none;
+    border-color: var(--accent-border);
+}
+
+.axis-range {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.axis-range-input {
+    width: 48px;
+    font-size: 13.5px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--text-h);
+    transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.axis-range-input:focus {
+    outline: none;
+    border-color: var(--accent-border);
+}
+
+.axis-range-input:disabled {
+    opacity: 0.45;
+}
+
+.axis-range-sep {
+    color: var(--text);
+    font-size: 13px;
+}
+
+.axis-auto-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12.5px;
+    color: var(--text);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.axis-auto-toggle input {
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.axis-delete {
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.axis-delete:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+}

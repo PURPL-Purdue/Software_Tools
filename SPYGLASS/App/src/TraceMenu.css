@@ -1,0 +1,54 @@
+.trace-menu {
+    position: fixed;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 170px;
+    padding: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+.trace-menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.trace-menu-label {
+    font-size: 13px;
+    color: var(--text);
+}
+
+.trace-menu-content {
+    display: flex;
+    align-items: center;
+}
+
+.color-picker {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+}
+
+.axis-select {
+    font-size: 14px;
+    padding: 3px 5px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--text-h);
+}
+
+.hint {
+    font-size: 14px;
+    color: var(--text-h);
+}

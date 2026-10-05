@@ -1,0 +1,68 @@
+.channel-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    position: relative;
+    transition: background 0.15s ease;
+}
+
+.channel-container:hover {
+    background: var(--accent-bg);
+}
+
+.channel-checkbox input {
+    cursor: pointer;
+    accent-color: var(--accent);
+}
+
+.channel-marker {
+    background: none;
+    border: 2px solid;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s ease;
+}
+
+/* Numeric channels: solid circle (a "trace") */
+.channel-marker--circle {
+    border-radius: 50%;
+}
+
+/* Solenoids: solid square (a "state"), so they read differently from
+   numeric channels in the list at a glance */
+.channel-marker--square {
+    border-radius: 3px;
+}
+
+.channel-label {
+    flex: 1;
+    text-align: left;
+    font-size: 14.5px;
+    color: var(--text-h);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-settings {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 14px;
+    letter-spacing: 1px;
+    padding: 4px 7px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.channel-settings:hover {
+    background: var(--accent-bg);
+    color: var(--accent);
+}

@@ -1,0 +1,32 @@
+/* Chart-specific overrides live here (Highcharts container sizing, etc).
+   Page layout lives in App.css instead. */
+.chart-container {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    padding: 8px;
+    overflow: hidden;
+}
+
+
+/* Hidden (but still laid out and measurable) until Chart.tsx has sized the
+   chart to this container for the first time and set data-chart-ready, so
+   a freshly mounted chart never shows a frame at Highcharts' default size. */
+.chart-container:not([data-chart-ready]) > * {
+    visibility: hidden;
+}
+
+/* Smooth fade to match Highcharts' own series-dimming transition speed,
+   since we're driving this one manually via mouseOver/mouseOut. */
+.solenoid-plot-line {
+    transition: opacity 0.25s ease;
+}

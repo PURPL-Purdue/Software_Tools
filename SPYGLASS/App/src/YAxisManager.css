@@ -1,0 +1,53 @@
+.axis-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-right: 2px;
+}
+
+.axis-list-empty {
+    font-size: 14.5px;
+    color: var(--text);
+    text-align: center;
+    margin: 4px 0;
+}
+
+.axis-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.axis-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.axis-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.axis-add-button {
+    flex: 0 0 auto;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 7px;
+    border: 1px dashed var(--border);
+    background: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.axis-add-button:hover {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+    color: var(--text-h);
+}
+
+.axis-add-button:active {
+    transform: translateY(0.5px);
+}

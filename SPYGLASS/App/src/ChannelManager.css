@@ -1,0 +1,60 @@
+.channel-bulk-actions {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.channel-bulk-button {
+    font-size: 10px !important;
+    padding: 6px 4px !important;
+    line-height: 1.0 !important;
+    text-align: center;
+}
+
+.channel-bulk-button--wide {
+    grid-column: 1 / -1;
+}
+
+.channel-bulk-button:disabled {
+    cursor: default;
+    opacity: 0.45;
+}
+
+.channel-bulk-button:disabled:hover {
+    border-color: var(--border);
+    background: var(--bg);
+    box-shadow: none;
+}
+
+.channel-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-right: 2px;
+}
+
+.channel-list-empty {
+    font-size: 14.5px;
+    color: var(--text);
+    text-align: center;
+    margin: 4px 0;
+}
+
+/* slim, sleek scrollbar */
+.channel-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.channel-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.channel-list::-webkit-scrollbar-track {
+    background: transparent;
+}
