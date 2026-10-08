@@ -4,6 +4,7 @@ import 'highcharts/modules/stock'
 import { HighchartsReact } from 'highcharts-react-official'
 import './Chart.css'
 import { useData } from './useData'
+import { elapsedTimes, overviewData, plotData, valueStats } from './decimate'
 
 // All the visual preferences for the chart theme
 Highcharts.setOptions({
@@ -170,16 +171,33 @@ function fadeColor(color: string): string {
 
 // Highcharts x-axis zones that render each gap BETWEEN two valid points
 // (a run of non-finite values) as a faint dotted bridge.
+// Cached per values array + color, since walking every sample on every
+// render adds up fast on big test fires.
+const gapZoneCache = new WeakMap<number[], { xValues: number[]; byColor: Map<string, Highcharts.SeriesZonesOptionsObject[]> }>();
+function cachedGapBridgeZones(xValues: number[], values: number[], color: string): Highcharts.SeriesZonesOptionsObject[] {
+    let entry = gapZoneCache.get(values);
+    if (!entry || entry.xValues !== xValues) {
+        entry = { xValues, byColor: new Map() };
+        gapZoneCache.set(values, entry);
+    }
+    let zones = entry.byColor.get(color);
+    if (!zones) {
+        zones = gapBridgeZones(xValues, values, color);
+        entry.byColor.set(color, zones);
+    }
+    return zones;
+}
+
 function gapBridgeZones(xValues: number[], values: number[], color: string): Highcharts.SeriesZonesOptionsObject[] {
     const zones: Highcharts.SeriesZonesOptionsObject[] = [];
     const bridgeColor = fadeColor(color);
     let lastValidX: number | null = null;
     let inGap = false;
 
-    values.forEach((v, i) => {
-        if (!Number.isFinite(v)) {
+    for (let i = 0; i < values.length; i++) {
+        if (!Number.isFinite(values[i])) {
             inGap = lastValidX !== null;
-            return;
+            continue;
         }
         if (inGap && lastValidX !== null) {
             zones.push({ value: lastValidX }); // normal line up to the gap
@@ -187,7 +205,7 @@ function gapBridgeZones(xValues: number[], values: number[], color: string): Hig
         }
         inGap = false;
         lastValidX = xValues[i];
-    });
+    }
 
     if (zones.length > 0) zones.push({}); // normal line after the last gap
     return zones;
@@ -293,10 +311,63 @@ const Chart = () => {
     // DataContext) the chart has applied, so each import is applied once.
     const appliedTimeRangeTokenRef = useRef<number | null>(null);
 
+    // --- Decimation (see decimate.ts) ---
+    // The series are handed to Highcharts as a cheap overview of the whole
+    // test fire; whenever the visible window changes, the part of each
+    // trace inside it is swapped for full pixel-level detail.
+    // What every plotted series' points come from, keyed by series id.
+    const plotSources = useMemo(() => ({
+        xValues: elapsedTimes(timestamps),
+        valuesById: new Map(
+            channels.filter((c) => c.kind === 'numeric' && c.visible).map((c) => [c.id, c.values] as const)
+        ),
+    }), [timestamps, channels]);
+    const plotSourcesRef = useRef(plotSources);
+    // Window + width the series' data was last built for, so the same work
+    // is never done twice in a row.
+    const refinedKeyRef = useRef('');
+    const refineFrameRef = useRef<number | null>(null);
+
+    const refineVisibleData = useCallback((chart: Highcharts.Chart) => {
+        const xAxis = chart.xAxis[0] as (Highcharts.Axis & { userMin?: number; userMax?: number }) | undefined;
+        if (!xAxis) return;
+        const view = { min: xAxis.userMin, max: xAxis.userMax };
+        const width = Math.max(1, Math.round(chart.plotWidth));
+        const key = `${view.min === undefined ? '' : Math.round(view.min * 1000)}|${view.max === undefined ? '' : Math.round(view.max * 1000)}|${width}`;
+        if (key === refinedKeyRef.current) return;
+        refinedKeyRef.current = key;
+        const { xValues, valuesById } = plotSourcesRef.current;
+        let changed = false;
+        chart.series.forEach((series) => {
+            const id = series.options.id;
+            const values = id !== undefined ? valuesById.get(id) : undefined;
+            if (!values) return; // navigator series etc
+            // updatePoints=false: replace outright, no per-point diffing
+            series.setData(plotData(xValues, values, view, width), false, false, false);
+            changed = true;
+        });
+        if (changed) chart.redraw(false);
+    }, []);
+
+    // Coalesce bursts of extremes changes (dragging the navigator fires one
+    // per mouse move) into at most one refinement per animation frame.
+    const scheduleRefine = useCallback((chart: Highcharts.Chart) => {
+        if (refineFrameRef.current !== null) return;
+        refineFrameRef.current = requestAnimationFrame(() => {
+            refineFrameRef.current = null;
+            refineVisibleData(chart);
+        });
+    }, [refineVisibleData]);
+
+    useEffect(() => () => {
+        if (refineFrameRef.current !== null) cancelAnimationFrame(refineFrameRef.current);
+    }, []);
+
     const options = useMemo(() => {
         // Shift every x value so the first sample sits at 0 (see
         // formatElapsedTick above).
         const startTime = timestamps[0] ?? 0;
+        const xValues = elapsedTimes(timestamps);
 
         const visibleNumeric = channels.filter((c) => c.kind === 'numeric' && c.visible);
         const visibleSolenoids = channels.filter((c) => c.kind === 'solenoid' && c.visible);
@@ -307,10 +378,8 @@ const Chart = () => {
         const AXIS_BUFFER = 8;
         const estimateLabelWidth = (channel?: { values: number[] }) => {
             if (!channel || channel.values.length === 0) return 40;
-            const finiteValues = channel.values.filter((v) => Number.isFinite(v));
-            if (finiteValues.length === 0) return 40;
-            const maxAbs = Math.max(...finiteValues.map((v) => Math.abs(v)));
-            const hasNegative = finiteValues.some((v) => v < 0);
+            const { count, maxAbs, hasNegative } = valueStats(channel.values);
+            if (count === 0) return 40;
             const intDigits = Math.max(1, Math.floor(Math.log10(maxAbs + 1)) + 1);
             // + a decimal point and one decimal place, since Highcharts'
             // default tick formatting usually shows one, + a minus sign
@@ -351,9 +420,9 @@ const Chart = () => {
                 const TICK_COUNT = 6;
                 const hasExplicitMin = !axis.auto && axis.min !== '';
                 const hasExplicitMax = !axis.auto && axis.max !== '';
-                const dataValues = (channelForAxis?.values ?? []).filter((v) => Number.isFinite(v));
-                const dataMin = dataValues.length > 0 ? Math.min(...dataValues) : 0;
-                const dataMax = dataValues.length > 0 ? Math.max(...dataValues) : 1;
+                const stats = valueStats(channelForAxis?.values ?? []);
+                const dataMin = stats.count > 0 ? stats.min : 0;
+                const dataMax = stats.count > 0 ? stats.max : 1;
                 const dataPad = dataMax > dataMin ? (dataMax - dataMin) * 0.05 : 1;
                 const resolvedMin = hasExplicitMin ? (axis.min as number) : dataMin - dataPad;
                 let resolvedMax = hasExplicitMax ? (axis.max as number) : dataMax + dataPad;
@@ -392,19 +461,24 @@ const Chart = () => {
             })
             : [{ title: { text: '' } }];
 
-        const xValues = timestamps.map((t) => t - startTime);
         const series = visibleNumeric.map((channel) => ({
+            // id ties the series back to its channel for refineVisibleData
+            id: channel.id,
             name: channel.label,
             type: 'line',
             color: channel.color,
             yAxis: channel.axisId !== undefined ? (axisIndexById.get(channel.axisId) ?? 0) : 0,
-            // non-finite values (e.g. undefined calculated points) become nulls...
-            data: xValues.map((x, i) => [x, Number.isFinite(channel.values[i]) ? channel.values[i] : null]),
-            // ...which are bridged with a faint dotted line so it's clear the
-            // break is intentional (no tooltip points exist inside a bridge)
+            // Starts as the decimated overview of the whole trace; the
+            // layout effect below swaps in full detail for the visible
+            // window. Non-finite values (e.g. undefined calculated points)
+            // are left out...
+            data: overviewData(xValues, channel.values),
+            // ...and the gaps they leave are bridged with a faint dotted line
+            // so it's clear the break is intentional (no tooltip points exist
+            // inside a bridge)
             connectNulls: true,
             zoneAxis: 'x',
-            zones: gapBridgeZones(xValues, channel.values, channel.color),
+            zones: cachedGapBridgeZones(xValues, channel.values, channel.color),
         }));
 
         // make the solenoid lines since they aren't a normal data series
@@ -457,6 +531,8 @@ const Chart = () => {
                             start: axis.userMin !== undefined ? axis.userMin / 1000 : null,
                             end: axis.userMax !== undefined ? axis.userMax / 1000 : null,
                         });
+                        // load full detail for the new window
+                        scheduleRefine(this.chart);
                     },
                 },
             },
@@ -507,6 +583,10 @@ const Chart = () => {
             },
             plotOptions: {
                 series: {
+                    // Points are already reduced to ~2 per pixel, so skip
+                    // Highcharts' own per-point bookkeeping where possible.
+                    turboThreshold: 0,
+                    dataGrouping: { enabled: false },
                     events: {
                         // make sure the solenoid lines gray out like the series lines
                         mouseOver(this: Highcharts.Series) {
@@ -523,13 +603,18 @@ const Chart = () => {
                 },
             },
         };
-    }, [timestamps, channels, axes, chartWidth, drawNavigatorFrame, reportViewTimeRange]);
+    }, [timestamps, channels, axes, chartWidth, drawNavigatorFrame, reportViewTimeRange, scheduleRefine]);
 
     // time range on the chart is updated properly on changes
     useLayoutEffect(() => {
         const chart = chartComponentRef.current?.chart;
         const xAxis = chart?.xAxis[0];
-        if (!xAxis) return;
+        if (!chart || !xAxis) return;
+
+        // The chart was just (re)given overview data from `options`, so
+        // whatever detail was loaded before is gone - rebuild it below.
+        plotSourcesRef.current = plotSources;
+        refinedKeyRef.current = '';
 
         if (shownTimestampsRef.current !== timestamps) {
             shownTimestampsRef.current = timestamps;
@@ -538,6 +623,7 @@ const Chart = () => {
             // carry over to this one.
             appliedTimeRangeTokenRef.current = requestedTimeRange?.token ?? null;
             xAxis.setExtremes(undefined, undefined, true, false);
+            refineVisibleData(chart);
             return;
         }
 
@@ -550,6 +636,7 @@ const Chart = () => {
             const max = end !== null ? end * 1000 : undefined;
             viewRangeRef.current = { min, max };
             xAxis.setExtremes(min, max, true, false);
+            refineVisibleData(chart);
             return;
         }
 
@@ -559,7 +646,8 @@ const Chart = () => {
         if (hasRange && (current.userMin !== min || current.userMax !== max)) {
             xAxis.setExtremes(min, max, true, false);
         }
-    }, [options, timestamps, requestedTimeRange]);
+        refineVisibleData(chart);
+    }, [options, timestamps, requestedTimeRange, plotSources, refineVisibleData]);
 
     return (
         <div className="chart-container" ref={containerRef}>
