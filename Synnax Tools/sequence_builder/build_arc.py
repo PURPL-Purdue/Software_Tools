@@ -2,14 +2,48 @@ import csv
 import os
 import sys
 
+blueline_funcs = []
+blueline_seqs = []
+blueline_func_names = []
+
 def strip_comment(line):
     return line.split("/", 1)[0].rstrip()
+
+def parse_blueline(name, snrs, upprs, lwrs, seq):
+    func = ""
+    func += "func " + name + "() bool {\n"
+    func += "\tis_blueline := false\n"
+    for i, snr in enumerate(snrs):
+        snrs[i] = snr.replace("-", "_")
+    for i, num in enumerate(upprs):
+        func += "\tis_blueline = " + snrs[i] + " > " + str(parse_int(num, True)) + " or is_blueline\n"
+    for i, num in enumerate(lwrs):
+        func += "\tis_blueline = " + snrs[i] + " < " + str(parse_int(num, False)) + " or is_blueline\n"
+    func += "\treturn is_blueline\n"
+    func += "}\n\n"
+    blueline_funcs.append(func)
+    blueline_seqs.append(seq)
+    blueline_func_names.append(name)
+
+def is_in_blueline_funcs(value):
+    if value in blueline_func_names:
+        return True
+    return False
+
+def parse_int(s, upr):
+    if (s=="NA" and upr):
+        return 100000
+    elif (s=="NA" and not upr):
+        return -30
+    else:
+        return int(s)
 
 def preprocess_file(path):
     print("Parsing file: " + path)
     with open(path, newline="") as f:
         cleaned = (strip_comment(line) for line in f)
         reader = csv.reader(cleaned)
+        rows = list(reader)
 
         redline_devices = []
         redline_values = []
@@ -25,7 +59,9 @@ def preprocess_file(path):
 
         last_time = -1
 
-        for i, row in enumerate(reader):
+        indx = 0
+
+        for i, row in enumerate(rows):
             if i == 0 and row[0] != "Limits":
                 print(row[0])
                 return (False, "Error: missing Limits flag")
@@ -55,9 +91,19 @@ def preprocess_file(path):
                 for j, value in enumerate(redline_values):
                     if int(value) != -1 and int(value) < 0:
                         return (False, "Error: invalid redline value for device " + redline_devices[j])
+
+            if (row[0] == "BlueLimits"):
+                while (rows[indx+i+1][0] != "Timestamp (ms)"):
+                    indx += 1
+                    func_name = rows[indx+i][0]
+                    snrs = rows[indx+i][1].split("|")
+                    upprs = rows[indx+i][2].split("|")
+                    lwrs = rows[indx+i][3].split("|")
+                    seq = rows[indx+i][4]
+                    parse_blueline(func_name, snrs, upprs, lwrs, seq)       
+                indx += 1     
             
-            
-            if i == 3:
+            if i == 3+indx:
                 if (row[0] != "Timestamp (ms)"):
                     return (False, "Error: no timestamp header element")
 
@@ -67,11 +113,11 @@ def preprocess_file(path):
                         devices.append(row[j+1] + "_cmd")
                 print("Input Devices: " + str(devices))
 
-            if i == 4:
+            if i == 4+indx:
                 if (row[0] != "Main"):
                     return (False, "Error: Missing Main sequence start in row " + str(i + 1))
 
-            if (i >= 5):
+            if (i >= 5+indx):
                 if row[0] == "END":
                     if len(row) < 2:
                         return (False, "Error: END statement should specify function name at row " + str(i + 1))
@@ -110,18 +156,20 @@ def preprocess_file(path):
                 last_time = int(row[0])
 
                 if "BLUELINE" not in row[1]:
-                    for element in row:
-                        try: # Logic to check if the value is an integer (valid)
-                            x = int(element)
-                        except ValueError:
-                            return (False, "Error: non-integer element in row " + str(i + 1))
-                        
-                    if len(row[1:]) != len(devices):
+                    n = len(devices)
+                    if len(row[1:]) != n and not (len(row[1:]) == n + 1 and is_in_blueline_funcs(row[n+1])):
                         return (False, "Error: Invalid input field length in row " + str(i + 1))
-            
-                    for num in row[1:]: # Check for digital input for solenoids
-                        if (int(num) < 0 or int(num) > 1):
-                            return (False, "Error: invalid input on row " + str(i + 1))
+
+                    for num in row[1:]:
+                        if (num not in ("0", "1") and not is_in_blueline_funcs(num)):
+                            return (False, "Error: Invalid input on row " + str(i+1))
+
+                    # for element in row: # Removed as the upper block is an updated version of it for new bluelines
+                    #     try: # Logic to check if the value is an integer (valid)
+                    #         x = int(element)
+                    #     except ValueError:
+                    #         return (False, "Error: non-integer element in row " + str(i + 1))
+
                 else:
                     if len(row) != 6:
                         return (False, "Error: invalid length for check condition in row " + str(i + 1))
@@ -147,17 +195,20 @@ def preprocess_file(path):
         for device in redline_devices:
             redline_table[device] = redline_values[redline_devices.index(device)]
                     
-        return (True, redline_table, devices, time_offsets)
+        return (True, redline_table, devices, time_offsets, indx)
                     
             
 def parse_main_sequence(path="test.csv"):
+    blueline_funcs.clear()
+    blueline_seqs.clear()
+    blueline_func_names.clear()
     validation = preprocess_file(path)
 
     redline_devices = []
     input_devices = []
 
     if (validation[0]):
-        isValid, redline_table, input_devices, time_offsets = validation
+        isValid, redline_table, input_devices, time_offsets, offset_indx = validation
     else:
         print(validation[1])
         return
@@ -204,7 +255,6 @@ def parse_main_sequence(path="test.csv"):
 
     main_sequence = "import (\n\ttime\n\tcontrol\n)\n\nauthority 250\n"
     main_sequence += "sequence Main {\n"
-
     blueline_num = 1
 
     with open(path, newline="") as f:
@@ -223,7 +273,7 @@ def parse_main_sequence(path="test.csv"):
             rows.append(row)
 
         for i, row in enumerate(rows):
-            if (i < 5):
+            if (i < 5 + offset_indx):
                 continue
 
             if row[0] == "END":
@@ -249,9 +299,9 @@ def parse_main_sequence(path="test.csv"):
                     stage_block += "\t\tcontrol.set_authority{value=250},\n"
                     stage_block += "\t\t1 -> seq_running,\n"
                     stage_block += "\t\t1 -> data_logging,\n"
-                    stage_block += "\t\t0 -> blueline_triggered\n"
-                    stage_block += "\t\t0 -> redline_triggered\n"
-                    stage_block += "\t\t0 -> blueline_count\n"
+                    stage_block += "\t\t0 -> blueline_triggered,\n"
+                    stage_block += "\t\t0 -> redline_triggered,\n"
+                    stage_block += "\t\t0 -> blueline_count,\n"
                 elif seq_name == "Redline":
                     stage_block += "\t\tcontrol.set_authority{value=253},\n"
                     stage_block += "\t\t1 -> redline_triggered,\n"
@@ -275,7 +325,11 @@ def parse_main_sequence(path="test.csv"):
 
 
             for j, value in enumerate(row[1:]):
-                stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
+                if value in ("0", "1"):
+                    stage_block += "\t\t" + str(value) + " -> " + str(input_devices[j]) + ",\n"
+                else:
+                    k = blueline_func_names.index(value)
+                    stage_block += "\t\ttime.interval{period=10ms} -> " + str(value) + "{} => " + blueline_seqs[k] + "0,\n"
 
             if seq_name != "Redline":
                 stage_block += "\t\ttime.interval{period=10ms} -> check_redline{} => Redline0,\n"
@@ -300,6 +354,10 @@ def parse_main_sequence(path="test.csv"):
         main_sequence += idle_seq
         main_sequence += "}\n\n"
         main_sequence += redline_func
+
+        for func in blueline_funcs:
+            main_sequence += func
+
 
 
         main_sequence += "start_cmd != 0 => Main"
