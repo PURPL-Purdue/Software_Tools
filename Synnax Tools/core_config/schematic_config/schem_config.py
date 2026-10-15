@@ -1,9 +1,11 @@
 from pathlib import Path
 import synnax as sy
 import json
+import argparse
+import sys
 
 
-def configure_schematic():
+def configure_schematic(old_system=False):
     client = sy.Synnax(host="169.254.71.1",
         port=9091,
         username="synnax",
@@ -18,151 +20,15 @@ def configure_schematic():
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-
-    # DEPRECATED: Synnax changed schematic formats, this only works for older versions (< 50.0 I think)
-    """
-    elements = data["props"]
-
-    for element in elements.keys():
-        if elements[element]["key"] == "value":
-            #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"]["channel"])
-            
-            label = elements[element]["label"]["label"]
-            label = label.replace("-", "_")
-            label = label.replace(" ", "_")
-
-            if label[:2] == "SN" or label[:2] == "ER":
-                label = label + "_state"
-
-            #print(label)
-
-            try:
-                elements[element]["telem"]["props"]["segments"]["valueStream"]["props"]["channel"] = client.channels.retrieve([label])[0].key
-            except:
-                print(f"Channel {label} not found in Synnax, skipping...")
-
-            #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"])
-        elif elements[element]["key"] == "setpoint":
-            label = elements[element]["label"]["label"]
-
-            label = label.replace(" ", "_")
-            label = label.replace("-", "_")
-
-            try:
-                elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
-                elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
-            except:
-                print(f"Channel {label} not found in Synnax, skipping...")
-
-        elif elements[element]["key"] == "solenoidValve" or elements[element]["key"] == "ballValve" or elements[element]["key"] == "switch" or elements[element]["key"] == "ejectorCompressor":
-            #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
-            #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
-
-            label = elements[element]["label"]["label"]
-
-            if label == "SEQUENCE RUNNING":
-                label = "seq_running"
-                
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-
-                    elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"] = channel_key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-
-                continue
-            
-            elif label == "REDLINE TRIGGERED":
-                label = "redline_triggered"
-                
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-
-                    elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"] = channel_key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-
-                continue
-            
-            elif label == "BLUELINE TRIGGERED":
-                label = "blueline_triggered"
-
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-
-                    elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"] = channel_key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-
-                continue
-
-            elif label == "DATA LOGGING":
-                label = "data_logging"
-
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-
-                    elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"] = channel_key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-
-                continue
-
-            label = label.replace(" ", "_")
-            label = label.replace("-", "_")
-
-            #print(label)
-
-            try:
-                elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"] = client.channels.retrieve([label + "_state"])[0].key
-                elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
-            except:
-                print(f"Channel {label} not found in Synnax, skipping...")
-
-        if elements[element]["key"] == "button":
-            #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
-            #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
-            label = elements[element]["label"]["label"]
-            if label == "Start":
-                label = "start_cmd"       
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-
-                continue
-
-            elif label == "ESTOP":
-                label = "estop_cmd"
-                try:
-                    channel_key = client.channels.retrieve([label])[0].key
-                    elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = channel_key
-                except:
-                    print(f"Channel {label} not found in Synnax, skipping...")
-                
-                continue
-            
-
-            label = label.replace(" ", "_")
-            label = label.replace("-", "_")
-
-            #print(label)
-
-            try:
-                elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
-            except:
-                print(f"Channel {label} not found in Synnax, skipping...")
-    """
-
-    elements = data["configs"]
+    if old_system:
+        elements = data["props"]
+        type_text = "key"
+    else:
+        elements = data["configs"]
+        type_text = "variant"
     
     for element in elements.keys():
-        if elements[element]["variant"] == "value":
+        if elements[element][type_text] == "value":
             #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"]["channel"])
             
             label = elements[element]["label"]["label"]
@@ -180,7 +46,7 @@ def configure_schematic():
                 print(f"Channel {label} not found in Synnax, skipping...")
 
             #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"])
-        elif elements[element]["variant"] == "setpoint":
+        elif elements[element][type_text] == "setpoint":
             label = elements[element]["label"]["label"]
 
             label = label.replace(" ", "_")
@@ -191,7 +57,7 @@ def configure_schematic():
             except:
                 print(f"Channel {label} not found in Synnax, skipping...")
 
-        elif elements[element]["variant"] == "solenoidValve" or elements[element]["key"] == "ballValve" or elements[element]["key"] == "switch":
+        elif elements[element][type_text] == "solenoidValve" or elements[element][type_text] == "ballValve" or elements[element][type_text] == "switch":
             #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
             #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
 
@@ -260,7 +126,7 @@ def configure_schematic():
             except:
                 print(f"Channel {label} not found in Synnax, skipping...")
 
-        if elements[element]["variant"] == "button":
+        if elements[element][type_text] == "button":
             #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
             #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
             label = elements[element]["label"]["label"]
@@ -299,4 +165,11 @@ def configure_schematic():
         json.dump(data, file)
 
 if __name__ == "__main__":
-    configure_schematic()
+    parser = argparse.ArgumentParser(description="Script to configure schematic JSON files with Synnax channel keys. It configures all JSON files in the 'empty_schems' directory and saves the filled schematics in the 'filled_schems' directory.")
+
+    parser.add_argument('--old', action='store_true', help="Toggle the old system profile.")
+
+    args = parser.parse_args()
+
+
+    configure_schematic(args.old)
