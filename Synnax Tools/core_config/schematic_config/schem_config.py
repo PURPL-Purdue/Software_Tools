@@ -1,9 +1,11 @@
 from pathlib import Path
 import synnax as sy
 import json
+import argparse
+import sys
 
 
-def configure_schematic():
+def configure_schematic(old_system=False):
     client = sy.Synnax(host="169.254.71.1",
         port=9091,
         username="synnax",
@@ -18,17 +20,22 @@ def configure_schematic():
     with open(file_path, 'r') as file:
         data = json.load(file)
 
-    elements = data["props"]
-
+    if old_system:
+        elements = data["props"]
+        type_text = "key"
+    else:
+        elements = data["configs"]
+        type_text = "variant"
+    
     for element in elements.keys():
-        if elements[element]["key"] == "value":
+        if elements[element][type_text] == "value":
             #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"]["channel"])
             
             label = elements[element]["label"]["label"]
             label = label.replace("-", "_")
             label = label.replace(" ", "_")
 
-            if label[:2] == "SN" or label[:2] == "ER":
+            if label[:2] == "ER":
                 label = label + "_state"
 
             #print(label)
@@ -39,7 +46,7 @@ def configure_schematic():
                 print(f"Channel {label} not found in Synnax, skipping...")
 
             #print(elements[element]["telem"]["props"]["segments"]["valueStream"]["props"])
-        elif elements[element]["key"] == "setpoint":
+        elif elements[element][type_text] == "setpoint":
             label = elements[element]["label"]["label"]
 
             label = label.replace(" ", "_")
@@ -47,11 +54,10 @@ def configure_schematic():
 
             try:
                 elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
-                elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"] = client.channels.retrieve([label + "_cmd"])[0].key
             except:
                 print(f"Channel {label} not found in Synnax, skipping...")
 
-        elif elements[element]["key"] == "solenoidValve" or elements[element]["key"] == "ballValve" or elements[element]["key"] == "switch" or elements[element]["key"] == "ejectorCompressor":
+        elif elements[element][type_text] == "solenoidValve" or elements[element][type_text] == "ballValve" or elements[element][type_text] == "switch":
             #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
             #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
 
@@ -120,7 +126,7 @@ def configure_schematic():
             except:
                 print(f"Channel {label} not found in Synnax, skipping...")
 
-        if elements[element]["key"] == "button":
+        if elements[element][type_text] == "button":
             #print(elements[element]["source"]["props"]["segments"]["valueStream"]["props"]["channel"])
             #print(elements[element]["sink"]["props"]["segments"]["setter"]["props"]["channel"])
             label = elements[element]["label"]["label"]
@@ -159,4 +165,11 @@ def configure_schematic():
         json.dump(data, file)
 
 if __name__ == "__main__":
-    configure_schematic()
+    parser = argparse.ArgumentParser(description="Script to configure schematic JSON files with Synnax channel keys. It configures all JSON files in the 'empty_schems' directory and saves the filled schematics in the 'filled_schems' directory.")
+
+    parser.add_argument('--old', action='store_true', help="Toggle the old system profile.")
+
+    args = parser.parse_args()
+
+
+    configure_schematic(args.old)
