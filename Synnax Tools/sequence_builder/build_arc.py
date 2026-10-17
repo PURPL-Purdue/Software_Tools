@@ -177,8 +177,8 @@ def preprocess_file(path):
                     if row[2] != "LOWER" and row[2] != "UPPER":
                         return (False, "Error: " + str(row[2]) + " is not a proper redline condition. Please use LOWER or UPPER. Row " + str(i + 1))
 
-                    if row[3].replace("-", "_") not in redline_devices:
-                        return (False, "Error: Check on non-existent device in row " + str(i + 1))
+                    #if row[3].replace("-", "_") not in redline_devices:
+                    #    return (False, "Error: Check on non-existent device in row " + str(i + 1))
                     
                     try: # Logic to check if the check value is an integer (valid)
                         x = int(row[4])
@@ -330,6 +330,8 @@ def parse_main_sequence(path="test.csv"):
                 else:
                     k = blueline_func_names.index(value)
                     stage_block += "\t\ttime.interval{period=10ms} -> " + str(value) + "{} => " + blueline_seqs[k] + "0,\n"
+                    stage_block += "\t\t" + str(blueline_num) + " -> blueline_count,\n"
+                    blueline_num += 1
 
             if seq_name != "Redline":
                 stage_block += "\t\ttime.interval{period=10ms} -> check_redline{} => Redline0,\n"
