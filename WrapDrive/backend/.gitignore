@@ -1,0 +1,12 @@
+# Database credentials
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+venv/
+.venv/
+
+# Python generated files
+__pycache__/
+*.pyc
