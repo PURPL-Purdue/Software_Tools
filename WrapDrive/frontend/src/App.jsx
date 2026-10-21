@@ -1,943 +1,120 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { api, idOf, listFrom, nameOf } from './lib/api'
+import Modal from './components/Modal'
+import PartForm from './components/PartForm'
 
-const LOCATIONS = [
-  { field: 'storage_quantity', label: 'Storage' },
-  { field: 'biggie_k_quantity', label: 'Biggie K' },
-  { field: 'airbreathing_quantity', label: 'Airbreathing' },
-  { field: 'tachyon_quantity', label: 'Tachyon' },
-  { field: 'damaged_quantity', label: 'Damaged' },
+const tabs = [
+  ['details','Part Details'], ['allocations','Allocations'], ['history','Stock History'],
+  ['tracked','Track a Part'], ['relations','Related Parts'], ['attachments','Attachments']
 ]
+const blankStock = {total:0,available:0,in_use:0,unavailable:0}
+const fmt = (n) => Number(n || 0).toLocaleString(undefined,{maximumFractionDigits:6})
+const date = (x) => x ? new Date(x).toLocaleString() : '—'
 
-const NON_DAMAGED_LOCATIONS = LOCATIONS.filter(l => l.field !== 'damaged_quantity')
-const LOCATION_LABEL = Object.fromEntries(LOCATIONS.map(l => [l.field, l.label]))
+function Toast({toast,onClose}) { if(!toast)return null; return <div className={`toast ${toast.type||''}`} onClick={onClose}>{toast.message}</div> }
+function Loading(){return <div className="loading"><div className="spinner"/>Loading…</div>}
+function Empty({children}){return <div className="empty">{children}</div>}
 
-const ICON_PATHS = {
-  plus: <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>,
-  eye: <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>,
-  trash: <><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></>,
+export default function App(){
+  const [parts,setParts]=useState([]), [categories,setCategories]=useState([]), [locations,setLocations]=useState([]), [tags,setTags]=useState([])
+  const [selectedId,setSelectedId]=useState(null), [part,setPart]=useState(null), [stock,setStock]=useState(blankStock)
+  const [tab,setTab]=useState('details'), [loading,setLoading]=useState(true), [detailLoading,setDetailLoading]=useState(false)
+  const [query,setQuery]=useState(''), [category,setCategory]=useState(''), [tag,setTag]=useState(''), [location,setLocation]=useState('')
+  const [modal,setModal]=useState(null), [toast,setToast]=useState(null)
+
+  const notify=(message,type='success')=>{setToast({message,type});setTimeout(()=>setToast(null),3500)}
+  const fail=(e)=>notify(e?.message || 'Something went wrong','error')
+
+  const loadMeta=useCallback(async()=>{
+    const [c,l,t]=await Promise.all([api.categories(),api.locations(),api.tags()])
+    setCategories(listFrom(c)); setLocations(listFrom(l)); setTags(listFrom(t).map(nameOf).filter(Boolean))
+  },[])
+  const loadParts=useCallback(async()=>{
+    const data=await api.listParts({q:query,category_id:category,tag,location_id:location,limit:200})
+    setParts(listFrom(data))
+  },[query,category,tag,location])
+  const loadPart=useCallback(async(id)=>{
+    if(!id){setPart(null);return}
+    setDetailLoading(true)
+    try{const [p,s]=await Promise.all([api.getPart(id),api.stock(id)]);setPart(p);setStock(s?.summary || s || blankStock)}catch(e){fail(e)}finally{setDetailLoading(false)}
+  },[])
+
+  useEffect(()=>{(async()=>{try{await Promise.all([loadMeta(),loadParts()])}catch(e){fail(e)}finally{setLoading(false)}})()},[])
+  useEffect(()=>{const timer=setTimeout(()=>loadParts().catch(fail),250);return()=>clearTimeout(timer)},[loadParts])
+  useEffect(()=>{loadPart(selectedId)},[selectedId,loadPart])
+
+  const categoryName=(p)=>nameOf(p?.category)||nameOf(categories.find(c=>idOf(c)===(p?.category_id||'')))||'Uncategorized'
+  const unit=part?.stock_unit || 'units'
+  const allocations=part?.allocations || stock?.allocations || []
+  const locationMap=useMemo(()=>Object.fromEntries(locations.map(l=>[idOf(l),l])),[locations])
+
+  async function refresh(){await Promise.all([loadMeta(),loadParts()]); if(selectedId) await loadPart(selectedId)}
+  async function createPart(body){try{const created=await api.createPart(body);setModal(null);await refresh();setSelectedId(idOf(created));notify('Part created')}catch(e){fail(e)}}
+  async function updatePart(body){try{await api.updatePart(selectedId,body);setModal(null);await refresh();notify('Part updated')}catch(e){fail(e)}}
+
+  if(loading) return <div className="app-shell"><Header/><Loading/></div>
+  return <div className="app-shell">
+    <Header/>
+    <main className="workspace">
+      <aside className="sidebar">
+        <div className="sidebar-title"><div><span className="eyebrow">Inventory</span><h1>Parts</h1></div><button className="primary compact" onClick={()=>setModal('addPart')}>+ Add Part</button></div>
+        <div className="search"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search part name or number"/></div>
+        <div className="filters">
+          <select value={category} onChange={e=>setCategory(e.target.value)}><option value="">All categories</option>{categories.map(c=><option key={idOf(c)} value={idOf(c)}>{nameOf(c)}</option>)}</select>
+          <select value={tag} onChange={e=>setTag(e.target.value)}><option value="">All tags</option>{tags.map(t=><option key={t}>{t}</option>)}</select>
+          <select value={location} onChange={e=>setLocation(e.target.value)}><option value="">All locations</option>{locations.map(l=><option key={idOf(l)} value={idOf(l)}>{nameOf(l)}</option>)}</select>
+        </div>
+        <div className="list-head"><span>{parts.length} parts</span><button className="text-btn" onClick={()=>setModal('categories')}>Edit categories</button></div>
+        <div className="part-list">{parts.length?parts.map(p=><button key={idOf(p)} className={`part-row ${selectedId===idOf(p)?'active':''}`} onClick={()=>{setSelectedId(idOf(p));setTab('details')}}><div className="part-icon">{(categoryName(p)[0]||'P').toUpperCase()}</div><div><strong>{p.name}</strong><small>{p.description||p.purpl_part_number||categoryName(p)}</small><span>{categoryName(p)}</span></div></button>):<Empty>No parts match these filters.</Empty>}</div>
+      </aside>
+
+      <section className="content">
+        {!selectedId?<Welcome onAdd={()=>setModal('addPart')}/>:detailLoading?<Loading/>:part?<>
+          <div className="breadcrumb">Home <b>›</b> Parts <b>›</b> {categoryName(part)} <b>›</b> {part.name}</div>
+          <div className="part-header"><div><span className="eyebrow">{categoryName(part)}</span><h2>{part.name}</h2><p>{part.description||'No description yet.'}</p></div><button className="secondary" onClick={()=>setModal('editPart')}>Edit part</button></div>
+          <div className="summary-grid"><Stat label="In Stock" value={fmt(stock.total ?? stock.total_quantity)} unit={unit}/><Stat label="Available" value={fmt(stock.available ?? stock.available_quantity)} unit={unit}/><Stat label="In Use" value={fmt(stock.in_use ?? stock.in_use_quantity)} unit={unit}/><Stat label="Unavailable" value={fmt(stock.unavailable ?? stock.unavailable_quantity)} unit={unit}/></div>
+          <nav className="tabs">{tabs.map(([k,label])=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{label}</button>)}</nav>
+          <div className="detail-grid"><section className="panel main-panel">
+            {tab==='details'&&<Details part={part} category={categoryName(part)}/>} 
+            {tab==='allocations'&&<Allocations part={part} allocations={allocations} locations={locations} onSaved={refresh} notify={notify} fail={fail}/>} 
+            {tab==='history'&&<History partId={selectedId} locations={locationMap}/>} 
+            {tab==='tracked'&&<Tracked partId={selectedId} locations={locations} refresh={refresh} notify={notify} fail={fail}/>} 
+            {tab==='relations'&&<Relations part={part} allParts={parts} refresh={refresh} notify={notify} fail={fail}/>} 
+            {tab==='attachments'&&<Attachments partId={selectedId} notify={notify} fail={fail}/>} 
+          </section><aside className="right-rail"><TagsNotes part={part} refresh={refresh} notify={notify} fail={fail}/></aside></div>
+        </>:<Empty>Part not found.</Empty>}
+      </section>
+    </main>
+    {modal==='addPart'&&<Modal title="Add a Part" wide onClose={()=>setModal(null)}><PartForm categories={categories} onSubmit={createPart}/></Modal>}
+    {modal==='editPart'&&<Modal title={`Edit ${part.name}`} wide onClose={()=>setModal(null)}><PartForm initial={part} categories={categories} onSubmit={updatePart} submitLabel="Finish Editing"/></Modal>}
+    {modal==='categories'&&<Modal title="Edit Categories" onClose={()=>setModal(null)}><CategoryManager categories={categories} refresh={refresh} notify={notify} fail={fail}/></Modal>}
+    <Toast toast={toast} onClose={()=>setToast(null)}/>
+  </div>
 }
 
-function Icon({ name, size = 15 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {ICON_PATHS[name]}
-    </svg>
-  )
+function Header(){return <header className="topbar"><div className="brand"><div className="brand-mark">W</div><div><strong>WrapDrive</strong><small>PURPL Inventory</small></div></div><div className="top-status"><span className="status-dot"/> Inventory workspace</div></header>}
+function Welcome({onAdd}){return <div className="welcome"><div className="welcome-icon">⌁</div><h2>Inventory, without the spreadsheet archaeology.</h2><p>Search for a part on the left or add the first one. Engineering details, stock allocations, serialized units, related parts, and documents stay together.</p><button className="primary" onClick={onAdd}>+ Add a Part</button></div>}
+function Stat({label,value,unit}){return <div className="stat"><span>{label}</span><strong>{value}</strong><small>{unit}</small></div>}
+function Details({part,category}){const specs=part.specifications||part.specs||[];return <><div className="panel-title"><div><span className="eyebrow">Engineering</span><h3>Part Details</h3></div></div><dl className="details"><div><dt>Name</dt><dd>{part.name}</dd></div><div><dt>Description</dt><dd>{part.description||'—'}</dd></div><div><dt>Manufacturer Part Number</dt><dd>{part.manufacturer_part_number||'—'}</dd></div><div><dt>PURPL Part Number</dt><dd>{part.purpl_part_number||'—'}</dd></div><div><dt>Category</dt><dd>{category}</dd></div><div><dt>Stock Unit</dt><dd>{part.stock_unit||'each'}</dd></div></dl><div className="subsection"><h4>Specifications</h4>{specs.length?<dl className="spec-list">{specs.map((s,i)=><div key={i}><dt>{s.key||s.name}</dt><dd>{s.value}{s.unit?` ${s.unit}`:''}</dd></div>)}</dl>:<Empty>No specifications have been added.</Empty>}</div></>}
+
+function Allocations({part,allocations,locations,onSaved,notify,fail}){
+  const current=useMemo(()=>Object.fromEntries(allocations.map(a=>[a.location_id||idOf(a.location),Number(a.quantity||0)])),[allocations])
+  const [editing,setEditing]=useState(false), [values,setValues]=useState(current), [notes,setNotes]=useState({}), [actor,setActor]=useState('')
+  useEffect(()=>setValues(current),[current])
+  const rows=locations.filter(l=>l.active!==false)
+  async function save(){const edits=rows.filter(l=>Number(values[idOf(l)]||0)!==Number(current[idOf(l)]||0)).map(l=>({location_id:idOf(l),new_quantity:Number(values[idOf(l)]||0),note:(notes[idOf(l)]||'').trim()}));if(!edits.length){setEditing(false);return}if(!actor.trim())return fail(new Error('Enter your name for the stock history.'));if(edits.some(e=>!e.note))return fail(new Error('Add a short note for every changed location.'));try{await api.reconcileStock(idOf(part),{actor:actor.trim(),edits});setEditing(false);setNotes({});await onSaved();notify('Stock updated and recorded in history')}catch(e){fail(e)}}
+  return <><div className="panel-title"><div><span className="eyebrow">Inventory</span><h3>Allocations</h3></div><button className={editing?'primary':'secondary'} onClick={()=>editing?save():setEditing(true)}>{editing?'Finish Updating Stock':'Update Stock'}</button></div>{editing&&<div className="callout"><label>Your name<input value={actor} onChange={e=>setActor(e.target.value)} placeholder="Who is making this update?"/></label><p>Change quantities below. Each changed row needs its own note so the history remains useful.</p></div>}<div className="allocation-list">{rows.map(l=>{const lid=idOf(l), changed=Number(values[lid]||0)!==Number(current[lid]||0);return <div className={`allocation ${changed?'changed':''}`} key={lid}><div><strong>{nameOf(l)}</strong><small>{l.state?.replace('_',' ')||'available'}</small></div>{editing?<><input className="qty" type="number" min="0" step="any" value={values[lid]??0} onChange={e=>setValues(v=>({...v,[lid]:e.target.value}))}/><input className="note-input" value={notes[lid]||''} disabled={!changed} onChange={e=>setNotes(n=>({...n,[lid]:e.target.value}))} placeholder={changed?'Required note for this change':'No change'}/></>:<strong>{fmt(current[lid])} {part.stock_unit||'units'}</strong>}</div>})}</div></>
 }
 
-function CategoryPicker({ selected, categories, onChange, compact = false }) {
-  const available = categories.filter(c => !selected.includes(c.name))
-  return (
-    <div className={`cat-picker${compact ? ' compact' : ''}`}>
-      {selected.length === 0 && <span className="cat-picker-empty">—</span>}
-      {selected.map(name => (
-        <span key={name} className="mini-chip">
-          {name}
-          <button
-            type="button"
-            className="mini-chip-x"
-            aria-label={`Remove ${name}`}
-            onClick={() => onChange(selected.filter(n => n !== name))}
-          >×</button>
-        </span>
-      ))}
-      {available.length > 0 && (
-        <select
-          className="cat-picker-add"
-          value=""
-          onChange={e => {
-            if (e.target.value) onChange([...selected, e.target.value])
-          }}
-        >
-          <option value="">+</option>
-          {available.map(c => (
-            <option key={c.id} value={c.name}>{c.name}</option>
-          ))}
-        </select>
-      )}
-    </div>
-  )
-}
+function History({partId,locations}){const [items,setItems]=useState(null);useEffect(()=>{api.stockHistory(partId).then(x=>setItems(listFrom(x))).catch(()=>setItems([]))},[partId]);if(!items)return <Loading/>;return <><div className="panel-title"><div><span className="eyebrow">Audit trail</span><h3>Stock History</h3></div></div>{items.length?<div className="timeline">{items.map((e,i)=><div className="event" key={idOf(e)||i}><div className="event-dot"/><div><strong>{eventText(e,locations)}</strong><p>{e.note||'No note provided'}</p><small>{e.actor||'Unknown'} · {date(e.created_at||e.timestamp)}</small></div></div>)}</div>:<Empty>No stock changes recorded yet.</Empty>}</>}
+function eventText(e,locations){const q=fmt(e.quantity);const from=nameOf(locations[e.from_location_id])||'stock';const to=nameOf(locations[e.to_location_id])||'stock';if(e.operation==='move'||e.operation==='move_tracked_unit')return `${q} moved from ${from} to ${to}`;if(e.operation==='receive')return `${q} received into ${to}`;if(e.operation==='remove')return `${q} removed from ${from}`;if(e.operation==='serialize')return `Serialized ${q} unit`;return `${e.operation?.replaceAll('_',' ')||'Stock updated'} · ${q}`}
 
-function ConnectionBanner({ error }) {
-  if (!error) return null
-  const message = error === 'backend'
-    ? 'Servers are currently down. Trying to reconnect…'
-    : 'Database is unreachable. Some features may not work.'
-  return (
-    <div className="banner banner-error" role="status">
-      <span className="banner-dot" />
-      <span>{message}</span>
-    </div>
-  )
-}
+function Tracked({partId,locations,refresh,notify,fail}){const [units,setUnits]=useState(null),[show,setShow]=useState(false);const load=()=>api.trackedUnits(partId).then(x=>setUnits(listFrom(x))).catch(e=>{setUnits([]);fail(e)});useEffect(load,[partId]);async function add(e){e.preventDefault();const f=new FormData(e.currentTarget);try{await api.createTrackedUnit(partId,{serial:f.get('serial'),location_id:f.get('location_id'),description:f.get('description'),kit:f.get('kit')||null,actor:f.get('actor')});setShow(false);await Promise.all([load(),refresh()]);notify('Tracked unit created')}catch(err){fail(err)}}return <><div className="panel-title"><div><span className="eyebrow">Serialized inventory</span><h3>Track a Part</h3></div><button className="primary compact" onClick={()=>setShow(true)}>+ Track unit</button></div>{!units?<Loading/>:units.length?<div className="card-list">{units.map(u=><div className="unit-card" key={idOf(u)}><div><strong>{u.serial||u.name}</strong><span className={`badge ${u.status||''}`}>{u.status||'active'}</span></div><p>{u.description||'No identifying notes.'}</p><small>{nameOf(locations.find(l=>idOf(l)===u.location_id))||'Unknown location'}{u.kit?` · Kit: ${u.kit}`:''} · Added {date(u.created_at)}</small></div>)}</div>:<Empty>No individually tracked units.</Empty>}{show&&<Modal title="Track a Part" onClose={()=>setShow(false)}><form className="stack" onSubmit={add}><label>Serial / tracking name<input name="serial" required placeholder="ESB03137-1"/></label><label>Location<select name="location_id" required><option value="">Choose location</option>{locations.filter(l=>l.active!==false).map(l=><option value={idOf(l)} key={idOf(l)}>{nameOf(l)}</option>)}</select></label><label>Description<textarea name="description" placeholder="Sharpie dot, loose lever…"/></label><label>Kit<input name="kit" placeholder="Optional"/></label><label>Your name<input name="actor" required/></label><button className="primary">Add tracked unit</button></form></Modal>}</>}
 
-function Toast({ toast }) {
-  if (!toast) return null
-  return (
-    <div className={`toast toast-${toast.type}`} role="status">
-      {toast.message}
-    </div>
-  )
-}
+function Relations({part,allParts,refresh,notify,fail}){const [show,setShow]=useState(false);const rels=part.relations||[];async function add(e){e.preventDefault();const f=new FormData(e.currentTarget);try{await api.addRelation(idOf(part),{related_part_id:f.get('related_part_id'),note:f.get('note')||''});setShow(false);await refresh();notify('Related part added')}catch(err){fail(err)}}return <><div className="panel-title"><div><span className="eyebrow">Engineering context</span><h3>Related Parts</h3></div><button className="primary compact" onClick={()=>setShow(true)}>+ Add a Part</button></div>{rels.length?<div className="card-list">{rels.map((r,i)=>{const rp=r.related_part||allParts.find(p=>idOf(p)===(r.related_part_id||r.part_id));return <div className="relation-card" key={idOf(r)||i}><strong>{rp?.name||r.name||r.related_part_id}</strong><p>{rp?.description||r.note||'Related part'}</p></div>})}</div>:<Empty>No related parts yet.</Empty>}{show&&<Modal title="Add Related Part" onClose={()=>setShow(false)}><form className="stack" onSubmit={add}><label>Part<select name="related_part_id" required><option value="">Choose a part</option>{allParts.filter(p=>idOf(p)!==idOf(part)).map(p=><option value={idOf(p)} key={idOf(p)}>{p.name} — {p.description}</option>)}</select></label><label>Relationship note<input name="note" placeholder="Mating fitting, mounting hardware…"/></label><button className="primary">Add relation</button></form></Modal>}</>}
 
-function Brand() {
-  return (
-    <div className="brand">
-      <span className="brand-purpl">PURPL</span>
-      <span className="brand-logo">
-        <img src="/favicon.svg" alt="" className="brand-icon" />
-        WrapDrive
-      </span>
-    </div>
-  )
-}
+function Attachments({partId,notify,fail}){const [items,setItems]=useState(null);const load=()=>api.attachments(partId).then(x=>setItems(listFrom(x))).catch(e=>{setItems([]);fail(e)});useEffect(load,[partId]);async function upload(e){e.preventDefault();const form=e.currentTarget;const raw=new FormData(form);const data=new FormData();data.append('file',raw.get('file'));data.append('kind',raw.get('kind'));data.append('note',raw.get('note'));data.append('uploaded_by',raw.get('uploaded_by'));try{await api.uploadAttachment(partId,data);form.reset();await load();notify('Attachment uploaded')}catch(err){fail(err)}}return <><div className="panel-title"><div><span className="eyebrow">Documents</span><h3>Attachments</h3></div></div><form className="upload" onSubmit={upload}><input name="file" type="file" required/><select name="kind" defaultValue="datasheet"><option value="datasheet">Datasheet</option><option value="manual">Manual</option><option value="drawing">Engineering drawing</option><option value="other">Other</option></select><input name="note" placeholder="Description"/><input name="uploaded_by" placeholder="Your name" required/><button className="primary compact">Attach file</button></form>{!items?<Loading/>:items.length?<div className="card-list">{items.map(a=><a className="attachment-card" key={idOf(a)} href={api.attachmentUrl(partId,idOf(a))} target="_blank" rel="noreferrer"><div className="file-icon">↗</div><div><strong>{a.filename||a.name}</strong><p>{a.note||a.kind||'Attachment'}</p><small>{a.uploaded_by||'Unknown'} · {date(a.created_at)}</small></div></a>)}</div>:<Empty>No files attached yet.</Empty>}</>}
 
-const DEFAULT_MOVE = {
-  from_location: 'storage_quantity',
-  to_location: 'biggie_k_quantity',
-  quantity: 1,
-  serial: '',
-  description: '',
-}
+function TagsNotes({part,refresh,notify,fail}){const [note,setNote]=useState(''),[author,setAuthor]=useState('');async function add(){if(!note.trim()||!author.trim())return;try{await api.addNote(idOf(part),{text:note.trim(),author:author.trim()});setNote('');await refresh();notify('Note added')}catch(e){fail(e)}}return <><section className="rail-card"><h4>All Tags</h4><div className="chips">{part.tags?.length?part.tags.map(t=><span className="chip" key={t}>{t}</span>):<span className="muted">No tags</span>}</div></section><section className="rail-card"><h4>Notes</h4><div className="notes">{part.notes?.length?part.notes.map((n,i)=><article key={n.id||i}><p>{n.text||n.note}</p><small>{n.author||n.actor||'Unknown'} · {date(n.created_at||n.timestamp)}</small></article>):<span className="muted">There are no comments on this part.</span>}</div><textarea value={note} onChange={e=>setNote(e.target.value)} placeholder="Add a note…"/><div className="inline"><input value={author} onChange={e=>setAuthor(e.target.value)} placeholder="Your name"/><button className="secondary compact" onClick={add}>Add</button></div></section><section className="rail-card"><h4>Record</h4><dl className="mini"><div><dt>Updated</dt><dd>{date(part.updated_at)}</dd></div><div><dt>Stock version</dt><dd>{part.stock_version??'—'}</dd></div></dl></section></>}
 
-export default function App() {
-  const [page, setPage] = useState('list')
-  const [items, setItems] = useState([])
-  const [categories, setCategories] = useState([])
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [form, setForm] = useState({ name: '', quantity: 0, description: '', categories: [] })
-  const [newCategory, setNewCategory] = useState('')
-  const [categoryError, setCategoryError] = useState('')
-  const [hiddenCategories, setHiddenCategories] = useState(() => new Set())
-
-  const [connectionError, setConnectionError] = useState(null) // 'backend' | 'database' | null
-  const [toast, setToast] = useState(null) // { type: 'success'|'error', message: string }
-
-  const showToast = (type, message, ms = 2500) => {
-    setToast({ type, message })
-    if (ms) setTimeout(() => setToast(t => (t && t.message === message ? null : t)), ms)
-  }
-
-  const api = async (url, options) => {
-    try {
-      const res = await fetch(url, options)
-      if (res.status === 503) {
-        setConnectionError('database')
-      } else {
-        setConnectionError(prev => prev ? null : prev)
-      }
-      return res
-    } catch {
-      setConnectionError('backend')
-      return {
-        ok: false,
-        status: 0,
-        json: async () => ({ detail: 'Servers are currently down.' }),
-      }
-    }
-  }
-
-  const toggleFilter = (name) => {
-    setHiddenCategories(prev => {
-      const next = new Set(prev)
-      if (next.has(name)) next.delete(name)
-      else next.add(name)
-      return next
-    })
-  }
-
-  const [moveModal, setMoveModal] = useState(false)
-  const [moveForm, setMoveForm] = useState(DEFAULT_MOVE)
-  const [moveError, setMoveError] = useState('')
-
-  const [addItemId, setAddItemId] = useState(null)
-  const [addQty, setAddQty] = useState(1)
-  const [addError, setAddError] = useState('')
-
-  const [removeModal, setRemoveModal] = useState(false)
-  const [removeForm, setRemoveForm] = useState({ location: 'storage_quantity', quantity: 1 })
-  const [removeError, setRemoveError] = useState('')
-
-  const [damagedMoveSerial, setDamagedMoveSerial] = useState(null)
-  const [damagedMoveLocation, setDamagedMoveLocation] = useState('storage_quantity')
-  const [damagedMoveError, setDamagedMoveError] = useState('')
-
-  const fetchItems = () => api('/items').then(r => r.json()).then(setItems)
-  const fetchCategories = () => api('/categories').then(r => r.json()).then(setCategories)
-
-  const refreshSelected = async (id) => {
-    const fresh = await api(`/items/${id}`).then(r => r.json())
-    setSelectedItem(fresh)
-    return fresh
-  }
-
-  useEffect(() => { fetchItems(); fetchCategories() }, [])
-
-  useEffect(() => {
-    if (!connectionError) return
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/health')
-        if (res.ok) {
-          setConnectionError(null)
-          fetchItems()
-          fetchCategories()
-        } else if (res.status === 503) {
-          setConnectionError('database')
-        }
-      } catch {
-        // still disconnected
-      }
-    }, 4000)
-    return () => clearInterval(interval)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connectionError])
-
-  const createItem = async (e) => {
-    e.preventDefault()
-    const name = form.name
-    const res = await api('/create_item', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...form,
-        storage_quantity: Number(form.quantity),
-        total_quantity: Number(form.quantity),
-      }),
-    })
-    if (!res.ok) {
-      const data = await res.json()
-      showToast('error', data.detail ?? 'Failed to add item.')
-      return
-    }
-    setForm({ name: '', quantity: 0, description: '', categories: [] })
-    fetchItems()
-    showToast('success', `"${name}" added successfully`)
-  }
-
-  const createCategory = async (e) => {
-    e.preventDefault()
-    setCategoryError('')
-    const name = newCategory.trim()
-    if (!name) return
-    const res = await api('/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    })
-    if (!res.ok) {
-      const data = await res.json()
-      setCategoryError(data.detail ?? 'Failed to create category.')
-      return
-    }
-    setNewCategory('')
-    fetchCategories()
-  }
-
-  const deleteCategory = async (name) => {
-    if (!window.confirm(`Delete category "${name}"? Items in it will be moved to Uncategorized.`)) return
-    const res = await api(`/categories/${encodeURIComponent(name)}`, { method: 'DELETE' })
-    if (!res.ok) {
-      const data = await res.json()
-      alert(data.detail ?? 'Failed to delete category.')
-      return
-    }
-    fetchCategories()
-    fetchItems()
-  }
-
-  const setItemCategories = async (id, categoriesList) => {
-    const res = await api(`/items/${id}/categories`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ categories: categoriesList }),
-    })
-    if (!res.ok) {
-      const data = await res.json()
-      alert(data.detail ?? 'Failed to change categories.')
-      return
-    }
-    fetchItems()
-    if (selectedItem && selectedItem.id === id) {
-      await refreshSelected(id)
-    }
-  }
-
-  const deleteItem = async (id, name) => {
-    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
-    await api(`/items/${id}`, { method: 'DELETE' })
-    fetchItems()
-  }
-
-  const openInfo = async (item) => {
-    const fresh = await api(`/items/${item.id}`).then(r => r.json())
-    setSelectedItem(fresh)
-    setPage('info')
-  }
-
-  const openAddModal = (id) => {
-    setAddItemId(id)
-    setAddQty(1)
-    setAddError('')
-  }
-
-  const closeAddModal = () => {
-    setAddItemId(null)
-    setAddQty(1)
-    setAddError('')
-  }
-
-  const submitAdd = async (e) => {
-    e.preventDefault()
-    setAddError('')
-    const res = await api(`/items/${addItemId}/add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: Number(addQty) }),
-    })
-    if (!res.ok) {
-      const data = await res.json()
-      setAddError(data.detail ?? 'Failed to add items.')
-      return
-    }
-    fetchItems()
-    if (selectedItem && selectedItem.id === addItemId) {
-      await refreshSelected(addItemId)
-    }
-    closeAddModal()
-  }
-
-  const submitRemove = async (e) => {
-    e.preventDefault()
-    setRemoveError('')
-    const res = await api(`/items/${selectedItem.id}/remove`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...removeForm, quantity: Number(removeForm.quantity) }),
-    })
-    if (!res.ok) {
-      const data = await res.json()
-      setRemoveError(data.detail ?? 'Remove failed.')
-      return
-    }
-    await refreshSelected(selectedItem.id)
-    fetchItems()
-    setRemoveModal(false)
-    setRemoveForm({ location: 'storage_quantity', quantity: 1 })
-  }
-
-  const submitMove = async (e) => {
-    e.preventDefault()
-    setMoveError('')
-
-    const isDamage = moveForm.to_location === 'damaged_quantity'
-
-    let res
-    if (isDamage) {
-      if (!moveForm.serial.trim()) {
-        setMoveError('Serial number is required.')
-        return
-      }
-      res = await api(`/items/${selectedItem.id}/damage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serial: moveForm.serial.trim(),
-          location: moveForm.from_location,
-          description: moveForm.description,
-        }),
-      })
-    } else {
-      if (moveForm.from_location === moveForm.to_location) {
-        setMoveError('Source and destination must be different.')
-        return
-      }
-      res = await api(`/items/${selectedItem.id}/move`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from_location: moveForm.from_location,
-          to_location: moveForm.to_location,
-          quantity: Number(moveForm.quantity),
-        }),
-      })
-    }
-
-    if (!res.ok) {
-      const data = await res.json()
-      setMoveError(data.detail ?? 'Move failed.')
-      return
-    }
-    await refreshSelected(selectedItem.id)
-    fetchItems()
-    setMoveModal(false)
-    setMoveForm(DEFAULT_MOVE)
-  }
-
-  const openDamagedMove = (serial, currentLocation) => {
-    setDamagedMoveSerial(serial)
-    setDamagedMoveLocation(currentLocation)
-    setDamagedMoveError('')
-  }
-
-  const submitDamagedMove = async (e) => {
-    e.preventDefault()
-    setDamagedMoveError('')
-    const res = await api(
-      `/items/${selectedItem.id}/damaged/${encodeURIComponent(damagedMoveSerial)}/move`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ location: damagedMoveLocation }),
-      }
-    )
-    if (!res.ok) {
-      const data = await res.json()
-      setDamagedMoveError(data.detail ?? 'Move failed.')
-      return
-    }
-    await refreshSelected(selectedItem.id)
-    setDamagedMoveSerial(null)
-  }
-
-  const restoreDamaged = async (serial) => {
-    if (!window.confirm(`Unmark damaged item "${serial}"? It will be returned to its location.`)) return
-    const res = await api(
-      `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}/restore`,
-      { method: 'POST' }
-    )
-    if (!res.ok) {
-      const data = await res.json()
-      alert(data.detail ?? 'Restore failed.')
-      return
-    }
-    await refreshSelected(selectedItem.id)
-    fetchItems()
-  }
-
-  const deleteDamaged = async (serial) => {
-    if (!window.confirm(`Delete damaged item "${serial}"? This cannot be undone.`)) return
-    const res = await api(
-      `/items/${selectedItem.id}/damaged/${encodeURIComponent(serial)}`,
-      { method: 'DELETE' }
-    )
-    if (!res.ok) {
-      const data = await res.json()
-      alert(data.detail ?? 'Delete failed.')
-      return
-    }
-    await refreshSelected(selectedItem.id)
-    fetchItems()
-  }
-
-  const addModal = addItemId !== null && (
-    <div className="overlay" onClick={closeAddModal}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-title">Add Items to Storage</div>
-        </div>
-        <form onSubmit={submitAdd}>
-          <div className="modal-body">
-            <div className="field">
-              <label className="field-label">Quantity to Add</label>
-              <input
-                type="number"
-                min={1}
-                required
-                className="input"
-                value={addQty}
-                onChange={e => setAddQty(e.target.value)}
-              />
-            </div>
-            {addError && <div className="error">{addError}</div>}
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-ghost" onClick={closeAddModal}>Cancel</button>
-            <button type="submit" className="btn btn-soft">Add</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-
-  if (page === 'info' && selectedItem) {
-    const damagedList = Object.values(selectedItem.damaged_objects || {})
-    const isDamageMove = moveForm.to_location === 'damaged_quantity'
-
-    return (
-      <div className="page">
-        <ConnectionBanner error={connectionError} />
-        <Toast toast={toast} />
-        <div className="page-header">
-          <button className="btn btn-ghost" onClick={() => { setPage('list'); setSelectedItem(null) }}>
-            ← Back to inventory
-          </button>
-          <Brand />
-        </div>
-
-        <div className="summary">
-          <h1 className="summary-name">{selectedItem.name}</h1>
-        </div>
-        {selectedItem.description && <p className="summary-desc">{selectedItem.description}</p>}
-
-        <div className="total-card">
-          <span className="label">Total Quantity</span>
-          <span className="value">{selectedItem.total_quantity}</span>
-        </div>
-
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header"><h3>Inventory by Location</h3></div>
-          <table className="table">
-            <colgroup>
-              {LOCATIONS.map(({ field }) => <col key={field} style={{ width: '20%' }} />)}
-            </colgroup>
-            <thead>
-              <tr>
-                {LOCATIONS.map(({ field, label }) => (
-                  <th key={field} className="center">{label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                {LOCATIONS.map(({ field }) => (
-                  <td key={field} className="center num" style={{ fontSize: 16, fontWeight: 600 }}>
-                    {selectedItem[field] ?? 0}
-                  </td>
-                ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <h3>Damaged Objects</h3>
-            <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
-              {damagedList.length} {damagedList.length === 1 ? 'item' : 'items'}
-            </span>
-          </div>
-          {damagedList.length === 0 ? (
-            <div className="table-empty">No damaged items recorded.</div>
-          ) : (
-            <table className="table">
-              <colgroup>
-                <col style={{ width: '22%' }} />
-                <col style={{ width: '18%' }} />
-                <col style={{ width: '35%' }} />
-                <col style={{ width: '25%' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>Serial</th>
-                  <th>Location</th>
-                  <th>Description</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {damagedList.map(obj => (
-                  <tr key={obj.serial}>
-                    <td>{obj.serial}</td>
-                    <td>{LOCATION_LABEL[obj.location] ?? obj.location}</td>
-                    <td style={{ color: 'var(--text-dim)' }}>{obj.description}</td>
-                    <td>
-                      <div className="actions">
-                        <button className="btn btn-sm btn-outline-soft" onClick={() => restoreDamaged(obj.serial)}>Unmark</button>
-                        <button className="btn btn-sm btn-outline-primary" onClick={() => openDamagedMove(obj.serial, obj.location)}>Move</button>
-                        <button className="btn btn-sm btn-outline-rose" onClick={() => deleteDamaged(obj.serial)}>Remove</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        <div className="btn-row">
-          <button className="btn btn-outline-soft" onClick={() => openAddModal(selectedItem.id)}>+ Add Items</button>
-          <button className="btn btn-outline-primary" onClick={() => { setMoveModal(true); setMoveError('') }}>Move Items</button>
-          <button className="btn btn-outline-rose" onClick={() => { setRemoveModal(true); setRemoveError('') }}>Remove Items</button>
-        </div>
-
-        {removeModal && (
-          <div className="overlay" onClick={() => { setRemoveModal(false); setRemoveError('') }}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header"><div className="modal-title">Remove Items</div></div>
-              <form onSubmit={submitRemove}>
-                <div className="modal-body">
-                  <div className="field">
-                    <label className="field-label">Location</label>
-                    <select
-                      className="select"
-                      value={removeForm.location}
-                      onChange={e => setRemoveForm(f => ({ ...f, location: e.target.value }))}
-                    >
-                      {LOCATIONS.map(({ field, label }) => (
-                        <option key={field} value={field}>{label} ({selectedItem[field] ?? 0})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">Quantity to Remove</label>
-                    <input
-                      type="number"
-                      min={1}
-                      required
-                      className="input"
-                      value={removeForm.quantity}
-                      onChange={e => setRemoveForm(f => ({ ...f, quantity: e.target.value }))}
-                    />
-                  </div>
-                  {removeError && <div className="error">{removeError}</div>}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => { setRemoveModal(false); setRemoveForm({ location: 'storage_quantity', quantity: 1 }); setRemoveError('') }}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-rose">Remove</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {moveModal && (
-          <div className="overlay" onClick={() => { setMoveModal(false); setMoveForm(DEFAULT_MOVE); setMoveError('') }}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-title">{isDamageMove ? 'Mark as Damaged' : 'Move Item'}</div>
-              </div>
-              <form onSubmit={submitMove}>
-                <div className="modal-body">
-                  <div className="field">
-                    <label className="field-label">{isDamageMove ? 'Location' : 'From'}</label>
-                    <select
-                      className="select"
-                      value={moveForm.from_location}
-                      onChange={e => setMoveForm(f => ({ ...f, from_location: e.target.value }))}
-                    >
-                      {NON_DAMAGED_LOCATIONS.map(({ field, label }) => (
-                        <option key={field} value={field}>{label} ({selectedItem[field] ?? 0})</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="field">
-                    <label className="field-label">To</label>
-                    <select
-                      className="select"
-                      value={moveForm.to_location}
-                      onChange={e => setMoveForm(f => ({ ...f, to_location: e.target.value }))}
-                    >
-                      {LOCATIONS.map(({ field, label }) => (
-                        <option key={field} value={field}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {isDamageMove ? (
-                    <>
-                      <div className="field">
-                        <label className="field-label">Serial Number</label>
-                        <input
-                          type="text"
-                          required
-                          className="input"
-                          value={moveForm.serial}
-                          onChange={e => setMoveForm(f => ({ ...f, serial: e.target.value }))}
-                        />
-                      </div>
-                      <div className="field">
-                        <label className="field-label">Description</label>
-                        <input
-                          type="text"
-                          className="input"
-                          value={moveForm.description}
-                          onChange={e => setMoveForm(f => ({ ...f, description: e.target.value }))}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="field">
-                      <label className="field-label">Quantity</label>
-                      <input
-                        type="number"
-                        min={1}
-                        required
-                        className="input"
-                        value={moveForm.quantity}
-                        onChange={e => setMoveForm(f => ({ ...f, quantity: e.target.value }))}
-                      />
-                    </div>
-                  )}
-
-                  {moveError && <div className="error">{moveError}</div>}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => { setMoveModal(false); setMoveForm(DEFAULT_MOVE); setMoveError('') }}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary">Submit</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {damagedMoveSerial !== null && (
-          <div className="overlay" onClick={() => { setDamagedMoveSerial(null); setDamagedMoveError('') }}>
-            <div className="modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <div className="modal-title">Move Damaged Item</div>
-                <div className="modal-sub">Serial: {damagedMoveSerial}</div>
-              </div>
-              <form onSubmit={submitDamagedMove}>
-                <div className="modal-body">
-                  <div className="field">
-                    <label className="field-label">New Location</label>
-                    <select
-                      className="select"
-                      value={damagedMoveLocation}
-                      onChange={e => setDamagedMoveLocation(e.target.value)}
-                    >
-                      {NON_DAMAGED_LOCATIONS.map(({ field, label }) => (
-                        <option key={field} value={field}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  {damagedMoveError && <div className="error">{damagedMoveError}</div>}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => { setDamagedMoveSerial(null); setDamagedMoveError('') }}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary">Move</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {addModal}
-      </div>
-    )
-  }
-
-  return (
-    <div className="page">
-      <ConnectionBanner error={connectionError} />
-      <Toast toast={toast} />
-      <div className="page-header">
-        <h1>Inventory</h1>
-        <Brand />
-      </div>
-
-      <form onSubmit={createItem} className="create-form">
-        <input
-          className="input"
-          placeholder="Item name"
-          required
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-        />
-        <input
-          className="input input-qty"
-          placeholder="Qty"
-          type="number"
-          required
-          value={form.quantity}
-          onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-        />
-        <input
-          className="input"
-          placeholder="Description (optional)"
-          value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-        />
-        <div className="input-cat">
-          <CategoryPicker
-            selected={form.categories}
-            categories={categories}
-            onChange={cats => setForm(f => ({ ...f, categories: cats }))}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">+ Add New Item</button>
-      </form>
-
-      {(() => {
-        const knownCategoryNames = categories.map(c => c.name)
-        const groups = new Map()
-        knownCategoryNames.forEach(name => groups.set(name, []))
-        groups.set('Uncategorized', [])
-        items.forEach(item => {
-          const itemCats = (item.categories || []).filter(c => knownCategoryNames.includes(c))
-          if (itemCats.length === 0) {
-            groups.get('Uncategorized').push(item)
-          } else {
-            itemCats.forEach(cat => groups.get(cat).push(item))
-          }
-        })
-
-        const allGroupNames = Array.from(groups.keys())
-        const entries = Array.from(groups.entries()).filter(
-          ([name, group]) => name !== 'Uncategorized' || group.length > 0
-        )
-        const visibleEntries = entries.filter(([name]) => !hiddenCategories.has(name))
-
-        return (
-          <div className="main-layout">
-            <aside className="sidebar">
-              <div className="card">
-                <div className="card-header">
-                  <h3>Categories</h3>
-                </div>
-                <div className="card-body cat-list vertical">
-                  {categories.length === 0 ? (
-                    <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>No categories yet.</span>
-                  ) : categories.map(c => (
-                    <span key={c.id} className="cat-chip">
-                      <span className="cat-chip-name">{c.name}</span>
-                      <button
-                        className="cat-chip-x"
-                        onClick={() => deleteCategory(c.name)}
-                        aria-label={`Delete ${c.name}`}
-                      >×</button>
-                    </span>
-                  ))}
-                </div>
-                <form onSubmit={createCategory} className="cat-create-footer">
-                  <input
-                    className="input"
-                    placeholder="New category"
-                    value={newCategory}
-                    onChange={e => setNewCategory(e.target.value)}
-                  />
-                  <button type="submit" className="btn btn-outline-primary btn-sm">+ Add</button>
-                </form>
-                {categoryError && <div className="error" style={{ margin: '0 16px 16px' }}>{categoryError}</div>}
-              </div>
-
-              <div className="card">
-                <div className="card-header">
-                  <h3>Filter</h3>
-                  {hiddenCategories.size > 0 && (
-                    <button
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setHiddenCategories(new Set())}
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-                <div className="card-body filter-list">
-                  {allGroupNames.map(name => (
-                    <label key={name} className="filter-row">
-                      <input
-                        type="checkbox"
-                        checked={!hiddenCategories.has(name)}
-                        onChange={() => toggleFilter(name)}
-                      />
-                      <span>{name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            <div className="main-content">
-              {items.length === 0 && categories.length === 0 ? (
-                <div className="card"><div className="table-empty">No items yet — add one above.</div></div>
-              ) : visibleEntries.length === 0 ? (
-                <div className="card"><div className="table-empty">All categories are filtered out.</div></div>
-              ) : (
-                visibleEntries.map(([catName, group]) => (
-                  <div className="card category-card" key={catName}>
-                    <div className="card-header">
-                      <h3>{catName}</h3>
-                      <span style={{ color: 'var(--text-faint)', fontSize: 13 }}>
-                        {group.length} {group.length === 1 ? 'item' : 'items'}
-                      </span>
-                    </div>
-                    <table className="table">
-                      <colgroup>
-                        <col style={{ width: '160px' }} />
-                        <col style={{ width: '80px' }} />
-                        <col style={{ width: '80px' }} />
-                        <col />
-                        <col />
-                        <col style={{ width: '132px' }} />
-                      </colgroup>
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th className="center">Total</th>
-                          <th className="center">Avail</th>
-                          <th>Description</th>
-                          <th>Categories</th>
-                          <th className="center">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.length === 0 ? (
-                          <tr><td colSpan={6} className="table-empty">No items in this category.</td></tr>
-                        ) : group.map(item => (
-                          <tr key={`${catName}-${item.id}`}>
-                            <td className="cell-name">{item.name}</td>
-                            <td className="center num">{item.total_quantity}</td>
-                            <td className="center num">{item.storage_quantity ?? 0}</td>
-                            <td className="cell-desc" title={item.description || ''}>{item.description}</td>
-                            <td className="cell-cats">
-                              <CategoryPicker
-                                compact
-                                selected={item.categories || []}
-                                categories={categories}
-                                onChange={cats => setItemCategories(item.id, cats)}
-                              />
-                            </td>
-                            <td>
-                              <div className="actions actions-center">
-                                <button className="btn btn-icon btn-outline-soft" title="Add items" onClick={() => openAddModal(item.id)}><Icon name="plus" /></button>
-                                <button className="btn btn-icon btn-outline-primary" title="View details" onClick={() => openInfo(item)}><Icon name="eye" /></button>
-                                <button className="btn btn-icon btn-outline-rose" title="Delete item" onClick={() => deleteItem(item.id, item.name)}><Icon name="trash" /></button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        )
-      })()}
-
-      {addModal}
-    </div>
-  )
-}
+function CategoryManager({categories,refresh,notify,fail}){const [name,setName]=useState('');async function add(){if(!name.trim())return;try{await api.createCategory(name.trim());setName('');await refresh();notify('Category added')}catch(e){fail(e)}}async function del(c){if(!confirm(`Delete category “${nameOf(c)}”?`))return;try{await api.deleteCategory(idOf(c));await refresh();notify('Category deleted')}catch(e){fail(e)}}return <div className="stack"><div className="inline"><input value={name} onChange={e=>setName(e.target.value)} placeholder="New category"/><button className="primary compact" onClick={add}>Add</button></div><div className="manage-list">{categories.map(c=><div key={idOf(c)}><span>{nameOf(c)}</span><button className="danger-text" onClick={()=>del(c)}>Delete</button></div>)}</div></div>}

@@ -1,16 +1,44 @@
-# React + Vite
+# WrapDrive Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite frontend for the PURPL WrapDrive inventory backend.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20.19+ or 22.12+ (required by Vite 8)
+- The FastAPI backend running on `http://127.0.0.1:8000`
 
-## React Compiler
+## Local setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open `http://localhost:5173`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Local development uses `/api` and `vite.config.js` proxies it to FastAPI. This avoids hard-coding a machine-specific backend URL.
+
+For a deployed frontend, copy `.env.example` to `.env` and set `VITE_API_BASE_URL` to the public API base URL if the frontend and API are not served from the same origin.
+
+## Implemented UI
+
+- Search and filters for category, tag, and location
+- Part creation and editing
+- Engineering details, free-form specifications, tags, and notes
+- Stock summary and location allocations
+- Direct allocation editing with a required per-change audit note
+- Stock history
+- Serialized/tracked units
+- Related parts
+- Attachment upload and download
+- Category management
+- Responsive layout for laptop/tablet/mobile widths
+
+## Data-integrity behavior
+
+The UI does not directly overwrite the backend's total/available/in-use stock summary. Allocation edits are sent to the backend reconcile endpoint, where stock changes are validated and recorded in history.
+
+## Before production deployment
+
+The backend currently does not provide authentication/authorization. Do not expose the app publicly until authentication and authorization are implemented. Also run end-to-end tests against the real MongoDB deployment before treating inventory mutations as production-ready.

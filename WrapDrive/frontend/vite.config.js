@@ -1,17 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 5173,
     proxy: {
-      '/items': 'http://localhost:8000',
-      '/create_item': 'http://localhost:8000',
-      '/add_item': 'http://localhost:8000',
-      '/search': 'http://localhost:8000',
-      '/categories': 'http://localhost:8000',
-      '/health': 'http://localhost:8000',
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
     },
   },
 })
