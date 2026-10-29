@@ -29,6 +29,20 @@ async def create_category(payload: NameCreate):
     return serialize_doc(doc)
 
 
+@router.patch("/categories/{category_id}")
+async def update_category(category_id: str, payload: NameCreate):
+    changes = {"name": payload.name, "name_key": clean_key(payload.name), "updated_at": utcnow()}
+    try:
+        result = await get_db().categories.update_one(
+            {"_id": oid(category_id, "category id")}, {"$set": changes}
+        )
+    except DuplicateKeyError as exc:
+        raise HTTPException(status_code=409, detail="Category already exists") from exc
+    if not result.matched_count:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"ok": True}
+
+
 @router.delete("/categories/{category_id}")
 async def delete_category(category_id: str):
     database = get_db()
@@ -85,7 +99,96 @@ async def update_location(location_id: str, payload: LocationUpdate):
     return {"ok": True}
 
 
+@router.delete("/locations/{location_id}")
+async def delete_location(location_id: str):
+    database = get_db()
+    location_oid = oid(location_id, "location id")
+    location = await database.locations.find_one({"_id": location_oid})
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+    has_stock = await database.parts.find_one(
+        {"allocations": {"$elemMatch": {"location_id": location_oid, "quantity": {"$gt": 0}}}}
+    )
+    has_tracked_units = await database.tracked_units.find_one(
+        {"location_id": location_oid, "status": {"$in": ["active", "damaged", "lost"]}}
+    )
+    if has_stock or has_tracked_units:
+        raise HTTPException(
+            status_code=409,
+            detail="this location still contains units! reallocate and try again.",
+        )
+    await database.locations.delete_one({"_id": location_oid})
+    return {"ok": True}
+
+
 @router.get("/tags")
 async def list_tags():
-    tags = await get_db().parts.distinct("tags")
-    return sorted({tag for tag in tags if isinstance(tag, str)}, key=str.casefold)
+    database = get_db()
+    existing = await database.tags.find().sort("name_key", 1).to_list(1000)
+    values = [doc["name"] for doc in existing]
+    values.extend(await database.parts.distinct("tags"))
+    by_key = {}
+    for value in values:
+        if isinstance(value, str) and value.strip():
+            by_key.setdefault(clean_key(value), value.strip())
+    return sorted(by_key.values(), key=str.casefold)
+
+
+@router.post("/tags", status_code=201)
+async def create_tag(payload: NameCreate):
+    database = get_db()
+    key = clean_key(payload.name)
+    if await database.parts.find_one({"tags_key": key}):
+        raise HTTPException(status_code=409, detail="A tag with that name already exists")
+    doc = {"name": payload.name, "name_key": key, "created_at": utcnow()}
+    try:
+        result = await database.tags.insert_one(doc)
+    except DuplicateKeyError as exc:
+        raise HTTPException(status_code=409, detail="A tag with that name already exists") from exc
+    doc["_id"] = result.inserted_id
+    return serialize_doc(doc)
+
+
+@router.patch("/tags/{tag_name}")
+async def rename_tag(tag_name: str, payload: NameCreate):
+    database = get_db()
+    old_key = clean_key(tag_name)
+    new_key = clean_key(payload.name)
+    async for part in database.parts.find({"$or": [{"tags_key": old_key}, {"tags": tag_name}]}):
+        updated = []
+        seen = set()
+        for value in part.get("tags", []):
+            canonical = payload.name if clean_key(value) == old_key else value
+            canonical_key = clean_key(canonical)
+            if canonical_key not in seen:
+                updated.append(canonical)
+                seen.add(canonical_key)
+        await database.parts.update_one(
+            {"_id": part["_id"]},
+            {"$set": {"tags": updated, "tags_key": [clean_key(value) for value in updated], "updated_at": utcnow()}},
+        )
+
+    await database.tags.delete_many({"name_key": old_key})
+    try:
+        await database.tags.update_one(
+            {"name_key": new_key},
+            {"$set": {"name": payload.name, "updated_at": utcnow()}, "$setOnInsert": {"created_at": utcnow()}},
+            upsert=True,
+        )
+    except DuplicateKeyError as exc:
+        raise HTTPException(status_code=409, detail="A tag with that name already exists") from exc
+    return {"ok": True}
+
+
+@router.delete("/tags/{tag_name}")
+async def delete_tag(tag_name: str):
+    database = get_db()
+    key = clean_key(tag_name)
+    async for part in database.parts.find({"$or": [{"tags_key": key}, {"tags": tag_name}]}):
+        kept = [value for value in part.get("tags", []) if clean_key(value) != key]
+        await database.parts.update_one(
+            {"_id": part["_id"]},
+            {"$set": {"tags": kept, "tags_key": [clean_key(value) for value in kept], "updated_at": utcnow()}},
+        )
+    await database.tags.delete_many({"name_key": key})
+    return {"ok": True}

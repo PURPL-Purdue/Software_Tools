@@ -19,6 +19,7 @@ from ..models import StockBatchRequest, StockOperationType
 from ..utils import oid, quantity_decimal
 
 ZERO = Decimal("0")
+MAX_LOCATION_QUANTITY = Decimal("10000")
 
 
 def _alloc_map(part: dict) -> dict[str, Decimal]:
@@ -119,6 +120,8 @@ async def apply_stock_batch(part_id: str, request: StockBatchRequest) -> dict:
                 after_total = sum(allocations.values(), ZERO)
                 if after_total < ZERO or any(v < ZERO for v in allocations.values()):
                     raise HTTPException(status_code=409, detail="Stock cannot become negative")
+                if any(value > MAX_LOCATION_QUANTITY for value in allocations.values()):
+                    raise HTTPException(status_code=409, detail="A location cannot contain more than 10000 units")
 
                 events.append(
                     {
@@ -188,6 +191,8 @@ async def create_tracked_unit(part_id: str, payload) -> dict:
                 "status": payload.status.value,
                 "description": payload.description,
                 "kit": payload.kit,
+                "image_url": payload.image_url,
+                "updated_by": payload.actor,
                 "created_at": now,
                 "updated_at": now,
             }
@@ -232,9 +237,16 @@ async def update_tracked_unit(part_id: str, unit_id: str, payload) -> dict:
             if not unit:
                 raise HTTPException(status_code=404, detail="Tracked unit not found")
 
-            changes = payload.model_dump(exclude_none=True)
+            changes = {
+                key: value
+                for key, value in payload.model_dump(exclude_unset=True).items()
+                if value is not None or key == "image_url"
+            }
             actor = changes.pop("actor", "Unknown")
             note = changes.pop("note", "Tracked unit updated")
+            changes["updated_by"] = actor
+            if "serial" in changes:
+                changes["serial_key"] = changes["serial"].strip().casefold()
             if "status" in changes:
                 changes["status"] = changes["status"].value
 
@@ -260,6 +272,8 @@ async def update_tracked_unit(part_id: str, unit_id: str, payload) -> dict:
                         raise HTTPException(status_code=409, detail="Inventory is inconsistent at tracked unit location")
                     allocations[old_key] -= Decimal(1)
                     allocations[new_key] = allocations.get(new_key, ZERO) + Decimal(1)
+                    if allocations[new_key] > MAX_LOCATION_QUANTITY:
+                        raise HTTPException(status_code=409, detail="A location cannot contain more than 10000 units")
                     result = await database.parts.update_one(
                         {"_id": mongo_part_id, "stock_version": part.get("stock_version", 0)},
                         {
@@ -273,7 +287,12 @@ async def update_tracked_unit(part_id: str, unit_id: str, payload) -> dict:
                     event_operation = "move_tracked_unit"
 
             changes["updated_at"] = now
-            await database.tracked_units.update_one({"_id": mongo_unit_id}, {"$set": changes}, session=session)
+            try:
+                await database.tracked_units.update_one(
+                    {"_id": mongo_unit_id}, {"$set": changes}, session=session
+                )
+            except DuplicateKeyError as exc:
+                raise HTTPException(status_code=409, detail="That serial already exists for this part") from exc
             await database.stock_events.insert_one(
                 {
                     "part_id": mongo_part_id,

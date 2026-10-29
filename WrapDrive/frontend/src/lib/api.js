@@ -51,11 +51,16 @@ export const api = {
   deletePart: (id) => request(`/parts/${id}`, { method: 'DELETE' }),
   categories: () => request('/categories'),
   createCategory: (name) => request('/categories', { method: 'POST', body: JSON.stringify({ name }) }),
+  updateCategory: (id, name) => request(`/categories/${id}`, { method: 'PATCH', body: JSON.stringify({ name }) }),
   deleteCategory: (id) => request(`/categories/${id}`, { method: 'DELETE' }),
-  locations: () => request('/locations'),
+  locations: () => request('/locations?include_inactive=true'),
   createLocation: (body) => request('/locations', { method: 'POST', body: JSON.stringify(body) }),
   updateLocation: (id, body) => request(`/locations/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteLocation: (id) => request(`/locations/${id}`, { method: 'DELETE' }),
   tags: () => request('/tags'),
+  createTag: (name) => request('/tags', { method: 'POST', body: JSON.stringify({ name }) }),
+  updateTag: (name, nextName) => request(`/tags/${encodeURIComponent(name)}`, { method: 'PATCH', body: JSON.stringify({ name: nextName }) }),
+  deleteTag: (name) => request(`/tags/${encodeURIComponent(name)}`, { method: 'DELETE' }),
   stock: (partId) => request(`/parts/${partId}/stock`),
   reconcileStock: (partId, body) => request(`/parts/${partId}/stock/reconcile`, { method: 'POST', body: JSON.stringify(body) }),
   stockHistory: (partId) => request(`/parts/${partId}/stock/history`),
@@ -70,7 +75,7 @@ export const api = {
   attachments: (partId) => request(`/parts/${partId}/attachments`),
   uploadAttachment: (partId, formData) => request(`/parts/${partId}/attachments`, { method: 'POST', body: formData }),
   deleteAttachment: (partId, attachmentId) => request(`/parts/${partId}/attachments/${attachmentId}`, { method: 'DELETE' }),
-  attachmentUrl: (partId, attachmentId) => `${API_BASE}/parts/${partId}/attachments/${attachmentId}/download`,
+  attachmentUrl: (partId, attachmentId, inline=false) => `${API_BASE}/parts/${partId}/attachments/${attachmentId}/download${inline?'?inline=true':''}`,
 }
 
 export function listFrom(payload) {

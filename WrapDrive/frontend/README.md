@@ -1,6 +1,6 @@
-# WrapDrive Frontend
+# Shulker Frontend
 
-React/Vite frontend for the PURPL WrapDrive inventory backend.
+React/Vite frontend for the PURPL Shulker inventory backend.
 
 ## Requirements
 
@@ -24,8 +24,9 @@ For a deployed frontend, copy `.env.example` to `.env` and set `VITE_API_BASE_UR
 ## Implemented UI
 
 - Search and filters for category, tag, and location
+- Canonical tag creation, renaming, deletion, filtering, and sorting
 - Part creation and editing
-- Engineering details, free-form specifications, tags, and notes
+- Engineering details, free-form specifications, part images, tags, and notes
 - Stock summary and location allocations
 - Direct allocation editing with a required per-change audit note
 - Stock history
@@ -33,6 +34,7 @@ For a deployed frontend, copy `.env.example` to `.env` and set `VITE_API_BASE_UR
 - Related parts
 - Attachment upload and download
 - Category management
+- Editable category names
 - Responsive layout for laptop/tablet/mobile widths
 
 ## Data-integrity behavior

@@ -5,8 +5,8 @@ This backend is intentionally redesigned around the current inventory mockup rat
 ## What it supports
 
 - Part records with PURPL/manufacturer numbers, category, free-form specifications, tags, description, image reference, and stock unit.
-- Dynamic locations and location states (`available`, `in_use`, `unavailable`).
-- Derived stock summary: total / available / in use / unavailable.
+- Dynamic locations and location states (`available`, `unavailable`).
+- Derived stock summary: total / available / unavailable.
 - Atomic multi-change stock updates with required notes and immutable history.
 - Receive, move, remove, and adjustment operations.
 - Individually tracked/serialized units with location, status, description, and kit; moving a tracked unit also moves one aggregate stock unit atomically.
@@ -124,8 +124,8 @@ python scripts/bootstrap_mockup_locations.py
 
 1. **MongoDB remains the production database.** The stock service uses MongoDB multi-document transactions so a stock mutation and its audit event either both commit or neither commits. Use MongoDB Atlas or a replica set; a standalone local `mongod` does not provide the transaction guarantees this implementation expects.
 2. **Locations are dynamic, not hard-coded.** A user can create locations such as `Red toolbox top drawer`, `Biggie-K Stand`, or future locations without a code change.
-3. **Every location has an inventory state:** `available`, `in_use`, or `unavailable`. The UI's Available/In Use numbers are derived from the quantities at those locations rather than stored as independent counters that can drift out of sync.
-4. **Total stock is derived from allocations.** `total`, `available`, and `in_use` are calculated, never hand-maintained fields.
+3. **Every location has an inventory state:** `available` or `unavailable`. Stock marked in use is represented as unavailable.
+4. **Total stock is derived from allocations.** `total`, `available`, and `unavailable` are calculated, never hand-maintained fields.
 5. **Stock may be fractional.** This supports units such as feet. API values are rounded to six decimal places; if PURPL later needs metrology-level precision, quantities should be migrated to BSON Decimal128.
 6. **Serialized tracking does not automatically remove the unit from stock.** Serialization gives one physical unit an identity while it remains part of the aggregate quantity at its location. Retiring a tracked unit does remove one physical unit.
 7. **Damaged/lost serialized units remain part of total stock but are treated as unavailable.** This matches the mockup's example of a broken valve still physically located in the red toolbox.

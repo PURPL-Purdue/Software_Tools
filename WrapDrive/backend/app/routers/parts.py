@@ -33,7 +33,7 @@ def _part_doc(payload: PartCreate) -> dict:
         "description": payload.description,
         "manufacturer_part_number": payload.manufacturer_part_number,
         "purpl_part_number": purpl,
-        "purpl_part_number_key": clean_key(purpl) if purpl else None,
+        **({"purpl_part_number_key": clean_key(purpl)} if purpl else {}),
         "category_id": oid(payload.category_id, "category id") if payload.category_id else None,
         "tags": list(dict.fromkeys(t.strip() for t in payload.tags if t.strip())),
         "tags_key": list(dict.fromkeys(clean_key(t) for t in payload.tags if t.strip())),
@@ -90,9 +90,6 @@ async def _stock_summary(part: dict) -> dict:
         usable = qty - blocked
         if state == "available":
             available += usable
-            unavailable += blocked
-        elif state == "in_use":
-            in_use += usable
             unavailable += blocked
         else:
             unavailable += qty
@@ -188,14 +185,17 @@ async def get_part(part_id: str):
 @router.patch("/{part_id}")
 async def update_part(part_id: str, payload: PartUpdate):
     changes = payload.model_dump(exclude_unset=True)
+    unset = {}
     if "category_id" in changes:
         await _category_exists(changes["category_id"])
         changes["category_id"] = oid(changes["category_id"], "category id") if changes["category_id"] else None
     if "name" in changes:
         changes["name_key"] = clean_key(changes["name"])
     if "purpl_part_number" in changes:
-        value = changes["purpl_part_number"]
-        changes["purpl_part_number_key"] = clean_key(value) if value else None
+        if value := changes["purpl_part_number"]:
+            changes["purpl_part_number_key"] = clean_key(value)
+        else:
+            unset["purpl_part_number_key"] = ""
     if "tags" in changes:
         tags = list(dict.fromkeys(t.strip() for t in changes["tags"] if t.strip()))
         changes["tags"] = tags
@@ -204,7 +204,10 @@ async def update_part(part_id: str, payload: PartUpdate):
         changes["specifications"] = [s.model_dump() if hasattr(s, "model_dump") else s for s in changes["specifications"]]
     changes["updated_at"] = utcnow()
     try:
-        result = await get_db().parts.update_one({"_id": oid(part_id, "part id")}, {"$set": changes})
+        update = {"$set": changes}
+        if unset:
+            update["$unset"] = unset
+        result = await get_db().parts.update_one({"_id": oid(part_id, "part id")}, update)
     except DuplicateKeyError as exc:
         raise HTTPException(status_code=409, detail="PURPL part number already exists") from exc
     if not result.matched_count:

@@ -44,7 +44,7 @@ class PartUpdate(StrictModel):
 
 class StockAllocationEdit(StrictModel):
     location_id: str
-    new_quantity: float = Field(ge=0)
+    new_quantity: float = Field(ge=0, le=10000)
     note: str = Field(min_length=1, max_length=2000)
 
 
@@ -59,7 +59,6 @@ class NameCreate(StrictModel):
 
 class LocationState(str, Enum):
     available = "available"
-    in_use = "in_use"
     unavailable = "unavailable"
 
 
@@ -122,16 +121,19 @@ class TrackedUnitCreate(StrictModel):
     serial: str = Field(min_length=1, max_length=200)
     location_id: str
     status: TrackedUnitStatus = TrackedUnitStatus.active
-    description: str = Field(default="", max_length=5000)
+    description: str = Field(default="", max_length=240)
     kit: str | None = Field(default=None, max_length=200)
+    image_url: str | None = Field(default=None, max_length=2000)
     actor: str = Field(default="Unknown", min_length=1, max_length=150)
 
 
 class TrackedUnitUpdate(StrictModel):
+    serial: str | None = Field(default=None, min_length=1, max_length=200)
     location_id: str | None = None
     status: TrackedUnitStatus | None = None
-    description: str | None = Field(default=None, max_length=5000)
+    description: str | None = Field(default=None, max_length=240)
     kit: str | None = Field(default=None, max_length=200)
+    image_url: str | None = Field(default=None, max_length=2000)
     actor: str = Field(default="Unknown", min_length=1, max_length=150)
     note: str = Field(default="Tracked unit updated", min_length=1, max_length=2000)
 

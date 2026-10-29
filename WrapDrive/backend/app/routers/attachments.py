@@ -1,7 +1,9 @@
 """Part attachment upload/download endpoints backed by MongoDB GridFS."""
 from __future__ import annotations
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from urllib.parse import quote
+
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
 from ..config import settings
@@ -60,7 +62,7 @@ async def upload_attachment(
 
 
 @router.get("/{attachment_id}/download")
-async def download_attachment(part_id: str, attachment_id: str):
+async def download_attachment(part_id: str, attachment_id: str, inline: bool = Query(default=False)):
     database = get_db()
     meta = await database.attachments_meta.find_one(
         {"_id": oid(attachment_id, "attachment id"), "part_id": oid(part_id, "part id")}
@@ -76,10 +78,11 @@ async def download_attachment(part_id: str, attachment_id: str):
                 break
             yield chunk
 
+    filename = quote(meta["filename"], safe="")
     return StreamingResponse(
         chunks(),
         media_type=meta.get("content_type", "application/octet-stream"),
-        headers={"Content-Disposition": f'attachment; filename="{meta["filename"]}"'},
+        headers={"Content-Disposition": f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{filename}"},
     )
 
 

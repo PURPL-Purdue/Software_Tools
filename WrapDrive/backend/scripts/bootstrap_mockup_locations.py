@@ -10,9 +10,9 @@ from app.utils import clean_key
 
 LOCATIONS = [
     ("Red toolbox top drawer", "available"),
-    ("Biggie-K Stand", "in_use"),
-    ("Outer Stand", "in_use"),
-    ("Tiny Stand", "in_use"),
+    ("Biggie-K Stand", "unavailable"),
+    ("Outer Stand", "unavailable"),
+    ("Tiny Stand", "unavailable"),
 ]
 
 

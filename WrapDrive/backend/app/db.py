@@ -66,6 +66,14 @@ def get_client() -> AsyncIOMotorClient:
 async def ensure_indexes() -> None:
     database = get_db()
 
+    await database.locations.update_many(
+        {"state": "in_use"},
+        {"$set": {"state": "unavailable", "updated_at": utcnow()}},
+    )
+    await database.parts.update_many(
+        {"purpl_part_number_key": None},
+        {"$unset": {"purpl_part_number_key": ""}},
+    )
     await database.parts.create_indexes(
         [
             IndexModel([("purpl_part_number_key", ASCENDING)], unique=True, sparse=True),
@@ -88,6 +96,7 @@ async def ensure_indexes() -> None:
     )
     await database.categories.create_index("name_key", unique=True)
     await database.locations.create_index("name_key", unique=True)
+    await database.tags.create_index("name_key", unique=True)
     await database.stock_events.create_indexes(
         [
             IndexModel([("part_id", ASCENDING), ("created_at", DESCENDING)]),
