@@ -139,8 +139,6 @@ def export_data_loop():
                 writer.writerow(row)
 
         # Upload the CSV to the SPYGLASS server, can be commented out if not needed
-        # Was getting weird errors when trying to upload the CSV, but unit tests of the upload function were
-        # successful, so I'm not sure where things are going wrong.
         # upload_test("https://trapi.tail5b9bd7.ts.net", test_nickname, "Turbojet", os.path.join("/Users/brettpaden/src/purpl/Data_Regression_App/Synnax Tools/core_config/output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), os.path.join("/Users/brettpaden/src/purpl/Data_Regression_App/Synnax Tools/sequences", input("Enter sequence file name: ")))
 
         
