@@ -1,4 +1,5 @@
 import synnax as sy
+import requests
 from synnax import ni
 from itertools import zip_longest
 import pandas as pd
@@ -30,7 +31,7 @@ def export_data_loop():
                     continue
 
                 if frame["data_logging"][0] == 1:
-                    start_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 35
+                    start_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE * 6 + sy.TimeSpan.SECOND * 52
                     break
 
         print(f"Start timestamp: {start_timestamp}")
@@ -48,7 +49,7 @@ def export_data_loop():
                     continue
 
                 if frame["data_logging"][0] == 0:
-                    end_timestamp = sy.TimeStamp.now() + sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 45
+                    end_timestamp = sy.TimeStamp.now() + 7 * sy.TimeSpan.MINUTE + sy.TimeSpan.SECOND * 00
                     break
 
         print(f"End timestamp: {end_timestamp}")
@@ -136,6 +137,30 @@ def export_data_loop():
 
             for row in rows:
                 writer.writerow(row)
+
+        # Upload the CSV to the SPYGLASS server, can be commented out if not needed
+        # Was getting weird errors when trying to upload the CSV, but unit tests of the upload function were
+        # successful, so I'm not sure where things are going wrong.
+        upload_test("https://trapi.tail5b9bd7.ts.net", test_nickname, "Testbed", os.path.join("/Users/brettpaden/src/purpl/Data_Regression_App/Synnax Tools/core_config/output_data", test_dir, test_nickname + "_" + test_timestamp + "_combined.csv"), os.path.join("/Users/brettpaden/src/purpl/Data_Regression_App/Synnax Tools/sequences", input("Enter sequence file name: ")))
+
+        
+def upload_test(url, name, project, data_path, test_path):
+    with open(data_path, "rb") as data_file, open(test_path, "rb") as test_file:
+        response = requests.post(
+            f"{url}/upload",
+            data={
+                "name": name,
+                "project": project
+            },
+            files={
+                "data_file": data_file,
+                "test_file": test_file
+            },
+            timeout=120
+        )
+
+    response.raise_for_status()
+    return response.json()
 
 if __name__ == "__main__":
     export_data_loop()

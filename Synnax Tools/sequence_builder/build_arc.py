@@ -62,9 +62,9 @@ def preprocess_file(path):
         indx = 0
 
         for i, row in enumerate(rows):
-            if i == 0 and row[0] != "Limits":
-                print(row[0])
-                return (False, "Error: missing Limits flag")
+            #if i == 0 and row[0] != "Limits":
+                #print(row[0])
+                #return (False, "Error: missing Limits flag")
             if i == 1:
                 empty = False
                 for j, value in enumerate(row):
@@ -158,6 +158,9 @@ def preprocess_file(path):
                 if "BLUELINE" not in row[1]:
                     n = len(devices)
                     if len(row[1:]) != n and not (len(row[1:]) == n + 1 and is_in_blueline_funcs(row[n+1])):
+                        print(len(row[1:]))
+                        print(str(n + 1))
+                        print(row[n+1])
                         return (False, "Error: Invalid input field length in row " + str(i + 1))
 
                     for num in row[1:]:

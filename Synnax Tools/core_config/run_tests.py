@@ -5,14 +5,14 @@ from run_median import run_median_chan
 import threading
 
 if __name__ == "__main__":
-    configure_synnax()
+    #configure_synnax()
 
-    stop_event = threading.Event()
+    #stop_event = threading.Event()
 
-    med_thread = threading.Thread(target=run_median_chan, args=(stop_event,))
-    med_thread.start()
+    #med_thread = threading.Thread(target=run_median_chan, args=(stop_event,))
+    #med_thread.start()
 
     export_data_loop()
 
-    stop_event.set()
-    med_thread.join()
+    #stop_event.set()
+    #med_thread.join()

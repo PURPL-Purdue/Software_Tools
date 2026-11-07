@@ -120,8 +120,9 @@ def configure_synnax():
                     case _:
                         raise ValueError(f"Unrecognized/Invalid NI Card Type: {card_type}")
                 # Appropriate Time Channel
+                print("Making time channels")
                 channels["time_chan" + name] = client.channels.create(
-                    name="time_chan" + name,
+                name="time_chan" + name,
                     is_index=True,
                     data_type=sy.DataType.TIMESTAMP,
                     retrieve_if_name_exists=True,

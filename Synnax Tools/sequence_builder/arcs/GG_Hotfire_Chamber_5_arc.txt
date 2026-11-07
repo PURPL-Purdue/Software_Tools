@@ -9,6 +9,9 @@ sequence Main {
 		control.set_authority{value=250},
 		1 -> seq_running,
 		1 -> data_logging,
+		0 -> blueline_triggered,
+		0 -> redline_triggered,
+		0 -> blueline_count,
 		0 -> SN_H2_03_cmd,
 		0 -> SN_GO2_05_cmd,
 		0 -> PV_GO2_04_cmd,
@@ -115,6 +118,7 @@ sequence Main {
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
 		1 -> Spark_Plug_cmd,
+		time.interval{period=10ms} -> func1{} => SEQONE0,
 		time.interval{period=10ms} -> check_redline{} => Redline0,
 		estop_cmd != 0 => ESTOP,
 		time.wait{duration=175ms} => next
@@ -131,21 +135,10 @@ sequence Main {
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
+		time.interval{period=10ms} -> func1{} => SEQONE0,
 		time.interval{period=10ms} -> check_redline{} => Redline0,
 		estop_cmd != 0 => ESTOP,
-		time.wait{duration=25ms} => next
-	}
-
-	stage ts1925 {
-		PT_TI_01 < 100 => SEQONE0,
-		1 -> blueline_count,
-		time.wait{duration=25ms} => next
-	}
-
-	stage ts1950 {
-		PT_TI_01 > 400 => SEQONE0,
-		2 -> blueline_count,
-		time.wait{duration=25ms} => next
+		time.wait{duration=75ms} => next
 	}
 
 	stage ts1975 {
@@ -159,6 +152,7 @@ sequence Main {
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
+		time.interval{period=10ms} -> func1{} => SEQONE0,
 		time.interval{period=10ms} -> check_redline{} => Redline0,
 		estop_cmd != 0 => ESTOP,
 		time.wait{duration=140ms} => next
@@ -175,15 +169,10 @@ sequence Main {
 		1 -> SN_N2_08_cmd,
 		1 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
+		time.interval{period=10ms} -> func1{} => SEQONE0,
 		time.interval{period=10ms} -> check_redline{} => Redline0,
 		estop_cmd != 0 => ESTOP,
-		time.wait{duration=235ms} => next
-	}
-
-	stage ts2350 {
-		PT_GG_01 < 100 => SEQTWO0,
-		3 -> blueline_count,
-		time.wait{duration=5ms} => next
+		time.wait{duration=240ms} => next
 	}
 
 	stage ts2355 {
@@ -628,6 +617,7 @@ sequence Main {
 		0 -> SN_N2_08_cmd,
 		0 -> SN_N2_09_cmd,
 		0 -> Spark_Plug_cmd,
+		start_cmd != 0 => Main,
 	}
 
 }
@@ -644,6 +634,15 @@ func check_redline() bool {
 	is_redline = TC_GO2_04_1 > 300 or is_redline
 	is_redline = PT_GO2_04_1 > 2000 or is_redline
 	return is_redline
+}
+
+func func1() bool {
+	is_blueline := false
+	is_blueline = PT_TI_01 > 100 or is_blueline
+	is_blueline = PT_GG_01 > 1000 or is_blueline
+	is_blueline = PT_TI_01 < -1 or is_blueline
+	is_blueline = PT_GG_01 < 12 or is_blueline
+	return is_blueline
 }
 
 start_cmd != 0 => Main
