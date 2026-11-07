@@ -5,7 +5,7 @@ from run_median import run_median_chan
 import threading
 
 if __name__ == "__main__":
-    #configure_synnax() NOTE: DO NOT RUN THIS FUNCTION WHEN THE HIGH-PRESS SYSTEM IS OPERATING. WILL VENT ON NEXT VALVE COMMAND. 
+    #configure_synnax() NOTE: DO NOT RUN THIS FUNCTION WHEN THE TANK-PRESS SYSTEM IS OPERATING. WILL VENT ON NEXT VALVE COMMAND. 
 
     #stop_event = threading.Event()
 
