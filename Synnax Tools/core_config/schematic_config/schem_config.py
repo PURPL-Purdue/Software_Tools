@@ -14,7 +14,7 @@ def configure_schematic(old_system=False):
     )
 
     BASE_DIR = Path(__file__).resolve().parent
-    file_name = "RDE.json"
+    file_name = "Turbojetv1.json"
     file_path = BASE_DIR / "empty_schems" / file_name
 
     with open(file_path, 'r') as file:
